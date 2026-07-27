@@ -14,6 +14,15 @@ function updateTaskProgress(){
   if(pctEl)pctEl.textContent=pct+'%';
   if(barEl)barEl.style.width=pct+'%';
   for(const id of TASK_IDS){const tc=document.getElementById('taskcard_task'+id);const cb=document.getElementById('ck_task'+id);if(tc)tc.classList.toggle('done',cb?.checked||false);}
+  const no=String(fields.no.value||'').trim();
+  if(!no)return;
+  const rawIdx=getRawRowIndexByNo(no);
+  if(rawIdx<0)return;
+  const rawRow=rawRows[rawIdx];
+  for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);rawRow[fullKeys['task'+id]]=boolToCsv(el?.checked||false);}
+  if(typeof FirebaseApp!=='undefined'&&FirebaseApp.getCurrentUser()){
+    FirebaseApp.saveToFirestore(rawRow,currentHeaders).catch(function(err){console.error('Firestore task save error:',err)});
+  }
 }
 function resetAllTasks(){
   const TASK_IDS=['01','02','03','04','04a','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33'];
