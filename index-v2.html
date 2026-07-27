@@ -1,0 +1,986 @@
+
+
+
+
+<!doctype html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>臨床研究研修会 ダッシュボード / dual-theme control ui v2026-06-05c</title>
+<link rel="stylesheet" href="css/theme-base.css">
+<link rel="stylesheet" href="css/styles.css">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="js/theme-toggle.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+</head>
+<body>
+<canvas id="bgCodeCanvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
+<div class="scanline"></div>
+
+<!-- ── v2 TOPBAR ── -->
+<header class="v2-topbar">
+  <div class="v2-topbar-title">DASHBOARD <span>v2</span></div>
+  <div class="v2-topbar-stats">
+    <span class="v2-topbar-stat">Records <b id="sumAllTop">0</b></span>
+    <span class="v2-topbar-stat">Year <b id="sumYearTop">0</b></span>
+    <span class="v2-topbar-stat">Next <b id="sumNextTop">-</b></span>
+    <span class="v2-topbar-stat">DB <b id="miniDbText" style="font-weight:400">空</b></span>
+  </div>
+  <div class="v2-topbar-actions">
+    <input type="file" id="csvFile" accept=".csv" style="display:none">
+    <label for="csvFile" class="btn small">📂 CSV</label>
+    <button class="btn small" id="newDbBtn">🆕 DB作成</button>
+    <button class="btn small" id="dummyDataBtn">🔲 サンプル</button>
+    <select id="recordSelect" title="Noを選択">
+      <option value="">--- No Select ---</option>
+    </select>
+    <button class="btn small" id="openConfirmBtn">▶ 開く</button>
+    <button class="btn small" id="themeBtn" onclick="SharedTheme.toggleTheme()" title="テーマ切替">◐</button>
+    <button class="btn small primary" id="saveAndDownloadBtn" disabled>💾 保存してDL</button>
+  </div>
+</header>
+
+<!-- ── v2 SIDEBAR + MAIN ── -->
+<div class="v2-layout">
+  <nav class="v2-sidebar">
+    <div class="v2-sidebar-lbl">Navigation</div>
+    <button class="v2-sidebar-btn active" data-section="topControlPanel" onclick="scrollToSection('topControlPanel')"><i>◉</i><span>ダッシュボード</span></button>
+    <button class="v2-sidebar-btn" data-section="todayCommandSection" onclick="scrollToSection('todayCommandSection')"><i>▶</i><span>今日のアクション</span></button>
+    <button class="v2-sidebar-btn" data-section="deadlineAlertSection" onclick="scrollToSection('deadlineAlertSection')"><i>⚠</i><span>期限アラート</span></button>
+    <button class="v2-sidebar-btn" data-section="quickOperationSection" onclick="scrollToSection('quickOperationSection')"><i>＋</i><span>新規追加</span></button>
+    <button class="v2-sidebar-btn" data-section="entryConsoleSection" onclick="scrollToSection('entryConsoleSection')"><i>◎</i><span>入力・編集</span></button>
+    <button class="v2-sidebar-btn" data-section="mailTemplateSection" onclick="scrollToSection('mailTemplateSection')"><i>✉</i><span>メール作成</span></button>
+    <button class="v2-sidebar-btn" data-section="taskChecklistPanel" onclick="scrollToSection('taskChecklistPanel')"><i>✓</i><span>タスク管理</span></button>
+    <button class="v2-sidebar-btn" data-section="exceptionQueueSection" onclick="scrollToSection('exceptionQueueSection')"><i>!</i><span>例外確認</span></button>
+    <button class="v2-sidebar-btn" data-section="masterTableSection" onclick="scrollToSection('masterTableSection')"><i>▤</i><span>データ管理</span></button>
+    <button class="v2-sidebar-btn" data-section="templateInjectionSection" onclick="scrollToSection('templateInjectionSection')"><i>⚙</i><span>管理</span></button>
+    <div class="v2-sidebar-lbl" style="margin-top:10px">Action</div>
+    <button class="v2-sidebar-btn" id="sidebarSaveDlBtn" onclick="sidebarSaveAndDownload()"><i>💾</i><span>保存してCSVをDL</span></button>
+    <div class="v2-sidebar-lbl" style="margin-top:10px">Links</div>
+    <a class="v2-sidebar-btn" href="https://morikawa001.github.io/seminar/seminar.html" target="_blank"><i>?</i><span>取扱説明</span></a>
+    <a class="v2-sidebar-btn" href="https://morikawa001.github.io/seminar/kenshukai-notion-csv-generator.html" target="_blank"><i>▤</i><span>申込者管理</span></a>
+    <a class="v2-sidebar-btn" href="https://morikawa001.github.io/seminar/attend.html" target="_blank"><i>◈</i><span>受講者管理</span></a>
+    <a class="v2-sidebar-btn" href="https://morikawa001.github.io/seminar/license.html" target="_blank"><i>◎</i><span>受講証交付</span></a>
+  </nav>
+  <main class="v2-main">
+  <div class="wrap">
+
+    <section class="hero-panel wide" id="topControlPanel" style="scroll-margin-top:56px">
+    <div class="corner-label">Dual Theme Control UI</div>
+      <div class="hero-head">
+        <div class="id-block top-hero-copy">
+          <div class="kicker">Clinical Research Training Control</div>
+          <h1>▌ Clinical Research Training Dashboard ▌</h1>
+          <p class="project-line">20XX年_臨床研究研修会計画_project_2501</p>
+          <p class="hero-desc">It serves as an operation platform that centrally manages training session planning, and the light theme provides a bright, Notion-like business UI that is easy to read.</p>
+          <p class="hero-desc jp">オペレーション_プラットフォームとして研修会開催計画を一元管理することができる / ライトテーマは Notion 風の明るく読みやすい業務UIとなっている</p>
+        </div>
+        <div class="hero-stats" style="display:none">
+          <div class="stat-box"><span>Records</span><b id="sumAllTop">0</b></div>
+          <div class="stat-box"><span>Current Year</span><b id="sumYearTop">0</b></div>
+          <div class="stat-box"><span>Next No</span><b id="sumNextTop">-</b></div>
+        </div>
+      </div>
+    </section>
+    <div class="hero-btn-grid">
+          <a class="btn manual-btn" href="#masterTableSection" onclick="scrollToSection('masterTableSection');return false;">Master Table</a>
+          <a class="btn manual-btn" href="#entryConsoleSection" onclick="scrollToSection('entryConsoleSection');return false;">Entry Console</a>
+          <a class="btn manual-btn" href="#templateInjectionSection" onclick="scrollToSection('templateInjectionSection');return false;">Template Inject</a>
+          <a class="btn manual-btn" href="https://morikawa001.github.io/seminar/live_session.html" target="_blank" rel="noopener noreferrer">Live Session</a>
+          <a class="btn manual-btn" href="https://morikawa001.github.io/seminar/seminar-manager.html" target="_blank" rel="noopener noreferrer">管理システム</a>
+          <a class="btn manual-btn" id="spareBtn1" href="https://example.com" target="_blank" rel="noopener noreferrer" ondblclick="editSpareUrl(1)" title="ダブルクリックでURL・ラベルを編集">予備ボタン1</a>
+          <a class="btn manual-btn" id="spareBtn2" href="https://example.com" target="_blank" rel="noopener noreferrer" ondblclick="editSpareUrl(2)" title="ダブルクリックでURL・ラベルを編集">予備ボタン2</a>
+          <a class="btn manual-btn" id="spareBtn3" href="https://example.com" target="_blank" rel="noopener noreferrer" ondblclick="editSpareUrl(3)" title="ダブルクリックでURL・ラベルを編集">予備ボタン3</a>
+          <a class="btn manual-btn" id="spareBtn4" href="https://example.com" target="_blank" rel="noopener noreferrer" ondblclick="editSpareUrl(4)" title="ダブルクリックでURL・ラベルを編集">予備ボタン4</a>
+          <a class="btn manual-btn" id="spareBtn5" href="https://example.com" target="_blank" rel="noopener noreferrer" ondblclick="editSpareUrl(5)" title="ダブルクリックでURL・ラベルを編集">予備ボタン5</a>
+          <a class="btn manual-btn" id="spareBtn6" href="https://example.com" target="_blank" rel="noopener noreferrer" ondblclick="editSpareUrl(6)" title="ダブルクリックでURL・ラベルを編集">予備ボタン6</a>
+    </div>
+
+    <!-- ── Quick Actions ── -->
+    <div class="quick-actions-row">
+      <button class="btn primary" onclick="scrollAndOpen('quickOperationSection')">📝 新規研修会を追加</button>
+      <button class="btn" onclick="scrollAndOpen('mailTemplateSection')">✉ メールを作成</button>
+    </div>
+
+    <!-- Training Progress Panel: 研修会全体の進捗 -->
+    <section id="trainingProgressPanel" class="panel section-collapsible" data-collapsed="true">
+      <div class="corner-label">Training Progress</div>
+      <div class="panel-head">
+        <div>
+          <h2>研修会全体の進捗</h2>
+          <p>登録済み研修会の終了状況</p>
+        </div>
+      </div>
+      <div class="progress-summary">
+        <div class="progress-summary-item">
+          <span class="label">登録件数</span>
+          <strong id="trainingTotalCount">0</strong>
+        </div>
+        <div class="progress-summary-item">
+          <span class="label">終了件数</span>
+          <strong id="trainingDoneCount">0</strong>
+        </div>
+        <div class="progress-summary-item">
+          <span class="label">残り</span>
+          <strong id="trainingRemainCount">0</strong>
+        </div>
+        <div class="progress-summary-item">
+          <span class="label">進捗率</span>
+          <strong id="trainingProgressPct">0%</strong>
+        </div>
+      </div>
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar-track">
+          <div id="trainingProgressBar" class="progress-bar-fill"></div>
+        </div>
+      </div>
+      <div class="hint-box small">
+        研修会CSVの「終了」フラグから自動計算されます。
+      </div>
+    </section>
+
+    <div class="section-group-label">⚡ 今日の優先アクション</div>
+
+    <!-- Today Command -->
+    <section class="panel section-collapsible open" id="todayCommandSection" data-collapsed="false">
+      <div class="corner-label">Today Command</div>
+      <div class="panel-head">
+        <div>
+          <h2>Today Command</h2>
+          <p>本日優先すべきアクションを自動判定して表示します。CSVを読み込むと更新されます。</p>
+        </div>
+        <div class="panel-nav-actions">
+          <a class="btn small manual-btn" href="#exceptionQueueSection" onclick="scrollToSection('exceptionQueueSection');return false;">Exception Queue</a>
+          <a class="btn small manual-btn" href="#mailTemplateSection" onclick="scrollToSection('mailTemplateSection');return false;">Mail Template</a>
+          <a class="btn small manual-btn" href="#taskChecklistPanel" onclick="scrollToSection('taskChecklistPanel');return false;">Task Checklist</a>
+          <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
+        </div>
+      </div>
+      <div class="today-command-grid" id="todayCommandList">
+        <div class="tc-empty">
+          <i class="tc-empty-icon">&#9881;</i>
+          CSVを読み込むか、新規DBを作成すると本日のアクション候補がここに表示されます。
+        </div>
+      </div>
+    </section>
+
+    <!-- Deadline Alert -->
+    <section class="panel section-collapsible" id="deadlineAlertSection" data-collapsed="false">
+      <div class="corner-label">Deadline Alert</div>
+      <div class="panel-head">
+        <div>
+          <h2>Deadline Alert</h2>
+          <p>7日以内に期限が迫るタスクを上から優先表示します。</p>
+        </div>
+        <div class="panel-nav-actions">
+          <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
+        </div>
+      </div>
+      <div class="alert-wrap" id="alertList">
+        <div class="alert-item">
+          <div><span class="alert-tag">WAIT</span></div>
+          <div><strong>期限監視待機中</strong><p>CSVを読み込むと期限アラートがここに表示されます。</p></div>
+          <div class="mono">No data</div>
+        </div>
+      </div>
+    </section><!-- /Deadline Alert -->
+
+    <div class="section-group-label">🛠 メイン作業</div>
+
+    <!-- ── Data Tab ── -->
+  <!-- ===== ROW 1: Quick Operation + 差出人情報 ===== -->
+    <div class="two-col-grid">
+    <section class="panel command-panel section-collapsible" id="quickOperationSection" data-collapsed="false">
+      <div class="corner-label">Operation Console</div>
+      <div class="panel-head">
+        <div>
+          <h2>Quick Operation</h2>
+          <p>CSV操作・新規DB・テーマ切替を一括管理します。</p>
+        </div>
+      </div>
+      <div class="no-search-row">
+        <select id="quickRecordSelect" class="btn" style="flex:1">
+          <option value="">Noを選択して表示</option>
+        </select>
+        <button class="btn primary" id="quickOpenBtn">開く</button>
+      </div>
+      <div class="file-name-display">
+        <span>📄</span>
+        <input id="csvFileName" value="" readonly placeholder="ファイル未選択">
+      </div>
+      <div class="mini-grid">
+        <div class="mini-box">
+          <span>Database</span>
+          <b id="miniDbState">CSV未読込</b>
+          <p id="miniDbText">CSVまたは新規DBを選択してください</p>
+        </div>
+        <div class="mini-box">
+          <span>Next</span>
+          <b id="miniNext">-</b>
+          <p>次回採番候補</p>
+        </div>
+        <div class="mini-box">
+          <span>Year Count</span>
+          <b id="miniYearCount">0</b>
+          <p>当年度登録件数</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="right-col-stack">
+    <section class="panel section-collapsible" id="senderInfoSection" data-collapsed="true">
+      <div class="corner-label">Sender Info</div>
+      <div class="panel-head">
+        <div>
+          <h2>差出人情報</h2>
+          <p>メールの冒頭・末尾シグネチャーに自動反映されます。</p>
+        </div>
+      </div>
+      <div class="sender-info-grid">
+        <div class="field">
+          <label>所属・部署名</label>
+          <input type="text" id="senderOrg" placeholder="例：XXがんセンター 臨床研究支援センター" />
+        </div>
+        <div class="field">
+          <label>担当者名</label>
+          <input type="text" id="senderName" placeholder="例：山田 太郎" />
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label>シグネチャー（＊＊＊に挟まれた部分のみ入力）</label>
+          <textarea id="senderSignature" rows="5" style="min-height:100px" placeholder="例：XXがんセンター 臨床研究支援センター&#10;臨床研究管理・調整室&#10;山田 太郎&#10;TEL: 055-989-XXXX&#10;Email: t.morikawa@XXX.jp"></textarea>
+        </div>
+      </div>
+    </section>
+      <!-- 時計: 差出人情報直下・同幅 -->
+      <section class="nixie-panel" id="nixieClockPanel">
+        <div class="nixie-date-row">
+          <span class="nixie-digit" id="nixieYear">2026</span>
+          <span class="nixie-sep">/</span>
+          <span class="nixie-digit" id="nixieMonth">01</span>
+          <span class="nixie-sep">/</span>
+          <span class="nixie-digit" id="nixieDay">01</span>
+        </div>
+        <div class="nixie-time-row">
+          <span class="nixie-time-digit" id="nixieHour">00</span>
+          <span class="nixie-colon">:</span>
+          <span class="nixie-time-digit" id="nixieMin">00</span>
+          <span class="nixie-colon">:</span>
+          <span class="nixie-time-digit" id="nixieSec">00</span>
+        </div>
+        <div class="nixie-day-badge" id="nixieDow">月曜日</div>
+      </section>
+    </div>
+  </div>
+
+    <!-- ── Input Tab ── -->
+  <!-- ===== ROW 4: Entry Console + 右スタック ===== -->
+  <div class="two-col-grid entry-row">
+    <section class="panel section-collapsible" id="entryConsoleSection" data-collapsed="false">
+      <div class="corner-label">Entry Console</div>
+      <div class="panel-head">
+        <div>
+          <h2>Entry Console</h2>
+          <p>ダークでは電子端末風、ライトでは Notion 風の落ち着いた視認性重視フォームになります。</p>
+        </div>
+        <button class="btn" id="loadSelectedBtn" disabled>選択Noを反映</button>
+      
+        <div class="panel-nav-actions">
+          <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
+        </div>
+      </div>
+
+      <div class="master-grid">
+        <div class="field"><label>No</label><input id="fNo"></div>
+        <div class="field"><label>年度_YEAR_1</label><input id="fYear" value="2026年"></div>
+        <div class="field"><label>開催日_DATE_1</label><input id="fDate" type="date"></div>
+        <div class="field"><label>曜日_DAY</label><input id="fDay" readonly></div>
+        <div class="field"><label>メール用開催日_DATE_2</label><input id="fDate2" readonly></div>
+        <div class="field"><label>名前_NAME</label><input id="fName" value=""></div>
+        <div class="field"><label>研修会タイトル_TITLE</label><input id="fTitle" value="臨床研究データ管理実務"></div>
+        <div class="field"><label>講師名_SPEAKER</label><input id="fSpeaker" value="サンプル 講師"></div>
+
+        <div class="field"><label>研修会開始_START_1</label><input id="fStart" type="time" value="17:30" oninput="autoFillPreMeeting()"></div>
+        <div class="field"><label>終了_END_1</label><input id="fEnd" type="time" value="19:00"></div>
+        <div class="field"><label>事前打合せ開始時間_PRE_MEETING</label><input id="fPreMeeting" type="time" value=""></div>
+        <div class="field"><label>講義開始_START_TIME</label><input id="fLectureStart" type="time" value="17:30"></div>
+        <div class="field"><label>質疑応答締切_QA_DADLINE</label><input id="fQaDeadline" type="time" value=""></div>
+        <div class="field"><label>質疑応答_QA_TIME</label><input id="fQaTime" value=""></div>
+
+        <div class="field"><label>入室_TIME_1</label><input id="fRoomOpen" readonly></div>
+        <div class="field"><label>時間_TIME_2</label><input id="fDuration" readonly></div>
+        <div class="field"><label>〆切_DEADLINE_1</label><input id="fDeadline1" readonly></div>
+        <div class="field"><label>院内〆切_DEADLINE_2</label><input id="fDeadline2" readonly></div>
+        <div class="field"><label>資料DL_DEADLINE_3</label><input id="fDeadline3" readonly></div>
+        <div class="field"><label>講義資料締切_DATA_deadline</label><input id="fDataDeadline" readonly></div>
+        <div class="field"><label>謝金_COST</label><input id="fCost" value=""></div>
+
+        <div class="field"><label>対象_SUBJECT_1</label>
+          <select id="fSubject">
+            <option>研究者</option>
+            <option>研究支援者</option>
+            <option>倫理審査委員会委員</option>
+          </select>
+        </div>
+        <div class="field"><label>対象詳細_SUBJECT_2</label><input id="fSubject2" readonly></div>
+        <div class="field"><label>開催方法_SITE</label>
+          <select id="fSite">
+            <option>Web会議室</option>
+            <option>（管理棟4階 研修室１における集合形式と併用）</option>
+            <option>会議室</option>
+            <option>ハイブリッド</option>
+          </select>
+        </div>
+        <div class="field"><label>共催_COHOST_1</label>
+          <select id="fCohost">
+            <option value="なし">なし</option>
+            <option value="企画人材班">企画人材班</option>
+          </select>
+        </div>
+        <div class="field"><label>共催3_COHOST_3</label><input id="fCohost3" readonly></div>
+        <div class="field"><label>Zoom ID</label><input id="fZoomId" value=""></div>
+        <div class="field"><label>パスコード_PASSCODE</label><input id="fPasscode" value=""></div>
+        <div class="field full"><label>Zoom URL</label><input id="fZoomUrl" value="https://zoom.us/"></div>
+        <div class="field full"><label>HP_URL_url_1</label><input id="fHpUrl" value=""></div>
+        <div class="field full"><label>目的_PURPOSE</label><textarea id="fPurpose">本研修会では、臨床研究に必要な実務の基本をわかりやすく学びます。</textarea></div>
+        <div class="field full"><label>進行表導入_INTRO_1</label><textarea id="fIntro1">本日は臨床研究研修会にご参加いただきありがとうございます。</textarea></div>
+        <div class="field full"><label>趣旨説明_INTRO_2</label><textarea id="fIntro2">本研修会では、臨床研究を進めるうえで必要となる基本事項と実務上のポイントを共有します。</textarea></div>
+        <div class="field full"><label>講師紹介_INTRO_3</label><textarea id="fIntro3">本日の講師は、臨床研究支援に関する実務経験を有する専門家です。</textarea></div>
+      </div>
+
+      <div class="control-row">
+        <button class="btn primary" id="appendBtn" disabled>保存してcsvをDL</button>
+        <button class="btn" id="prefillBtn" disabled>直近行を複製</button>
+      </div>
+
+      <div class="status-box" id="statusBox">CSVを読み込むか、新規データベースを作成すると入力を開始できます。</div>
+    </section>
+
+        <div class="right-stack">
+      <section class="panel section-collapsible open" id="computedScheduleSection" data-collapsed="false">
+        <div class="corner-label">Computed Schedule</div>
+        <div class="panel-head">
+          <div>
+            <h2>Computed Schedule</h2>
+            <p>起案スケジュールと各チェック状態を右側に固定表示します。</p>
+          </div>
+        
+        <div class="panel-nav-actions">
+          <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
+        </div>
+      </div>
+        <div class="schedule-list">
+          <div class="schedule-card">
+            <div class="schedule-left">
+              <span class="small-label">起案1</span>
+              <strong id="dK1">-</strong>
+              <p>開催35日前の起案予定です。</p>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ckK1"><span>実施済み</span></label>
+          </div>
+          <div class="schedule-card">
+            <div class="schedule-left">
+              <span class="small-label">HP公開</span>
+              <strong id="dHp">-</strong>
+              <p>開催28日前の案内開始予定です。</p>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ckHp"><span>実施済み</span></label>
+          </div>
+          <div class="schedule-card">
+            <div class="schedule-left">
+              <span class="small-label">起案2</span>
+              <strong id="dK2">-</strong>
+              <p>開催7日前の資料起案予定です。</p>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ckK2"><span>実施済み</span></label>
+          </div>
+          <div class="schedule-card">
+            <div class="schedule-left">
+              <span class="small-label">起案3</span>
+              <strong id="dK3">-</strong>
+              <p>開催翌営業日の受講証・修了証起案予定です。</p>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ckK3"><span>実施済み</span></label>
+          </div>
+          <div class="date-card"><span>入室</span><b id="dRoomOpen">-</b></div>
+          <div class="date-card"><span>所要時間</span><b id="dDuration">-</b></div>
+          <div class="date-card"><span>講義開始</span><b id="dLectureStart">-</b></div>
+          <div class="date-card"><span>事前打合せ</span><b id="dPreMeeting">-</b></div>
+          <div class="date-card"><span>QA締切</span><b id="dQaDeadline">-</b></div>
+          <div class="date-card"><span>QA時間</span><b id="dQaTime">-</b></div>
+          <div class="date-card"><span>DEADLINE_1</span><b id="dDeadline1">-</b></div>
+          <div class="date-card"><span>DEADLINE_2</span><b id="dDeadline2">-</b></div>
+          <div class="date-card"><span>DEADLINE_3</span><b id="dDeadline3">-</b></div>
+          <div class="date-card"><span>DATA_deadline</span><b id="dDataDeadline">-</b></div>
+          <div class="date-card"><span>DATE_2</span><b id="dDate2">-</b></div>
+          <div class="date-card"><span>SUBJECT_2</span><b id="dSubject2">-</b></div>
+        </div>
+        <div class="hint-box">CSV保存時には、起案1 / HP / 起案2 / 起案3 のチェック状態も一緒に保持します。</div>
+      </section>
+
+      <section class="panel" id="operationalSummaryPanel" style="display:none">
+        <div class="corner-label">Operational Summary</div>
+        <div class="panel-head">
+          <div>
+            <h2>Operational Summary</h2>
+            <p>年次の状況を補助数値でも確認できます。</p>
+          </div>
+        
+        <div class="panel-nav-actions">
+          <a class="btn small manual-btn" href="#taskChecklistPanel" onclick="scrollToSection('taskChecklistPanel');return false;">Task Checklist</a>
+          <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
+        </div>
+      </div>
+        <div class="summary-grid">
+          <div class="summary-box"><span>登録件数</span><b id="sumAll">0</b></div>
+          <div class="summary-box"><span>年度件数</span><b id="sumYear">0</b></div>
+          <div class="summary-box"><span>次No</span><b id="sumNext">-</b></div>
+          <div class="summary-box"><span>対象</span><b id="sumSubject">-</b></div>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-box"><span>直近30日</span><b id="sumSoon">0件</b></div>
+          <div class="summary-box"><span>開催済み</span><b id="sumDone">0件</b></div>
+          <div class="summary-box"><span>追加予定</span><b id="sumDraft">0件</b></div>
+          <div class="summary-box"><span>比率</span><b id="roadmapLabel">0 / 0</b></div>
+        </div>
+        <div class="progress-shell"><div class="progress-bar" id="roadmapBar"></div></div>
+      </section>
+    </div>
+  </div>
+
+    <div class="section-group-label">📦 補助ツール</div>
+
+    <!-- ── Data Tab (cont.) ── -->
+  <!-- ===== ROW 5: Exception Queue ===== -->
+  <section class="panel section-collapsible" id="exceptionQueueSection" data-collapsed="true">
+    <div class="corner-label">Exception Queue</div>
+    <div class="panel-head">
+      <div>
+        <h2>Exception Queue</h2>
+        <p>データの不備・例外をルールベースで自動検出します。CSV読込後に更新されます。</p>
+      </div>
+      <div class="panel-nav-actions">
+        <a class="btn small manual-btn" href="#mailTemplateSection" onclick="scrollToSection('mailTemplateSection');return false;">Mail Template</a>
+        <a class="btn small manual-btn" href="#todayCommandSection" onclick="scrollToSection('todayCommandSection');return false;">Today Command</a>
+        <a class="btn small manual-btn" href="#taskChecklistPanel" onclick="scrollToSection('taskChecklistPanel');return false;">Task Checklist</a>
+        <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
+      </div>
+    </div>
+    <div class="alert-wrap" id="exceptionQueueList">
+      <div class="eq-item sev-info">
+        <div><span class="eq-tag info">WAIT</span><div class="eq-no" style="margin-top:4px">-</div></div>
+        <div class="eq-item-body"><strong>例外検出待機中</strong><p>CSVを読み込むか、新規DBを作成すると例外がここに表示されます。</p></div>
+        <div></div>
+      </div>
+    </div>
+  </section>
+
+    <!-- ── Email Tab ── -->
+  <!-- ===== ROW 6: Mail Template (全幅) ===== -->
+  <section class="panel section-collapsible" id="mailTemplateSection" data-collapsed="true">
+    <div class="corner-label">Mail Template</div>
+    <div class="panel-head">
+      <div>
+        <h2>Mail Template</h2>
+        <p>研修会レコードを選択し、用途タブを選ぶとメール文面を自動生成します。</p>
+      </div>
+      <div class="panel-nav-actions">
+        <a class="btn small manual-btn" href="#exceptionQueueSection" onclick="scrollToSection('exceptionQueueSection');return false;">Exception Queue</a>
+        <a class="btn small manual-btn" href="#todayCommandSection" onclick="scrollToSection('todayCommandSection');return false;">Today Command</a>
+        <a class="btn small manual-btn" href="#taskChecklistPanel" onclick="scrollToSection('taskChecklistPanel');return false;">Task Checklist</a>
+        <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
+      </div>
+    </div>
+
+    <!-- hidden selects for JS compatibility -->
+    <select id="mailRecipient" style="display:none">
+      <option value="">宛先を選択</option>
+      <option value="speaker">講師</option>
+      <option value="cohost">共催・関係者</option>
+    </select>
+    <select id="mailPurpose" style="display:none">
+      <option value="">用途を選択してください</option>
+      <option value="ishi_req">依頼状送付（講師・開催5W前）</option>
+      <option value="hp_report_speaker">HP掲載報告+資料依頼（講師・HP掲載当日）</option>
+      <option value="data_reminder_speaker">資料提出リマインド（講師・開催2W前）</option>
+      <option value="honban_reminder_speaker">本番前リマインド（講師・開催1W前）</option>
+      <option value="shakin_transfer">謝金振込通知（講師・開催7日以内）</option>
+      <option value="hp_upload_req">HP予約投稿依頼（関係者・HP掲載1W前）</option>
+      <option value="hp_done_report">HP掲載完了報告①（関係者・HP掲載1W前）</option>
+      <option value="hp_done_report_day">HP掲載完了報告②（関係者・HP掲載当日）</option>
+      <option value="denshi_post_req">電子カルテ掲載依頼（関係者・HP掲載当日）</option>
+      <option value="denshi_replace_req">電子カルテ差替依頼（関係者・開催1W前）</option>
+      <option value="shakin_proc_req">謝金支払手続依頼（関係者・開催翌〜3日）</option>
+      <option value="seminar_prep">研修会準備依頼（関係者・当日）</option>
+      <option value="jikan_gaizangyo">時間外勤務前申請（関係者・当日）</option>
+    </select>
+
+    <!-- 用途タブ（13種） -->
+    <div class="mail-tab-bar" id="mailTabBar">
+      <button class="mail-tab active" data-recipient="speaker" data-purpose="ishi_req" onclick="mailTabClick(this)">依頼状送付</button>
+      <button class="mail-tab" data-recipient="speaker" data-purpose="hp_report_speaker" onclick="mailTabClick(this)">HP掲載報告+資料依頼</button>
+      <button class="mail-tab" data-recipient="speaker" data-purpose="data_reminder_speaker" onclick="mailTabClick(this)">資料提出リマインド</button>
+      <button class="mail-tab" data-recipient="speaker" data-purpose="honban_reminder_speaker" onclick="mailTabClick(this)">本番前リマインド</button>
+      <button class="mail-tab" data-recipient="speaker" data-purpose="shakin_transfer" onclick="mailTabClick(this)">謝金振込通知</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="hp_upload_req" onclick="mailTabClick(this)">HP予約投稿依頼</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="hp_done_report" onclick="mailTabClick(this)">HP掲載完了報告①</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="hp_done_report_day" onclick="mailTabClick(this)">HP掲載完了報告②</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="denshi_post_req" onclick="mailTabClick(this)">電子カルテ掲載依頼</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="denshi_replace_req" onclick="mailTabClick(this)">電子カルテ差替依頼</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="shakin_proc_req" onclick="mailTabClick(this)">謝金支払手続依頼</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="seminar_prep" onclick="mailTabClick(this)">研修会準備依頼</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="jikan_gaizangyo" onclick="mailTabClick(this)">時間外勤務前申請</button>
+    </div>
+
+    <!-- レコード選択行 -->
+    <div class="mail-select-row">
+      <div class="field">
+        <label>研修会No選択</label>
+        <select id="mailRecordSelect">
+          <option value="">Noを選択してください</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>生成ボタン</label>
+        <button class="btn primary" id="mailGenerateBtn">クリア</button>
+      </div>
+      <div class="field" style="align-self:end">
+        <button class="btn" id="mailCopyAllBtn">件名＋本文をコピー</button>
+      </div>
+    </div>
+
+    <!-- 不足情報警告 -->
+    <div class="mail-missing-warn" id="mailMissingWarn">
+      <strong>⚠ 不足情報：</strong><span id="mailMissingList"></span>
+    </div>
+
+    <!-- プレビューエリア -->
+    <div class="mail-preview" id="mailPreviewWrap" style="display:none">
+      <div class="field">
+        <label>件名</label>
+        <div class="mail-subject-row">
+          <input id="mailSubjectDisplay" type="text" readonly style="background:var(--panel2);cursor:text;user-select:text" placeholder="（メール生成後に表示）">
+          <button class="btn small" id="mailCopySubjectBtn">件名コピー</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>本文（直接編集可）</label>
+        <textarea id="mailBodyDisplay" rows="18" style="min-height:320px;font-family:inherit;line-height:1.7"></textarea>
+      </div>
+    </div>
+  </section>
+
+    <!-- ── Tasks Tab ── -->
+  <!-- Commit Check / Export Result removed -->
+
+  <!-- ===== ROW 8: Task Checklist (全幅) ===== -->
+  <section class="panel section-collapsible" id="taskChecklistPanel" data-collapsed="true">
+        <div class="corner-label">Task Checklist</div>
+        <div class="panel-head">
+          <div>
+            <h2>Task Checklist</h2>
+            <p>研修会運営の全タスクチェックリストです。CSV保存時にチェック状態を保持します。</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <button class="btn small" id="taskResetBtn" onclick="resetAllTasks()">全リセット</button>
+            <button class="task-toggle-btn" id="taskToggleBtn" onclick="toggleTaskBody()">
+              <i class="toggle-icon">&#9660;</i><span id="taskToggleLabel">開く</span>
+            </button>
+          </div>
+        <div class="panel-nav-actions">
+          <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
+        </div>
+      </div>
+        <div class="mini-grid" style="margin-bottom:4px">
+          <div class="mini-box"><span>完了タスク</span><b id="taskDoneCount">0</b></div>
+          <div class="mini-box"><span>残りタスク</span><b id="taskRemainCount">33</b></div>
+          <div class="mini-box"><span>進捗</span><b id="taskProgressPct">0%</b></div>
+        </div>
+        <div class="progress-shell" style="margin-bottom:8px"><div class="progress-bar" id="taskProgressBar"></div></div>
+        <div id="taskBody" class="collapsed">
+        <div class="schedule-list" id="taskCheckList">
+<div class="task-phase-label"><span class="small-label">準備フェーズ（開催前〜起案1）</span></div>
+          <div class="schedule-card" id="taskcard_task01">
+            <div class="schedule-left">
+              <span class="small-label">Task 01</span>
+              <strong>研修会演題と目的案を作成</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task01" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task02">
+            <div class="schedule-left">
+              <span class="small-label">Task 02</span>
+              <strong>講師にメールで確認</strong>
+            </div>
+            <div class="schedule-actions">
+            <button class="task-mail-btn" onclick="openTaskMail('02')" title="メール案を作成">✉</button>
+            <label class="schedule-check"><input type="checkbox" id="ck_task02" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          </div>
+          <div class="schedule-card" id="taskcard_task03">
+            <div class="schedule-left">
+              <span class="small-label">Task 03</span>
+              <strong>マネジメントセンターにHP個別ページブランチ作成依頼</strong>
+            </div>
+            <div class="schedule-actions">
+            <button class="task-mail-btn" onclick="openTaskMail('03')" title="メール案を作成">✉</button>
+            <label class="schedule-check"><input type="checkbox" id="ck_task03" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          </div>
+          <div class="schedule-card" id="taskcard_task04">
+            <div class="schedule-left">
+              <span class="small-label">Task 04</span>
+              <strong>WordPressでHPページ更新を設定と予約投稿設定</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task04" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task04a">
+  <div class="schedule-left">
+    <span class="small-label">Task 04-2</span>
+    <strong>講師依頼状（兼業依頼）提出</strong>
+  </div>
+  <div class="schedule-actions">
+    <button class="task-mail-btn" onclick="openTaskMail('04a')" title="メール案を作成">✉</button>
+    <label class="schedule-check">
+      <input type="checkbox" id="ck_task04a" onchange="updateTaskProgress()">
+      <span>完了</span>
+    </label>
+  </div>
+</div>
+          <div class="schedule-card" id="taskcard_task05">
+            <div class="schedule-left">
+              <span class="small-label">Task 05</span>
+              <strong>起案1_開催</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task05" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+<div class="task-phase-label"><span class="small-label">広報・HP公開フェーズ</span></div>
+          <div class="schedule-card" id="taskcard_task06">
+            <div class="schedule-left">
+              <span class="small-label">Task 06</span>
+              <strong>HP公開設定依頼</strong>
+            </div>
+            <div class="schedule-actions">
+            <button class="task-mail-btn" onclick="openTaskMail('06')" title="メール案を作成">✉</button>
+            <label class="schedule-check"><input type="checkbox" id="ck_task06" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          </div>
+          <div class="schedule-card" id="taskcard_task07">
+            <div class="schedule-left">
+              <span class="small-label">Task 07</span>
+              <strong>HP公開・受付開始</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task07" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task08">
+            <div class="schedule-left">
+              <span class="small-label">Task 08</span>
+              <strong>HP公開開始のご案内メール</strong>
+            </div>
+            <div class="schedule-actions">
+            <button class="task-mail-btn" onclick="openTaskMail('08')" title="メール案を作成">✉</button>
+            <label class="schedule-check"><input type="checkbox" id="ck_task08" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          </div>
+          <div class="schedule-card" id="taskcard_task09">
+            <div class="schedule-left">
+              <span class="small-label">Task 09</span>
+              <strong>電子カルテ掲示板の掲載内容確認</strong>
+            </div>
+            <div class="schedule-actions">
+            <button class="task-mail-btn" onclick="openTaskMail('09')" title="メール案を作成">✉</button>
+            <label class="schedule-check"><input type="checkbox" id="ck_task09" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          </div>
+          <div class="schedule-card" id="taskcard_task10">
+            <div class="schedule-left">
+              <span class="small-label">Task 10</span>
+              <strong>院内配布用チラシ１回目配布</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task10" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+<div class="task-phase-label"><span class="small-label">チラシ・講師対応フェーズ</span></div>
+          <div class="schedule-card" id="taskcard_task11">
+            <div class="schedule-left">
+              <span class="small-label">Task 11</span>
+              <strong>院内配布用チラシ２回目配布</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task11" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task12">
+            <div class="schedule-left">
+              <span class="small-label">Task 12</span>
+              <strong>講師リマインドメール</strong>
+            </div>
+            <div class="schedule-actions">
+            <button class="task-mail-btn" onclick="openTaskMail('12')" title="メール案を作成">✉</button>
+            <label class="schedule-check"><input type="checkbox" id="ck_task12" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          </div>
+          <div class="schedule-card" id="taskcard_task13">
+            <div class="schedule-left">
+              <span class="small-label">Task 13</span>
+              <strong>講師スライド入手</strong>
+            </div>
+            <div class="schedule-actions">
+            <button class="task-mail-btn" onclick="openTaskMail('13')" title="メール案を作成">✉</button>
+            <label class="schedule-check"><input type="checkbox" id="ck_task13" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          </div>
+          <div class="schedule-card" id="taskcard_task14">
+            <div class="schedule-left">
+              <span class="small-label">Task 14</span>
+              <strong>共催枠について企画人材班への協力要請文作成</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task14" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task15">
+            <div class="schedule-left">
+              <span class="small-label">Task 15</span>
+              <strong>事前受付終了・Web受講希望者リストの書き出し</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task15" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+<div class="task-phase-label"><span class="small-label">起案2・資料準備フェーズ</span></div>
+          <div class="schedule-card" id="taskcard_task16">
+            <div class="schedule-left">
+              <span class="small-label">Task 16</span>
+              <strong>起案2_資料</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task16" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task17">
+            <div class="schedule-left">
+              <span class="small-label">Task 17</span>
+              <strong>追加資料の有無を確認</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task17" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task18">
+            <div class="schedule-left">
+              <span class="small-label">Task 18</span>
+              <strong>企画人材班と配布資料を共有</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task18" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task19">
+            <div class="schedule-left">
+              <span class="small-label">Task 19</span>
+              <strong>防災センターに報告</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task19" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task20">
+            <div class="schedule-left">
+              <span class="small-label">Task 20</span>
+              <strong>講師と受講者にリマインドメール①</strong>
+            </div>
+            <div class="schedule-actions">
+            <button class="task-mail-btn" onclick="openTaskMail('20')" title="メール案を作成">✉</button>
+            <label class="schedule-check"><input type="checkbox" id="ck_task20" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          </div>
+<div class="task-phase-label"><span class="small-label">当日直前・本番フェーズ</span></div>
+          <div class="schedule-card" id="taskcard_task21">
+            <div class="schedule-left">
+              <span class="small-label">Task 21</span>
+              <strong>研修会当日の準備</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task21" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task22">
+            <div class="schedule-left">
+              <span class="small-label">Task 22</span>
+              <strong>講師と受講者にリマインドメール②</strong>
+            </div>
+            <div class="schedule-actions">
+            <button class="task-mail-btn" onclick="openTaskMail('22')" title="メール案を作成">✉</button>
+            <label class="schedule-check"><input type="checkbox" id="ck_task22" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          </div>
+          <div class="schedule-card" id="taskcard_task23">
+            <div class="schedule-left">
+              <span class="small-label">Task 23</span>
+              <strong>使用するパソコンのシステム更新確認</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task23" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task24">
+            <div class="schedule-left">
+              <span class="small-label">Task 24</span>
+              <strong>研修会本番</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task24" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+<div class="task-phase-label"><span class="small-label">事後処理フェーズ（起案3〜完了）</span></div>
+          <div class="schedule-card" id="taskcard_task25">
+            <div class="schedule-left">
+              <span class="small-label">Task 25</span>
+              <strong>Zoomレポートダウンロード</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task25" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task26">
+            <div class="schedule-left">
+              <span class="small-label">Task 26</span>
+              <strong>会場参加者のデータを企画人材班に提供依頼</strong>
+            </div>
+            <div class="schedule-actions">
+            <button class="task-mail-btn" onclick="openTaskMail('26')" title="メール案を作成">✉</button>
+            <label class="schedule-check"><input type="checkbox" id="ck_task26" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          </div>
+          <div class="schedule-card" id="taskcard_task27">
+            <div class="schedule-left">
+              <span class="small-label">Task 27</span>
+              <strong>出席者を受講者リストに入力</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task27" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task28">
+            <div class="schedule-left">
+              <span class="small-label">Task 28</span>
+              <strong>起案3_受講証</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task28" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task29">
+            <div class="schedule-left">
+              <span class="small-label">Task 29</span>
+              <strong>講師へお礼の連絡</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task29" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task30">
+            <div class="schedule-left">
+              <span class="small-label">Task 30</span>
+              <strong>受講者数と内訳報告</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task30" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          <div class="schedule-card" id="taskcard_task31">
+            <div class="schedule-left">
+              <span class="small-label">Task 31</span>
+              <strong>謝金支払い</strong>
+            </div>
+            <div class="schedule-actions">
+            <button class="task-mail-btn" onclick="openTaskMail('31')" title="メール案を作成">✉</button>
+            <label class="schedule-check"><input type="checkbox" id="ck_task31" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          </div>
+          <div class="schedule-card" id="taskcard_task32">
+            <div class="schedule-left">
+              <span class="small-label">Task 32</span>
+              <strong>謝金の支払について講師にメール</strong>
+            </div>
+            <div class="schedule-actions">
+            <button class="task-mail-btn" onclick="openTaskMail('32')" title="メール案を作成">✉</button>
+            <label class="schedule-check"><input type="checkbox" id="ck_task32" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+          </div>
+          <div class="schedule-card" id="taskcard_task33">
+            <div class="schedule-left">
+              <span class="small-label">Task 33</span>
+              <strong>受講証・修了証書メール交付</strong>
+            </div>
+            <label class="schedule-check"><input type="checkbox" id="ck_task33" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
+        </div>
+        <div class="hint-box">各タスクを完了したらチェックを入れてください。CSV保存時に状態が保持されます。</div>
+        </div>
+  </section><!-- /taskChecklistPanel -->
+
+    <!-- ── Admin Tab ── -->
+  <section class="panel section-collapsible" id="templateInjectionSection" data-collapsed="true">
+    <div class="corner-label">Template Merge</div>
+    <div class="panel-head">
+      <div>
+        <h2>Template Injection</h2>
+        <p>pptx / xlsx / docx を複数同時読込し、選択Noのデータで一括差し込みします。</p>
+      </div>
+    
+        <div class="panel-nav-actions">
+          <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
+        </div>
+      </div>
+    <div class="master-grid">
+      <div class="field full">
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+    <label for="templateFiles" class="btn">ファイル選択</label>
+    <button class="btn" id="templateClearBtn" onclick="clearTemplateFiles()">テンプレート選択をクリア</button>
+  </div>
+  <input id="templateFiles" type="file" multiple accept=".docx,.pptx,.xlsx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+  <input id="templateFilesName" value="ファイル未選択" readonly>
+</div>
+      <div class="field">
+        <label>差し込み対象No</label>
+        <select id="mergeRecordSelect" disabled>
+          <option value="">Noを選択して差し込み</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>登録テンプレート数</label>
+        <input id="templateState" value="0件" readonly>
+      </div>
+    </div>
+
+    <div class="template-list" id="templateList">
+      <div class="template-row">
+        <div><strong>テンプレート未選択</strong><p>pptx / xlsx / docx を複数まとめて選択できます。</p></div>
+        <div><span class="status s3">待機</span></div>
+        <div class="mono">-</div>
+        <div class="mono">-</div>
+      </div>
+    </div>
+
+    <div class="footer-actions">
+      <button class="btn primary" id="mergeAllBtn" disabled>選択テンプレートを一括差し込み出力</button>
+      <button class="btn" id="mergeAllZipBtn" disabled>一括差し込み出力（ZIP）</button>
+    </div>
+    <div class="status-box" id="mergeStatusBox">テンプレートファイルを複数選択すると、一括差し込み出力できます。</div>
+  </section>
+
+    <!-- ── Data Tab (cont.) ── -->
+  <section class="panel section-collapsible" id="masterTableSection" data-collapsed="true">
+    <div class="corner-label">Master Table</div>
+    <div class="panel-head">
+      <div>
+        <h2>Master Table</h2>
+        <p>同じNoは1行だけ保持し、保存時は既存行を上書き更新します。</p>
+      </div>
+      <span id="masterCount" class="badge" style="background:var(--panel3);color:var(--muted);font-size:.72rem;padding:2px 8px"></span>
+      <div class="panel-nav-actions">
+        <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
+      </div>
+    </div>
+    <div class="tw"><div class="ts">
+      <table class="dt" id="masterTable">
+        <thead><tr>
+          <th data-s="no">No</th>
+          <th data-s="date">開催日</th>
+          <th>テーマ</th>
+          <th data-s="subject">対象</th>
+          <th class="tc-site">会場</th>
+          <th>進捗</th>
+          <th>起案1</th>
+          <th>HP</th>
+          <th>起案2</th>
+          <th>起案3</th>
+        </tr></thead>
+        <tbody id="masterTbody"></tbody>
+      </table>
+    </div></div>
+  </section>
+</div><!-- /wrap -->
+  </main>
+</div><!-- /v2-layout -->
+
+<script src="js/app.js"></script>
+</body>
+</html>

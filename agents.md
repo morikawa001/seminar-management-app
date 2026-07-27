@@ -48,10 +48,18 @@
 - `renderConfirm()` / `renderResult()` は削除済みDOM要素を参照しているため、null 安全チェック必須。TypeErrorが発生すると PapaParse コールバック内の後続処理全体が停止する。
 - HTML から削除された `els.*` 要素にアクセスする関数を追加/編集する際は、必ず `if(els.xxx)` ガードを入れること。
 
+### 完了した作業（追加）
+- ✅ **CSS/JS外部ファイル分割リファクタリング**: インラインCSS（1615行）を `css/styles.css` に、インラインJS（2680行）を `js/app.js` に切り出し。`index-v2.html` は986行のHTML構造のみに。
+
 ### ファイル別役割
-- `index-v2.html`: 全HTML + CSS + JS が同一ファイルに集約（SPA的構成）
+- `index-v2.html`: HTML構造のみ（CSS/JSは外部ファイル参照、986行）
 - `css/theme-base.css`: CSS変数定義、テーマ切替、ベーススタイル（共有）
+- `css/styles.css`: 全コンポーネントスタイル（元インラインCSSを集約、1554行）
 - `js/theme-toggle.js`: `SharedTheme` オブジェクトでテーマ切替（共有）
+- `js/app.js`: 全アプリケーションロジック（元インラインJSを集約、2748行）
+- `js/csv-utils.js`: CSVパース／エクスポートユーティリティ
+- `js/name-lists.js`: 名字辞書
+- `js/matrix-rain.js`: 背景マトリックスレインエフェクト
 
 ### デバッグ用 grep チェックリスト
 ```bash
