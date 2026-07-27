@@ -265,6 +265,7 @@ const els={
   prefillBtn:document.getElementById('prefillBtn'),
   loadSelectedBtn:document.getElementById('loadSelectedBtn'),
   saveAndDownloadBtn:document.getElementById('saveAndDownloadBtn'),
+  deleteEntryBtn:document.getElementById('deleteEntryBtn'),
   tableList:document.getElementById('masterTbody'),
   statusBox:document.getElementById('statusBox'),
   miniNext:document.getElementById('miniNext'),
@@ -391,6 +392,11 @@ els.recordSelect.addEventListener('change',handleSelectRecord);
 els.loadSelectedBtn.addEventListener('click',loadSelectedIntoForm);
 els.prefillBtn.addEventListener('click',prefillFromLast);
 els.appendBtn.addEventListener('click',()=>{commitDraft();setTimeout(downloadCsv,100)});
+els.deleteEntryBtn.addEventListener('click',function(){
+  const no=String(fields.no.value||'').trim();
+  if(!no){setStatus('削除する No が指定されていません。先に No を選択してください。');return}
+  deleteRecord(no);
+});
 els.openConfirmBtn.addEventListener('click', () => {
   if (!els.recordSelect || !String(els.recordSelect.value || '').trim()) {
     alert('先に No を選択してください。');
@@ -436,6 +442,7 @@ fields.subject.addEventListener('change',recalcDraft);
 [fields.site].forEach(el=>el.addEventListener('change',recalcDraft));
 [els.ckK1,els.ckHp,els.ckK2,els.ckK3].forEach(el=>el.addEventListener('change',recalcDraft));
 fields.title.addEventListener('input',function(){if(selectedRow){selectedRow[fullKeys.title]=this.value;renderRecordOptions()}});
+fields.no.addEventListener('input',function(){els.deleteEntryBtn.disabled=!dataRows.length||!String(this.value||'').trim()});
 
 function getHead1ValueByCohost(cohostValue){
   return String(cohostValue||'').trim()===COHOST_OPTION_TEAM ? HEAD_TEXT_COHOST : HEAD_TEXT_DEFAULT;
@@ -796,6 +803,7 @@ function createNewDatabase(){
   els.recordSelect.innerHTML='<option value="">Noを選択して表示</option>';
   els.recordSelect.disabled=true;
   els.prefillBtn.disabled=true;
+  els.deleteEntryBtn.disabled=true;
   els.loadSelectedBtn.disabled=true;
   els.appendBtn.disabled=false;
   els.openConfirmBtn.disabled=false;
@@ -838,6 +846,7 @@ function loadCsv(e){
       els.appendBtn.disabled=false;
       els.openConfirmBtn.disabled=false;
       els.prefillBtn.disabled=dataRows.length===0;
+      els.deleteEntryBtn.disabled=dataRows.length===0;
       els.loadSelectedBtn.disabled=dataRows.length===0;
       els.recordSelect.disabled=dataRows.length===0;
       renderRecordOptions();
@@ -1051,6 +1060,7 @@ function loadSelectedIntoForm(){
   fields.intro3.value=selectedRow[fullKeys.intro3]||'';
   applyScheduleChecksFromRow(selectedRow);
   recalcDraft();
+  els.deleteEntryBtn.disabled=false;
   setStatus(`No.${selectedRow[fullKeys.no]} を入力欄へ反映しました。保存すると同じNoを上書きします。`);
 }
 
@@ -1236,6 +1246,7 @@ function commitDraft(){
   els.recordSelect.disabled=!dataRows.length;
   els.loadSelectedBtn.disabled=!dataRows.length;
   els.prefillBtn.disabled=!dataRows.length;
+  els.deleteEntryBtn.disabled=!dataRows.length||!fields.no.value;
   if(lastSaveMode==='insert')fields.no.value=String(dataRows.reduce((m,r)=>Math.max(m,Number(r[fullKeys.no]||0)),0)+1);
   setStatus(lastSaveMode==='update'?`No.${no} の元行を上書き保存しました。新しい行は追加していません。`:`No.${no} を新規追加しました。`);
   // Firestoreに保存
@@ -2731,6 +2742,7 @@ function onFirebaseLogin(user){
     els.recordSelect.disabled = !dataRows.length;
     els.loadSelectedBtn.disabled = !dataRows.length;
     els.prefillBtn.disabled = !dataRows.length;
+    els.deleteEntryBtn.disabled = !dataRows.length;
     els.appendBtn.disabled = false;
     els.openConfirmBtn.disabled = false;
     els.miniDbState.textContent = 'DB接続済';
@@ -2756,6 +2768,7 @@ function onFirebaseLogout(){
   els.recordSelect.disabled = true;
   els.loadSelectedBtn.disabled = true;
   els.prefillBtn.disabled = true;
+  els.deleteEntryBtn.disabled = true;
   els.appendBtn.disabled = true;
   els.openConfirmBtn.disabled = true;
   renderTable();
@@ -2830,6 +2843,7 @@ rawRows=[dummy1,dummy2,dummy3,dummy4].map(r=>normalizeRowShape(r));
   els.appendBtn.disabled=false;
   els.openConfirmBtn.disabled=false;
   els.prefillBtn.disabled=false;
+  els.deleteEntryBtn.disabled=false;
   els.loadSelectedBtn.disabled=false;
   els.recordSelect.disabled=false;
   els.miniDbState.textContent='ダミーDB読込済';
