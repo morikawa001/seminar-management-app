@@ -19,10 +19,44 @@
 
 <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.7/dist/pizzip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
 </head>
 <body>
 <canvas id="bgCodeCanvas" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
 <div class="scanline"></div>
+
+<!-- ── Login Screen ── -->
+<div id="loginSection" style="position:relative;z-index:10;">
+  <div class="v2-topbar"></div>
+  <div class="login-overlay">
+    <div class="login-card">
+      <div class="login-header">研修会管理システム</div>
+      <p class="login-desc">ログインしてデータベースにアクセス</p>
+      <div class="login-field">
+        <label>メールアドレス</label>
+        <input type="email" id="loginEmail" placeholder="example@email.com">
+      </div>
+      <div class="login-field">
+        <label>パスワード（6文字以上）</label>
+        <input type="password" id="loginPassword" placeholder="パスワード">
+      </div>
+      <div id="loginMessage" class="login-message" style="display:none"></div>
+      <div class="login-btns">
+        <button class="btn primary" onclick="login()" style="flex:1">ログイン</button>
+        <button class="btn" onclick="register()" style="flex:1">新規登録</button>
+      </div>
+      <div style="margin-top:14px;text-align:center">
+        <button class="btn small" onclick="SharedTheme.toggleTheme()" title="テーマ切替">◐ テーマ切替</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Main App Container ── -->
+<div id="appContainer" style="display:none">
 
 <!-- ── v2 TOPBAR ── -->
 <header class="v2-topbar">
@@ -44,6 +78,7 @@
     <button class="btn small" id="openConfirmBtn">▶ 開く</button>
     <button class="btn small" id="themeBtn" onclick="SharedTheme.toggleTheme()" title="テーマ切替">◐</button>
     <button class="btn small primary" id="saveAndDownloadBtn" disabled>💾 保存してDL</button>
+    <button class="btn small" style="border-color:var(--danger);color:var(--danger)" onclick="logout()" title="ログアウト">🚪</button>
   </div>
 </header>
 
@@ -980,6 +1015,7 @@
 </div><!-- /wrap -->
   </main>
 </div><!-- /v2-layout -->
+</div><!-- /appContainer -->
 
 <script src="js/app.js"></script>
 </body>

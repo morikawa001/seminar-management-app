@@ -50,16 +50,28 @@
 
 ### 完了した作業（追加）
 - ✅ **CSS/JS外部ファイル分割リファクタリング**: インラインCSS（1615行）を `css/styles.css` に、インラインJS（2680行）を `js/app.js` に切り出し。`index-v2.html` は986行のHTML構造のみに。
+- ✅ **Firebase Auth + Firestore 統合**: ログイン画面追加（email/password）、Firestore `seminars` コレクションでデータ永続化。CSV機能は従来通り使用可能。
+- ✅ **ログインタイミング問題修正**: `onAuthStateChanged` より先に `app.js` が読み込まれない場合に備え、`app.js` 末尾で `FirebaseApp.getCurrentUser()` をチェックしてデータをロードする。
+- ✅ **ログアウトボタン追加**: Topbar 右端に 🚪 ボタン追加。
 
 ### ファイル別役割
-- `index-v2.html`: HTML構造のみ（CSS/JSは外部ファイル参照、986行）
+- `index-v2.html`: HTML構造 + ログイン画面（1022行）
 - `css/theme-base.css`: CSS変数定義、テーマ切替、ベーススタイル（共有）
-- `css/styles.css`: 全コンポーネントスタイル（元インラインCSSを集約、1554行）
+- `css/styles.css`: 全コンポーネントスタイル + ログイン画面スタイル
 - `js/theme-toggle.js`: `SharedTheme` オブジェクトでテーマ切替（共有）
-- `js/app.js`: 全アプリケーションロジック（元インラインJSを集約、2748行）
+- `js/app.js`: 全アプリケーションロジック（Firebase連携関数含む、2825行）
+- `js/firebase-config.js` (NEW): Firebase初期化、Auth（login/register/logout）、Firestore CRUD（loadFromFirestore/saveToFirestore/deleteFromFirestore）
 - `js/csv-utils.js`: CSVパース／エクスポートユーティリティ
 - `js/name-lists.js`: 名字辞書
 - `js/matrix-rain.js`: 背景マトリックスレインエフェクト
+
+### Firebase 統合に関する注意点
+- Firebase **compat SDK** (v10.7.1) 使用 — `type="module"` 不要
+- プロジェクト: `seminar-management-app-data`（Auth: email/password, Firestore: collection `seminars`）
+- Firestore ドキュメントのフィールドキー = CSV ヘッダー名（`fullKeys` の値）+ `createdBy` / `createdAt` / `updatedAt`
+- ログイン後: Firestore からユーザーの全セミナーをロード → `rawRows`/`dataRows` に格納して全画面描写
+- `commitDraft()` 内で Firestore への保存も実行（CSVダウンロードは従来通り）
+- `js/app.js` 末尾の IIFE で `FirebaseApp.getCurrentUser()` を再チェック（`onAuthStateChanged` が `onFirebaseLogin` 定義前に発火する問題への対策）
 
 ### デバッグ用 grep チェックリスト
 ```bash

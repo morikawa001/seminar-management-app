@@ -1237,6 +1237,19 @@ function commitDraft(){
   els.prefillBtn.disabled=!dataRows.length;
   if(lastSaveMode==='insert')fields.no.value=String(dataRows.reduce((m,r)=>Math.max(m,Number(r[fullKeys.no]||0)),0)+1);
   setStatus(lastSaveMode==='update'?`No.${no} の元行を上書き保存しました。新しい行は追加していません。`:`No.${no} を新規追加しました。`);
+  // Firestoreに保存
+  if(typeof FirebaseApp !== 'undefined' && FirebaseApp.getCurrentUser()){
+    var rawRow = rawRows[getRawRowIndexByNo(no)];
+    if(rawRow){
+      FirebaseApp.saveToFirestore(rawRow, currentHeaders).then(function(){
+        setStatus(lastSaveMode==='update'
+          ? 'No.'+no+' を上書き保存しました（CSV+DB）'
+          : 'No.'+no+' を新規追加しました（CSV+DB）');
+      }).catch(function(err){
+        console.error('Firestore save error:', err);
+      });
+    }
+  }
 }
 
 function getRawRowIndexByNo(no){return rawRows.findIndex(r=>String(r?.[fullKeys.no]||'').trim()===String(no||'').trim())}
@@ -2670,6 +2683,69 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 
 // renderAlerts / renderStats: Today Command・ExceptionQueue・mailRecordSelect は各関数本体に統合済み
+
+// ── Firebase Integration ──
+function onFirebaseLogin(user){
+  if(typeof FirebaseApp === 'undefined') return;
+  document.getElementById('loginMessage').style.display = 'none';
+  currentHeaders = ensureAdditionalHeaders([...DEFAULT_HEADERS]);
+  FirebaseApp.loadFromFirestore(currentHeaders, function(rows){
+    rawRows = rows.map(function(r){ return normalizeRowShape(r); });
+    dataRows = buildDisplayRowsFromRaw(rawRows);
+    renderRecordOptions();
+    renderTable();
+    setNextNo();
+    renderStats();
+    recalcDraft();
+    renderAlerts();
+    renderTodayCommand();
+    renderExceptionQueue();
+    updateTrainingProgressFromRows(rawRows);
+    renderMergeOptions();
+    els.recordSelect.disabled = !dataRows.length;
+    els.loadSelectedBtn.disabled = !dataRows.length;
+    els.prefillBtn.disabled = !dataRows.length;
+    els.appendBtn.disabled = false;
+    els.openConfirmBtn.disabled = false;
+    els.miniDbState.textContent = 'DB接続済';
+    els.miniDbText.textContent = dataRows.length ? dataRows.length + '件のデータを読み込みました。' : 'データベースに接続しました。新規登録から追加できます。';
+    if(dataRows.length) prefillFromLast();
+    else {
+      fields.no.value = '1';
+      fields.cohost.value = COHOST_OPTION_NONE;
+      syncCohostFields();
+      resetScheduleChecks();
+    }
+    setStatus(dataRows.length ? dataRows.length + '件のデータをDBから読み込みました。' : 'DBに接続しました。データがありません。');
+  });
+}
+function onFirebaseLogout(){
+  rawRows = [];
+  dataRows = [];
+  selectedRow = null;
+  stagedRow = null;
+  lastSaveMode = '';
+  currentHeaders = [];
+  els.recordSelect.innerHTML = '<option value="">--- No Select ---</option>';
+  els.recordSelect.disabled = true;
+  els.loadSelectedBtn.disabled = true;
+  els.prefillBtn.disabled = true;
+  els.appendBtn.disabled = true;
+  els.openConfirmBtn.disabled = true;
+  renderTable();
+  els.miniDbState.textContent = '未接続';
+  els.miniDbText.textContent = 'ログインしてください';
+  var loginMsg = document.getElementById('loginMessage');
+  if(loginMsg) loginMsg.style.display = 'none';
+}
+
+// ログイン済みの場合、onAuthStateChanged が firebase-config.js 読み込み時に
+// 発火しても onFirebaseLogin が未定義だったためスキップされる → ここで再チェック
+(function(){
+  if(typeof FirebaseApp !== 'undefined' && FirebaseApp.getCurrentUser()){
+    onFirebaseLogin(FirebaseApp.getCurrentUser());
+  }
+})();
 
 // ダミーデータ挿入
 function loadDummyData(){

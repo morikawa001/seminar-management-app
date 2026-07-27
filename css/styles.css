@@ -1552,3 +1552,36 @@ html{scroll-behavior:smooth}
   .v2-sidebar-btn.active{border-left:none!important;border-bottom:2px solid var(--green)}
   .v2-main{padding:0}
 }
+
+/* ── Login Screen ── */
+.login-overlay{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:20px;
+}
+.login-card{
+  width:100%;max-width:420px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow),var(--glow);
+  padding:32px 28px;
+  display:grid;gap:14px;
+}
+.login-header{
+  font-family:'Share Tech Mono',monospace;
+  font-size:1.15rem;font-weight:700;
+  color:var(--green);letter-spacing:.12em;
+  text-align:center;
+}
+.login-desc{
+  text-align:center;color:var(--muted);font-size:.92rem;
+}
+.login-field{display:grid;gap:4px}
+.login-field label{
+  font-size:.78rem;font-weight:700;color:var(--muted);
+  letter-spacing:.06em;
+}
+.login-message{
+  text-align:center;font-size:.88rem;padding:4px 0;
+}
+.login-btns{display:flex;gap:10px}
