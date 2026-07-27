@@ -1,0 +1,1158 @@
+
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SilenceCut Pro // GHOST MATRIX EDITION</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme-base.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:root, [data-theme="dark"] {
+  --color-bg: #000000;
+  --color-surface: #050a05;
+  --color-surface-2: #060d06;
+  --color-surface-offset: #091209;
+  --color-surface-dynamic: #0d1a0d;
+  --color-divider: #0f1f0f;
+  --color-border: #1a3d1a;
+  --color-text: #4dff91;
+  --color-text-muted: #2a8c4a;
+  --color-text-faint: #164d2a;
+  --color-text-inverse: #000a00;
+  --color-primary: #00ff41;
+  --color-primary-hover: #00cc33;
+  --color-primary-active: #009922;
+  --color-primary-highlight: #001a08;
+  --color-success: #39ff14;
+  --color-success-hover: #2acc0f;
+  --color-success-highlight: #0a1f04;
+  --color-error: #ff003c;
+  --color-error-highlight: #1f0010;
+  --color-warning: #ffae00;
+  --color-warning-highlight: #1f1500;
+  --color-orange: #ff6600;
+  --color-orange-highlight: #1f0c00;
+  --color-purple: #bf5fff;
+  --color-purple-highlight: #150a1f;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-full: 0;
+  --shadow-sm: 0 0 8px #00ff4122, 0 1px 2px #000a;
+  --shadow-md: 0 0 18px #00ff4133, 0 4px 12px #000c;
+  --shadow-lg: 0 0 40px #00ff4144, 0 12px 32px #000e;
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;
+  --space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;--space-16:4rem;
+  --text-xs:clamp(.7rem,.65rem + .25vw,.8rem);
+  --text-sm:clamp(.8rem,.75rem + .3vw,.9rem);
+  --text-base:clamp(.9rem,.85rem + .25vw,1rem);
+  --text-lg:clamp(1rem,.95rem + .5vw,1.3rem);
+  --text-xl:clamp(1.3rem,1.1rem + 1vw,1.9rem);
+  --font-body:'Rajdhani', 'Share Tech Mono', monospace;
+  --font-mono:'Share Tech Mono', monospace;
+  --trans:160ms cubic-bezier(.16,1,.3,1);
+}
+
+[data-theme="light"] {
+  --color-bg: #000000;
+  --color-surface: #050a05;
+  --color-surface-2: #060d06;
+  --color-surface-offset: #091209;
+  --color-surface-dynamic: #0d1a0d;
+  --color-divider: #0f1f0f;
+  --color-border: #1a3d1a;
+  --color-text: #4dff91;
+  --color-text-muted: #2a8c4a;
+  --color-text-faint: #164d2a;
+  --color-primary: #00ff41;
+  --color-primary-hover: #00cc33;
+  --color-primary-highlight: #001a08;
+  --color-success: #39ff14;
+  --color-success-highlight: #0a1f04;
+  --color-error: #ff003c;
+  --color-error-highlight: #1f0010;
+  --color-warning: #ffae00;
+  --color-warning-highlight: #1f1500;
+  --color-orange: #ff6600;
+  --color-orange-highlight: #1f0c00;
+  --color-purple: #bf5fff;
+  --color-purple-highlight: #150a1f;
+}
+
+
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth;}
+body{
+  min-height:100dvh;
+  font-family:var(--font-body);
+  font-size:var(--text-base);
+  color:var(--color-text);
+  background:var(--color-bg);
+  letter-spacing:.04em;
+  position:relative;
+  overflow-x:hidden;
+}
+
+#matrixRain {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  background: transparent;
+  opacity: 1;
+}
+
+body::before {
+  content: none;
+}
+
+body::after {
+  content: none;
+}
+
+.app {
+  position: relative;
+  z-index: 2;
+}
+
+body::after {
+  content:'';
+  position:fixed;
+  inset:0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,255,65,.012) 0%, transparent 70%);
+  pointer-events:none;
+  z-index: 0;
+}
+
+img,video,canvas,svg{display:block;max-width:100%;}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit;}
+a,button,[role="button"],input,select{transition:color var(--trans),background var(--trans),border-color var(--trans),box-shadow var(--trans);}
+:focus-visible{outline:1px solid var(--color-primary);outline-offset:2px;}
+
+.app{display:flex;flex-direction:column;min-height:100dvh;position:relative;z-index:1;}
+
+header{
+  background:rgba(0,0,0,.92);
+  border-bottom:1px solid var(--color-border);
+  padding:var(--space-3) var(--space-6);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 0 20px #00ff4120;
+}
+header::after {
+  content:'';
+  position:absolute;
+  bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--color-primary),transparent);
+  opacity:.4;
+}
+
+.logo{display:flex;align-items:center;gap:var(--space-3);}
+.logo-text{
+  font-size:var(--text-lg);font-weight:700;
+  font-family:var(--font-mono);
+  letter-spacing:.15em;
+  color:var(--color-primary);
+  text-shadow:0 0 12px var(--color-primary);
+}
+.logo-sub{
+  font-size:var(--text-xs);color:var(--color-text-muted);
+  font-family:var(--font-mono);letter-spacing:.1em;
+}
+.theme-btn{
+  padding:var(--space-2);
+  color:var(--color-text-muted);
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--color-border);
+  position:relative;
+}
+.theme-btn:hover{color:var(--color-primary);border-color:var(--color-primary);box-shadow:0 0 8px var(--color-primary);}
+
+main{flex:1;padding:var(--space-8) var(--space-4);max-width:860px;margin-inline:auto;width:100%;position:relative;z-index:1;}
+
+h1{
+  font-size:var(--text-xl);font-weight:700;margin-bottom:var(--space-2);
+  font-family:var(--font-mono);letter-spacing:.12em;
+  color:var(--color-primary);
+  text-shadow:0 0 20px var(--color-primary);
+}
+.subtitle{
+  color:var(--color-text-muted);margin-bottom:var(--space-6);
+  font-family:var(--font-mono);font-size:var(--text-xs);letter-spacing:.08em;
+}
+
+.card{
+  background:rgba(0,8,0,.55);
+  border:1px solid var(--color-border);
+  padding:var(--space-6);
+  box-shadow:0 0 12px rgba(0,255,65,.10), inset 0 0 30px rgba(0,255,65,.015);
+  margin-bottom:var(--space-5);
+  position:relative;
+  backdrop-filter:blur(1px);
+}
+.card::before,.card::after{
+  content:'';
+  position:absolute;
+  width:12px;height:12px;
+  border-color:var(--color-primary);
+  border-style:solid;
+  opacity:.5;
+}
+.card::before{top:-1px;left:-1px;border-width:1px 0 0 1px;}
+.card::after{bottom:-1px;right:-1px;border-width:0 1px 1px 0;}
+
+.card-title{
+  font-size:var(--text-sm);font-weight:700;margin-bottom:var(--space-4);
+  display:flex;align-items:center;gap:var(--space-2);
+  font-family:var(--font-mono);letter-spacing:.1em;
+  color:var(--color-primary);
+  text-transform:uppercase;
+  border-bottom:1px solid var(--color-border);
+  padding-bottom:var(--space-3);
+}
+.card-title::before{
+  content:'>';
+  color:var(--color-primary);
+  opacity:.7;
+  font-family:var(--font-mono);
+}
+.card-title-icon{width:16px;height:16px;flex-shrink:0;}
+
+.dropzone{
+  border:1px dashed var(--color-border);
+  padding:var(--space-10) var(--space-6);
+  text-align:center;cursor:pointer;
+  transition:border-color var(--trans),background var(--trans),box-shadow var(--trans);
+  position:relative;
+  background:rgba(0,255,65,.012);
+}
+.dropzone:hover,.dropzone.drag-over{
+  border-color:var(--color-primary);
+  background:rgba(0,255,65,.03);
+  box-shadow:inset 0 0 20px rgba(0,255,65,.04),0 0 12px rgba(0,255,65,.08);
+}
+.dropzone-icon{margin-inline:auto;margin-bottom:var(--space-4);color:var(--color-text-faint);}
+.dropzone-label{font-weight:700;margin-bottom:var(--space-1);font-family:var(--font-mono);letter-spacing:.08em;color:var(--color-text);}
+.dropzone-hint{font-size:var(--text-xs);color:var(--color-text-muted);font-family:var(--font-mono);}
+.dropzone input[type=file]{display:none;}
+
+.settings-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-4);}
+.trim-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);}
+@media(max-width:700px){.settings-grid,.trim-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.settings-grid,.trim-grid{grid-template-columns:1fr;}}
+.setting-item{display:flex;flex-direction:column;gap:var(--space-2);}
+.setting-label{font-size:var(--text-xs);font-weight:600;color:var(--color-text-muted);font-family:var(--font-mono);letter-spacing:.08em;text-transform:uppercase;}
+.setting-input{
+  background:#000;
+  border:1px solid var(--color-border);
+  padding:var(--space-3) var(--space-4);
+  font-size:var(--text-sm);
+  color:var(--color-primary);
+  outline:none;width:100%;
+  font-family:var(--font-mono);
+  letter-spacing:.05em;
+}
+.setting-input:focus{border-color:var(--color-primary);box-shadow:0 0 10px rgba(0,255,65,.2);}
+.setting-input[type=range]{padding:var(--space-2) 0;accent-color:var(--color-primary);}
+.setting-hint{font-size:var(--text-xs);color:var(--color-text-faint);font-family:var(--font-mono);}
+
+.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);}
+@media(max-width:540px){.feature-grid{grid-template-columns:1fr;}}
+.feature-card{
+  border:1px solid var(--color-border);
+  padding:var(--space-4);cursor:pointer;
+  transition:border-color var(--trans),background var(--trans),box-shadow var(--trans);
+  background:rgba(0,255,65,.01);
+  position:relative;
+}
+.feature-card.active{
+  border-color:var(--color-primary);
+  background:rgba(0,255,65,.04);
+  box-shadow:0 0 15px rgba(0,255,65,.1), inset 0 0 20px rgba(0,255,65,.04);
+}
+.feature-card:hover{border-color:var(--color-primary-hover);box-shadow:0 0 10px rgba(0,255,65,.08);}
+.feature-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2);}
+.feature-name{font-weight:700;font-size:var(--text-xs);display:flex;align-items:center;gap:var(--space-2);font-family:var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--color-text);}
+.feature-desc{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.6;font-family:var(--font-mono);}
+
+.toggle{position:relative;width:36px;height:20px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{
+  position:absolute;inset:0;
+  background:#000;border:1px solid var(--color-border);
+  transition:background var(--trans),border-color var(--trans),box-shadow var(--trans);
+}
+.toggle input:checked~.toggle-track{
+  background:rgba(0,255,65,.15);
+  border-color:var(--color-primary);
+  box-shadow:0 0 8px var(--color-primary);
+}
+.toggle-thumb{
+  position:absolute;top:3px;left:3px;width:12px;height:12px;
+  background:var(--color-text-faint);
+  transition:transform var(--trans),background var(--trans);
+}
+.toggle input:checked~.toggle-track~.toggle-thumb{transform:translateX(16px);background:var(--color-primary);}
+
+.sub-settings{margin-top:var(--space-3);padding-top:var(--space-3);border-top:1px solid var(--color-border);display:none;}
+.sub-settings.visible{display:block;}
+
+.btn{
+  display:inline-flex;align-items:center;gap:var(--space-2);
+  padding:var(--space-3) var(--space-5);
+  font-size:var(--text-xs);font-weight:700;cursor:pointer;border:none;white-space:nowrap;
+  font-family:var(--font-mono);letter-spacing:.1em;text-transform:uppercase;
+  position:relative;
+}
+.btn-primary{
+  background:rgba(0,255,65,.08);
+  color:var(--color-primary);
+  border:1px solid var(--color-primary);
+  box-shadow:0 0 10px rgba(0,255,65,.15), inset 0 0 10px rgba(0,255,65,.05);
+}
+.btn-primary::before{
+  content:'';
+  position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(0,255,65,.08),transparent);
+  transition:left .5s ease;
+}
+.btn-primary:hover::before{left:100%;}
+.btn-primary:hover{
+  background:rgba(0,255,65,.15);
+  box-shadow:0 0 20px rgba(0,255,65,.3), inset 0 0 15px rgba(0,255,65,.1);
+  text-shadow:0 0 8px var(--color-primary);
+}
+.btn-primary:disabled{opacity:.3;cursor:not-allowed;pointer-events:none;}
+.btn-row{display:flex;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--space-5);}
+
+.progress-wrap{margin-top:var(--space-5);}
+.progress-label{
+  font-size:var(--text-xs);color:var(--color-text-muted);margin-bottom:var(--space-2);
+  display:flex;justify-content:space-between;font-family:var(--font-mono);letter-spacing:.06em;
+}
+.progress-bar-bg{background:#000;border:1px solid var(--color-border);height:6px;overflow:hidden;position:relative;}
+.progress-bar-fill{
+  background:linear-gradient(90deg, var(--color-primary), #00ff80);
+  height:100%;width:0%;
+  transition:width .3s ease;
+  box-shadow:0 0 8px var(--color-primary);
+  position:relative;
+}
+.progress-bar-fill::after{
+  content:'';position:absolute;right:0;top:0;bottom:0;width:4px;
+  background:white;opacity:.4;
+  box-shadow:0 0 4px white;
+}
+
+.log{
+  background:#000;
+  border:1px solid var(--color-border);
+  padding:var(--space-4);max-height:180px;overflow-y:auto;
+  font-size:var(--text-xs);font-family:var(--font-mono);line-height:1.7;
+  margin-top:var(--space-4);
+  box-shadow:inset 0 0 20px rgba(0,255,65,.03);
+}
+.log::-webkit-scrollbar{width:4px;}
+.log::-webkit-scrollbar-track{background:#000;}
+.log::-webkit-scrollbar-thumb{background:var(--color-border);}
+.log-entry{margin-bottom:2px;}
+.log-entry.info{color:var(--color-text-muted);}
+.log-entry.success{color:var(--color-success);text-shadow:0 0 4px var(--color-success);}
+.log-entry.error{color:var(--color-error);}
+.log-entry.warn{color:var(--color-warning);}
+.log-entry.proc{color:var(--color-orange);}
+.log-entry::before{content:'$ ';opacity:.4;}
+
+.alert{padding:var(--space-3) var(--space-4);font-size:var(--text-xs);margin-bottom:var(--space-4);font-family:var(--font-mono);border:1px solid;}
+.alert-info{background:var(--color-primary-highlight);color:var(--color-primary);border-color:rgba(0,255,65,.2);}
+.alert-warn{background:var(--color-warning-highlight);color:var(--color-warning);border-color:rgba(255,174,0,.2);}
+.alert-success{background:var(--color-success-highlight);color:var(--color-success);border-color:rgba(57,255,20,.2);text-shadow:0 0 4px var(--color-success);}
+
+.segments{display:flex;flex-direction:column;gap:var(--space-2);max-height:220px;overflow-y:auto;}
+.segment-item{
+  display:flex;align-items:center;gap:var(--space-3);
+  padding:var(--space-3) var(--space-4);
+  background:#000;border:1px solid var(--color-border);
+  font-size:var(--text-xs);font-family:var(--font-mono);
+}
+.segment-info{flex:1;color:var(--color-text-muted);}
+.badge{font-size:var(--text-xs);padding:2px var(--space-2);font-weight:700;font-family:var(--font-mono);letter-spacing:.06em;}
+.badge-keep{background:rgba(0,255,65,.1);color:var(--color-primary);border:1px solid rgba(0,255,65,.3);}
+.badge-cut{background:rgba(255,174,0,.1);color:var(--color-warning);border:1px solid rgba(255,174,0,.3);}
+.summary-text{font-size:var(--text-xs);color:var(--color-text-faint);margin-top:var(--space-3);font-family:var(--font-mono);}
+
+@keyframes flicker {
+  0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:.8} 94%{opacity:1} 96%{opacity:.9} 97%{opacity:1}
+}
+.logo-text{animation:flicker 6s infinite;}
+
+@keyframes cursor-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.console-line {
+  margin-top: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  display:flex;
+  align-items:center;
+  gap:0.5rem;
+}
+.console-prompt { color: var(--color-primary); }
+.console-input {
+  flex:1;
+  min-height:1em;
+  outline:none;
+  border:none;
+  background:transparent;
+  color:var(--color-text);
+  font-family:var(--font-mono);
+}
+.console-caret {
+  width:0.6em;
+  text-align:left;
+  color:var(--color-primary);
+  animation: cursor-blink 1s steps(1,end) infinite;
+}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:var(--color-bg);}
+::-webkit-scrollbar-thumb{background:var(--color-border);}
+.hidden{display:none!important;}
+</style>
+<script src="js/theme-toggle.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const btn = document.querySelector('[data-theme-toggle]');
+  const ico = {dark:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>',light:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'};
+  if (btn) {
+    const updateIcon = function() { btn.innerHTML = ico[document.documentElement.getAttribute('data-theme') || 'dark']; };
+    btn.addEventListener('click', function() { SharedTheme.toggleTheme(); updateIcon(); });
+    updateIcon();
+  }
+});
+</script>
+</head>
+<body>
+<canvas id="matrixRain"></canvas>
+
+<div class="app">
+<header>
+  <div class="logo">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-label="ロゴ">
+      <rect width="32" height="32" fill="#000" stroke="#00ff41" stroke-width="1"/>
+      <rect x="6" y="14" width="3" height="9" fill="#00ff41" opacity="0.55"/>
+      <rect x="11" y="8" width="3" height="15" fill="#00ff41" opacity="0.85"/>
+      <rect x="16" y="11" width="3" height="12" fill="#00ff41" opacity="0.72"/>
+      <rect x="21" y="6" width="3" height="16" fill="#00ff41" opacity="0.45"/>
+      <line x1="4" y1="27" x2="28" y2="27" stroke="#00ff41" stroke-width="1" stroke-dasharray="2 2" opacity="0.5"/>
+    </svg>
+    <div>
+      <div class="logo-text">SilenceCut Pro</div>
+      <div class="logo-sub">MP4 SILENCE + AUDIO PROCESSOR</div>
+    </div>
+  </div>
+  <button class="theme-btn" data-theme-toggle aria-label="テーマ切替">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+</header>
+
+<main>
+  <h1>SilenceCut Pro</h1>
+  <p class="subtitle">無音カット ＋ 語尾保護 ＋ 音量正規化 ＋ ノイズ除去を、ブラウザだけで完結。</p>
+
+  <div class="card">
+    <div class="card-title">
+      <svg class="card-title-icon" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2"><path d="M21 15V6M18.5 18a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM12 12H3M16 6H3M12 18H3"/></svg>
+      01 // INPUT
+    </div>
+    <div class="dropzone" id="dropzone">
+      <svg class="dropzone-icon" width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="8" y="12" width="32" height="28" rx="3"/>
+        <path d="M20 28l4-4 4 4M24 24v8"/>
+        <path d="M16 12V8a2 2 0 012-2h12a2 2 0 012 2v4"/>
+      </svg>
+      <div class="dropzone-label">MP4ファイルをドラッグ＆ドロップ</div>
+      <div class="dropzone-hint">またはクリックして選択（.mp4 / .webm 対応）</div>
+      <input type="file" id="fileInput" accept="video/mp4,video/webm,video/*">
+    </div>
+    <div id="fileInfo" class="hidden" style="margin-top:var(--space-4);">
+      <div class="alert alert-success" id="fileInfoText"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <svg class="card-title-icon" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2"><path d="M4 7h16M4 12h10M4 17h7"/><path d="M17 5l3 2-3 2"/><path d="M15 15l3 2-3 2"/></svg>
+      02 // PRE TRIM
+    </div>
+    <div class="trim-grid">
+      <div class="setting-item">
+        <label class="setting-label" for="trimStart">冒頭カット位置（ここまで削除）</label>
+        <input class="setting-input" type="time" id="trimStart" step="1" value="00:00">
+        <span class="setting-hint">動画の最初から、この時刻までをカットします。</span>
+      </div>
+      <div class="setting-item">
+        <label class="setting-label" for="trimEnd">末尾カット開始位置（ここから後ろを削除）</label>
+        <input class="setting-input" type="time" id="trimEnd" step="1" value="23:59:59">
+        <span class="setting-hint">この時刻以降をカットします。未指定に近い状態なら末尾まで残します。</span>
+      </div>
+    </div>
+    <div class="alert alert-info" style="margin-top:var(--space-4);margin-bottom:0;">
+      先に「PRE TRIM」で動画の前後を整えてから、その残り区間に対して無音カットを実行します。
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <svg class="card-title-icon" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      03 // SILENCE CUT CONFIG
+    </div>
+    <div class="settings-grid">
+      <div class="setting-item">
+        <label class="setting-label" for="silenceThreshold">無音判定の閾値（dB）</label>
+        <input class="setting-input" type="number" id="silenceThreshold" value="-40" min="-80" max="0" step="1">
+        <span class="setting-hint">この音量以下を「無音」とみなします</span>
+      </div>
+      <div class="setting-item">
+        <label class="setting-label" for="silenceDuration">カットする最小無音時間（秒）</label>
+        <input class="setting-input" type="number" id="silenceDuration" value="3" min="0.5" max="30" step="0.5">
+        <span class="setting-hint">この秒数以上の無音をカットします</span>
+      </div>
+      <div class="setting-item">
+        <label class="setting-label" for="paddingBefore">カット前パディング（秒）</label>
+        <input class="setting-input" type="number" id="paddingBefore" value="0.1" min="0" max="2" step="0.05">
+        <span class="setting-hint">無音開始の前を少し残す</span>
+      </div>
+      <div class="setting-item">
+        <label class="setting-label" for="paddingAfter">カット後パディング（秒）</label>
+        <input class="setting-input" type="number" id="paddingAfter" value="0.1" min="0" max="2" step="0.05">
+        <span class="setting-hint">無音終了の後から少し後に再開</span>
+      </div>
+      <div class="setting-item">
+        <label class="setting-label" for="tailProtect">語尾保護の強さ</label>
+        <select class="setting-input" id="tailProtect">
+          <option value="weak">弱め（0.3秒）</option>
+          <option value="normal" selected>標準（0.8秒）</option>
+          <option value="strong">強め（1.5秒）</option>
+        </select>
+        <span class="setting-hint">語尾の消えかけの声を残す範囲</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <svg class="card-title-icon" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      04 // AUDIO POST FX
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card" id="normCard" onclick="toggleFeature('norm')">
+        <div class="feature-header">
+          <div class="feature-name">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-orange)" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            音量正規化（ラウドネス均一化）
+          </div>
+          <label class="toggle" onclick="event.stopPropagation()">
+            <input type="checkbox" id="normToggle" onchange="toggleFeature('norm')">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="feature-desc">全体の音量レベルを統一します。場面によって音量が大きかったり小さかったりするムラを補正します。</div>
+        <div class="sub-settings" id="normSettings">
+          <div class="setting-item">
+            <label class="setting-label" for="targetLufs">目標ラウドネス（LUFS）</label>
+            <input class="setting-input" type="number" id="targetLufs" value="-16" min="-30" max="-6" step="1">
+            <span class="setting-hint">YouTube推奨: -14 LUFS / 一般的: -16〜-18 LUFS</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-card" id="noiseCard" onclick="toggleFeature('noise')">
+        <div class="feature-header">
+          <div class="feature-name">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-purple)" stroke-width="2"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>
+            ノイズ除去（スペクトルサブトラクション）
+          </div>
+          <label class="toggle" onclick="event.stopPropagation()">
+            <input type="checkbox" id="noiseToggle" onchange="toggleFeature('noise')">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="feature-desc">背景の定常ノイズを除去します。無音区間の音声プロファイルを自動検出して差し引きます。</div>
+        <div class="sub-settings" id="noiseSettings">
+          <div class="setting-item">
+            <label class="setting-label" for="noiseReduction">除去強度</label>
+            <input class="setting-input" type="range" id="noiseReduction" value="0.7" min="0.1" max="1.0" step="0.1" oninput="document.getElementById('noiseReductionVal').textContent=Math.round(this.value*100)+'%'">
+            <span class="setting-hint">強度: <span id="noiseReductionVal">70</span>%（強くしすぎると声質が変わります）</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <svg class="card-title-icon" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      05 // ANALYZE & RENDER
+    </div>
+
+    <div id="segmentsSection" class="hidden" style="margin-bottom:var(--space-4);">
+      <p style="font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:var(--space-3);">検出された区間:</p>
+      <div class="segments" id="segmentsList"></div>
+      <p class="summary-text" id="summaryText"></p>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="analyzeBtn" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        無音を検出
+      </button>
+      <button class="btn btn-primary" id="processBtn" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        カット＋処理して書き出す
+      </button>
+    </div>
+
+    <div id="progressSection" class="progress-wrap hidden">
+      <div class="progress-label"><span id="progressLabel">処理中...</span><span id="progressPct">0%</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressBar"></div></div>
+    </div>
+    <div class="log" id="log"><div class="log-entry info">ファイルを選択して、必要なら前後をトリムしてから「無音を検出」を押してください。</div></div>
+
+    <div class="console-line">
+      <span class="console-prompt">&gt;</span>
+      <div class="console-input" contenteditable="true" spellcheck="false"></div>
+      <span class="console-caret">█</span>
+    </div>
+  </div>
+
+  <div class="card hidden" id="downloadCard">
+    <div class="card-title">
+      <svg class="card-title-icon" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      06 // EXPORT
+    </div>
+    <div class="alert alert-success" id="downloadAlert"></div>
+    <div class="btn-row">
+      <a id="downloadLink" class="btn btn-primary" download="output.webm">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        動画をダウンロード
+      </a>
+    </div>
+    <p style="font-size:var(--text-xs);color:var(--color-text-faint);margin-top:var(--space-3);">出力形式: WebM（.webm）。MP4に変換するにはClipchampやHandBrakeをご利用ください。</p>
+  </div>
+</main>
+</div>
+
+<script>
+
+
+function toggleFeature(id){
+  const chk=document.getElementById(id+'Toggle');
+  const card=document.getElementById(id+'Card');
+  const sub=document.getElementById(id+'Settings');
+  const isOn=chk.checked;
+  card.classList.toggle('active',isOn);
+  sub.classList.toggle('visible',isOn);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const line = document.querySelector('.console-line');
+  const input = document.querySelector('.console-input');
+  if(line && input){
+    line.addEventListener('click', () => input.focus());
+  }
+});
+
+let videoFile=null, audioBuffer=null, keepSegments=[], noiseProfile=null, trimRange={start:0,end:null}, originalDuration=0;
+
+const fileInput=document.getElementById('fileInput');
+const dropzone=document.getElementById('dropzone');
+const analyzeBtn=document.getElementById('analyzeBtn');
+const processBtn=document.getElementById('processBtn');
+const logEl=document.getElementById('log');
+
+function addLog(msg,type='info'){
+  const d=document.createElement('div');
+  d.className='log-entry '+type;
+  d.textContent='['+new Date().toLocaleTimeString('ja-JP')+'] '+msg;
+  logEl.appendChild(d);
+  logEl.scrollTop=logEl.scrollHeight;
+}
+function setProgress(pct,label){
+  document.getElementById('progressSection').classList.remove('hidden');
+  document.getElementById('progressBar').style.width=pct+'%';
+  document.getElementById('progressPct').textContent=pct+'%';
+  document.getElementById('progressLabel').textContent=label;
+}
+function formatSec(sec){
+  const s=Math.max(0, Math.floor(sec));
+  const hh=String(Math.floor(s/3600)).padStart(2,'0');
+  const mm=String(Math.floor((s%3600)/60)).padStart(2,'0');
+  const ss=String(s%60).padStart(2,'0');
+  return hh+':'+mm+':'+ss;
+}
+function parseTimeInput(v){
+  if(!v) return 0;
+  const parts=v.split(':').map(Number);
+  if(parts.some(Number.isNaN)) return 0;
+  if(parts.length===2){
+    const [mm,ss]=parts;
+    return mm*60+ss;
+  }
+  if(parts.length===3){
+    const [hh,mm,ss]=parts;
+    return hh*3600+mm*60+ss;
+  }
+  return 0;
+}
+async function getVideoDuration(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file);
+    const video=document.createElement('video');
+    video.preload='metadata';
+    video.src=url;
+    video.onloadedmetadata=()=>{ const d=video.duration; URL.revokeObjectURL(url); resolve(d); };
+    video.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('動画の長さを取得できませんでした')); };
+  });
+}
+function getTrimBounds(duration){
+  const start=parseTimeInput(document.getElementById('trimStart').value || '00:00');
+  let end=parseTimeInput(document.getElementById('trimEnd').value || formatSec(duration));
+  if(end<=0 || end>duration) end=duration;
+  const safeStart=Math.min(Math.max(0,start), duration);
+  const safeEnd=Math.max(safeStart, Math.min(duration,end));
+  return {start:safeStart,end:safeEnd};
+}
+
+dropzone.addEventListener('click',()=>fileInput.click());
+dropzone.addEventListener('dragover',e=>{e.preventDefault();dropzone.classList.add('drag-over');});
+dropzone.addEventListener('dragleave',()=>dropzone.classList.remove('drag-over'));
+dropzone.addEventListener('drop',e=>{e.preventDefault();dropzone.classList.remove('drag-over');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
+fileInput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
+
+async function handleFile(f){
+  if(!f.type.startsWith('video/')){addLog('動画ファイルを選択してください。','error');return;}
+  videoFile=f; audioBuffer=null; keepSegments=[]; noiseProfile=null;
+  document.getElementById('fileInfo').classList.remove('hidden');
+  document.getElementById('fileInfoText').textContent='✓ '+f.name+'  （'+(f.size/1024/1024).toFixed(1)+' MB）';
+  analyzeBtn.disabled=false; processBtn.disabled=true;
+  document.getElementById('segmentsSection').classList.add('hidden');
+  document.getElementById('downloadCard').classList.add('hidden');
+  try{
+    originalDuration=await getVideoDuration(f);
+    document.getElementById('trimEnd').value=formatSec(originalDuration);
+    addLog('ファイルを読み込みました: '+f.name+' / 長さ '+originalDuration.toFixed(2)+'秒','success');
+  }catch(err){
+    addLog('ファイルを読み込みました: '+f.name,'success');
+  }
+}
+
+analyzeBtn.addEventListener('click',async()=>{
+  if(!videoFile)return;
+  analyzeBtn.disabled=true; processBtn.disabled=true;
+  setProgress(5,'オーディオをデコード中...');
+  addLog('解析を開始します...','info');
+  try{
+    const ab=await videoFile.arrayBuffer();
+    setProgress(20,'デコード中...');
+    const actx=new(window.AudioContext||window.webkitAudioContext)();
+    audioBuffer=await actx.decodeAudioData(ab);
+
+    originalDuration=audioBuffer.duration;
+    trimRange=getTrimBounds(originalDuration);
+    const trimStart=trimRange.start;
+    const trimEnd=trimRange.end;
+    const effectiveDuration=Math.max(0, trimEnd-trimStart);
+
+    addLog('元の動画長: '+originalDuration.toFixed(2)+'秒','info');
+    addLog('前後トリム適用: '+trimStart.toFixed(2)+'s 〜 '+trimEnd.toFixed(2)+'s（有効長 '+effectiveDuration.toFixed(2)+'秒）','proc');
+
+    setProgress(50,'無音区間を検出中...');
+
+    const threshold=parseFloat(document.getElementById('silenceThreshold').value);
+    const minDur=parseFloat(document.getElementById('silenceDuration').value);
+    const padBefore=parseFloat(document.getElementById('paddingBefore').value);
+    const padAfter=parseFloat(document.getElementById('paddingAfter').value);
+
+    const sr=audioBuffer.sampleRate;
+    const chunkSec=0.05;
+    const chunkSize=Math.floor(sr*chunkSec);
+    const nch=audioBuffer.numberOfChannels;
+    const trimStartSample=Math.floor(trimStart*sr);
+    const trimEndSample=Math.floor(trimEnd*sr);
+    const trimmedLength=Math.max(0, trimEndSample-trimStartSample);
+    const nChunks=Math.floor(trimmedLength/chunkSize);
+    const thrLin=Math.pow(10,threshold/20);
+
+    const isSilent=new Uint8Array(nChunks);
+    for(let i=0;i<nChunks;i++){
+      let sum=0;
+      const base=trimStartSample + i*chunkSize;
+      for(let c=0;c<nch;c++){
+        const d=audioBuffer.getChannelData(c);
+        for(let s=base;s<base+chunkSize && s<trimEndSample;s++) sum+=d[s]*d[s];
+      }
+      isSilent[i]=(Math.sqrt(sum/(chunkSize*nch))<thrLin)?1:0;
+    }
+
+    const silents=[];
+    let ss=null;
+    for(let i=0;i<nChunks;i++){
+      const t=trimStart + i*chunkSec;
+      if(isSilent[i] && ss===null) ss=t;
+      else if(!isSilent[i] && ss!==null){ if(t-ss>=minDur) silents.push({start:ss,end:t}); ss=null; }
+    }
+    if(ss!==null && trimEnd-ss>=minDur) silents.push({start:ss,end:trimEnd});
+
+    addLog(silents.length+'個の無音区間を検出しました。',silents.length>0?'warn':'success');
+
+    if(silents.length>0 && document.getElementById('noiseToggle').checked){
+      noiseProfile=buildNoiseProfile(audioBuffer, silents[0].start, silents[0].end);
+      addLog('ノイズプロファイルを取得しました（'+silents[0].start.toFixed(2)+'s〜'+silents[0].end.toFixed(2)+'s）','proc');
+    }
+
+    const tailMap={weak:0.3,normal:0.8,strong:1.5};
+    const tailSec=tailMap[document.getElementById('tailProtect').value]||0.8;
+
+    function findNaturalEnd(silStart){
+      const lookback=Math.min(tailSec, silStart-trimStart);
+      const startSample=Math.floor((silStart-lookback)*sr);
+      const endSample=Math.floor(silStart*sr);
+      if(endSample<=startSample) return silStart;
+      const mini=Math.floor(sr*0.03);
+      const energies=[];
+      for(let s=endSample-mini;s>=startSample;s-=mini){
+        let sum=0;
+        for(let c=0;c<nch;c++){
+          const d=audioBuffer.getChannelData(c);
+          for(let k=s;k<s+mini && k<audioBuffer.length;k++) sum+=d[k]*d[k];
+        }
+        energies.push({t:s/sr,rms:Math.sqrt(sum/(mini*nch))});
+      }
+      const peak=Math.max(...energies.map(e=>e.rms),0);
+      const tail=peak*0.15;
+      for(const e of energies){
+        if(e.rms>=tail) return Math.min(e.t+0.04, silStart);
+      }
+      return silStart-lookback;
+    }
+
+    function findNaturalStart(silEnd){
+      const lookahead=Math.min(0.5, trimEnd-silEnd);
+      const startSample=Math.floor(silEnd*sr);
+      const endSample=Math.floor((silEnd+lookahead)*sr);
+      if(endSample<=startSample) return silEnd;
+      const mini=Math.floor(sr*0.03);
+      const thrResume=thrLin*1.5;
+      for(let s=startSample;s<endSample-mini;s+=mini){
+        let sum=0;
+        for(let c=0;c<nch;c++){
+          const d=audioBuffer.getChannelData(c);
+          for(let k=s;k<s+mini && k<audioBuffer.length;k++) sum+=d[k]*d[k];
+        }
+        const rms=Math.sqrt(sum/(mini*nch));
+        if(rms>=thrResume) return Math.max(silEnd, s/sr-0.03);
+      }
+      return silEnd;
+    }
+
+    keepSegments=[];
+    let pos=trimStart;
+    for(const sr2 of silents){
+      const naturalEnd=findNaturalEnd(sr2.start);
+      const naturalStart=findNaturalStart(sr2.end);
+      const keepEnd=Math.max(pos, Math.min(sr2.start+padBefore, naturalEnd));
+      if(keepEnd>pos) keepSegments.push({start:pos,end:keepEnd,fadeOut:Math.min(0.15, keepEnd-pos)});
+      pos=Math.max(pos, Math.max(sr2.end-padAfter, naturalStart));
+    }
+    if(pos<trimEnd) keepSegments.push({start:pos,end:trimEnd,fadeOut:0});
+    keepSegments=keepSegments.filter(s=>s.end-s.start>0.05);
+
+    const allSegs=[];
+    let cur=trimStart;
+    for(const sr2 of silents){
+      if(sr2.start>cur) allSegs.push({start:cur,end:sr2.start,type:'keep'});
+      allSegs.push({start:sr2.start,end:sr2.end,type:'cut'});
+      cur=sr2.end;
+    }
+    if(cur<trimEnd) allSegs.push({start:cur,end:trimEnd,type:'keep'});
+
+    const list=document.getElementById('segmentsList');
+    list.innerHTML='';
+    allSegs.forEach(seg=>{
+      const d=document.createElement('div');
+      d.className='segment-item';
+      const len=(seg.end-seg.start).toFixed(2);
+      d.innerHTML=`<div class="segment-info">${seg.start.toFixed(2)}s ～ ${seg.end.toFixed(2)}s</div>
+      <span class="badge ${seg.type==='keep'?'badge-keep':'badge-cut'}">${seg.type==='keep'?'保持 '+len+'s':'カット '+len+'s'}</span>`;
+      list.appendChild(d);
+    });
+
+    const totalKeep=keepSegments.reduce((s,k)=>s+(k.end-k.start),0);
+    const totalCut=(trimStart)+(originalDuration-trimEnd)+silents.reduce((s,r)=>s+(r.end-r.start),0);
+    document.getElementById('summaryText').textContent=
+      '前後トリム後の解析範囲: '+trimStart.toFixed(2)+'s ～ '+trimEnd.toFixed(2)+'s / 保持: '+totalKeep.toFixed(2)+'秒 / カット合計: '+totalCut.toFixed(2)+'秒（元: '+originalDuration.toFixed(2)+'秒）';
+
+    document.getElementById('segmentsSection').classList.remove('hidden');
+    setProgress(100,'解析完了');
+    addLog('解析完了。「カット＋処理して書き出す」を押してください。','success');
+    analyzeBtn.disabled=false;
+    processBtn.disabled=keepSegments.length===0;
+    actx.close();
+  }catch(e){
+    addLog('エラー: '+e.message,'error');
+    analyzeBtn.disabled=false;
+  }
+});
+
+function buildNoiseProfile(buf, t0, t1){
+  const sr=buf.sampleRate;
+  const s0=Math.floor(t0*sr), s1=Math.floor(t1*sr);
+  const len=s1-s0;
+  if(len<512)return null;
+  const fftSize=2048, hop=512;
+  const nFrames=Math.floor((len-fftSize)/hop);
+  if(nFrames<1)return null;
+  const nch=buf.numberOfChannels;
+  const profile=new Float32Array(fftSize/2);
+  let count=0;
+  const win=new Float32Array(fftSize);
+  for(let i=0;i<fftSize;i++)win[i]=0.5-0.5*Math.cos(2*Math.PI*i/fftSize);
+  for(let f=0;f<nFrames;f++){
+    const frame=new Float32Array(fftSize);
+    for(let c=0;c<nch;c++){
+      const d=buf.getChannelData(c);
+      for(let i=0;i<fftSize;i++)frame[i]+=d[s0+f*hop+i]*win[i]/nch;
+    }
+    const mag=fftMag(frame);
+    for(let i=0;i<fftSize/2;i++)profile[i]+=mag[i];
+    count++;
+  }
+  for(let i=0;i<profile.length;i++)profile[i]/=count;
+  return profile;
+}
+function fftMag(x){
+  const N=x.length;
+  const re=new Float32Array(N/2), im=new Float32Array(N/2);
+  for(let k=0;k<N/2;k++){
+    let r=0,im2=0;
+    for(let n=0;n<N;n++){const phi=2*Math.PI*k*n/N;r+=x[n]*Math.cos(phi);im2-=x[n]*Math.sin(phi);}
+    re[k]=r; im[k]=im2;
+  }
+  const mag=new Float32Array(N/2);
+  for(let k=0;k<N/2;k++)mag[k]=Math.sqrt(re[k]*re[k]+im[k]*im[k])/N;
+  return mag;
+}
+function applyNoiseReduction(buf, profile, strength){
+  if(!profile)return buf;
+  addLog('ノイズ除去を適用中...','proc');
+  const sr=buf.sampleRate, nch=buf.numberOfChannels, len=buf.length;
+  const fftSize=2048, hop=512;
+  const outCtx=new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(nch,len,sr);
+  const outBuf=outCtx.createBuffer(nch,len,sr);
+
+  for(let c=0;c<nch;c++){
+    const inp=buf.getChannelData(c);
+    const out=outBuf.getChannelData(c);
+    const win=new Float32Array(fftSize);
+    for(let i=0;i<fftSize;i++)win[i]=0.5-0.5*Math.cos(2*Math.PI*i/fftSize);
+
+    const overlap=new Float32Array(len+fftSize);
+    const nFrames=Math.floor((len)/hop);
+    for(let f=0;f<nFrames;f++){
+      const pos=f*hop;
+      const frame=new Float32Array(fftSize);
+      for(let i=0;i<fftSize;i++){const idx=pos+i;frame[i]=(idx<len?inp[idx]:0)*win[i];}
+      for(let i=0;i<fftSize;i++){
+        const noiseAmp=profile[Math.min(i,profile.length-1)]*strength*2;
+        const sign=frame[i]>=0?1:-1;
+        frame[i]=sign*Math.max(0,Math.abs(frame[i])-noiseAmp);
+      }
+      for(let i=0;i<fftSize;i++){const idx=pos+i;if(idx<len+fftSize)overlap[idx]+=frame[i]*win[i];}
+    }
+    const normFac=fftSize/hop*0.375;
+    for(let i=0;i<len;i++)out[i]=overlap[i]/normFac;
+  }
+  return outBuf;
+}
+function measureLoudness(buf){
+  const nch=buf.numberOfChannels;
+  let sum=0,count=0;
+  for(let c=0;c<nch;c++){
+    const d=buf.getChannelData(c);
+    const w=nch===1?1.0:(c<2?1.0:1.41);
+    for(let i=0;i<d.length;i++)sum+=d[i]*d[i]*w*w;
+    count+=d.length;
+  }
+  const rms=Math.sqrt(sum/count);
+  return rms>0?20*Math.log10(rms)-0.691:-Infinity;
+}
+function applyGain(buf,gainLinear){
+  for(let c=0;c<buf.numberOfChannels;c++){
+    const d=buf.getChannelData(c);
+    for(let i=0;i<d.length;i++)d[i]=Math.max(-1,Math.min(1,d[i]*gainLinear));
+  }
+  return buf;
+}
+
+processBtn.addEventListener('click',async()=>{
+  if(!videoFile||keepSegments.length===0)return;
+  processBtn.disabled=true; analyzeBtn.disabled=true;
+  document.getElementById('downloadCard').classList.add('hidden');
+  addLog('書き出しを開始します...','info');
+  setProgress(5,'動画を読み込み中...');
+
+  const useNorm=document.getElementById('normToggle').checked;
+  const useNoise=document.getElementById('noiseToggle').checked;
+  const targetLufs=parseFloat(document.getElementById('targetLufs').value);
+  const noiseStrength=parseFloat(document.getElementById('noiseReduction').value);
+
+  try{
+    const url=URL.createObjectURL(videoFile);
+    const chunks=[];
+    const totalDuration=keepSegments.reduce((s,k)=>s+(k.end-k.start),0);
+    let recorded=0;
+
+    const video=document.createElement('video');
+    video.src=url; video.preload='auto';
+    await new Promise(res=>{video.onloadedmetadata=res;});
+
+    const canvas=document.createElement('canvas');
+    canvas.width=video.videoWidth||1280;
+    canvas.height=video.videoHeight||720;
+    const ctx=canvas.getContext('2d');
+
+    const audioCtx=new AudioContext();
+
+    let procBuffer=audioBuffer;
+    setProgress(10,'音声を処理中...');
+
+    if(useNoise){
+      addLog('ノイズ除去を処理中...','proc');
+      if(!noiseProfile) noiseProfile=buildNoiseProfile(procBuffer,trimRange.start,Math.min(trimRange.start+2,trimRange.end));
+      if(noiseProfile){
+        procBuffer=applyNoiseReduction(procBuffer,noiseProfile,noiseStrength);
+        addLog('ノイズ除去を適用しました。','success');
+      } else {
+        addLog('ノイズプロファイルが取得できませんでした。スキップします。','warn');
+      }
+    }
+
+    if(useNorm){
+      addLog('音量を測定中...','proc');
+      const measuredLufs=measureLoudness(procBuffer);
+      if(isFinite(measuredLufs)){
+        const diff=targetLufs-measuredLufs;
+        const gainLin=Math.pow(10,diff/20);
+        const cappedGain=Math.min(gainLin,10);
+        applyGain(procBuffer,cappedGain);
+        addLog('ラウドネス正規化: '+measuredLufs.toFixed(1)+' LUFS → '+targetLufs+' LUFS（ゲイン: '+(cappedGain).toFixed(2)+'x）','success');
+      } else {
+        addLog('音量測定に失敗しました。スキップします。','warn');
+      }
+    }
+
+    setProgress(20,'映像の書き出しを開始...');
+
+    const sourceNode=audioCtx.createBufferSource();
+    sourceNode.buffer=procBuffer;
+    const masterGain=audioCtx.createGain();
+    masterGain.gain.value=1;
+    const dest=audioCtx.createMediaStreamDestination();
+    sourceNode.connect(masterGain);
+    masterGain.connect(dest);
+    masterGain.connect(audioCtx.destination);
+
+    const videoStream=canvas.captureStream(30);
+    const combinedStream=new MediaStream([...videoStream.getVideoTracks(),...dest.stream.getAudioTracks()]);
+
+    const mimeTypes=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+    const mimeType=mimeTypes.find(m=>MediaRecorder.isTypeSupported(m))||'video/webm';
+    addLog('コーデック: '+mimeType,'info');
+
+    const recorder=new MediaRecorder(combinedStream,{mimeType,videoBitsPerSecond:4000000});
+    recorder.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+    recorder.start(100);
+
+    const FADE_IN=0.06;
+    for(let i=0;i<keepSegments.length;i++){
+      const seg=keepSegments[i];
+      const segDur=seg.end-seg.start;
+      const fadeOut=seg.fadeOut||0;
+      const pct=Math.round(20+70*(recorded/totalDuration));
+      setProgress(pct,`区間 ${i+1}/${keepSegments.length} を処理中...`);
+      addLog(`区間 ${i+1}/${keepSegments.length}: ${seg.start.toFixed(2)}s〜${seg.end.toFixed(2)}s`,'proc');
+
+      video.currentTime=seg.start;
+      await new Promise(res=>{video.onseeked=res;});
+
+      const audioSrc2=audioCtx.createBufferSource();
+      audioSrc2.buffer=procBuffer;
+      const segGain=audioCtx.createGain();
+      audioSrc2.connect(segGain);
+      segGain.connect(masterGain);
+
+      const now=audioCtx.currentTime;
+      segGain.gain.setValueAtTime(0, now);
+      segGain.gain.linearRampToValueAtTime(1, now + Math.min(FADE_IN, segDur * 0.1));
+      if(fadeOut > 0 && segDur > fadeOut + FADE_IN){
+        segGain.gain.setValueAtTime(1, now + segDur - fadeOut);
+        segGain.gain.linearRampToValueAtTime(0, now + segDur);
+      }
+      audioSrc2.start(now, seg.start, segDur);
+
+      await video.play();
+      const drawLoop=()=>{ctx.drawImage(video,0,0,canvas.width,canvas.height);if(!video.paused&&!video.ended)requestAnimationFrame(drawLoop);};
+      requestAnimationFrame(drawLoop);
+
+      await new Promise(res=>{
+        const check=()=>{if(video.currentTime>=seg.end-0.05){video.pause();res();}else requestAnimationFrame(check);};
+        check();
+      });
+      audioSrc2.stop();
+      segGain.disconnect();
+      recorded+=segDur;
+    }
+
+    video.pause();
+    recorder.stop();
+    setProgress(95,'書き出し中...');
+    await new Promise(res=>{recorder.onstop=res;});
+
+    const blob=new Blob(chunks,{type:mimeType});
+    const outUrl=URL.createObjectURL(blob);
+    document.getElementById('downloadLink').href=outUrl;
+    document.getElementById('downloadLink').download=videoFile.name.replace(/\.[^.]+$/,'')+'_processed.webm';
+
+    const applied=[];
+    if(useNoise)applied.push('ノイズ除去');
+    if(useNorm)applied.push('音量正規化('+targetLufs+'LUFS)');
+    const appText=applied.length>0?' ＋ '+applied.join('・'):'';
+    document.getElementById('downloadAlert').textContent='✓ 処理完了！ ファイルサイズ: '+(blob.size/1024/1024).toFixed(1)+' MB　適用: 前後トリム＋無音カット'+appText;
+    document.getElementById('downloadCard').classList.remove('hidden');
+    setProgress(100,'完了');
+    addLog('書き出し完了！ダウンロードボタンから保存してください。','success');
+    audioCtx.close(); URL.revokeObjectURL(url);
+  }catch(e){
+    addLog('エラー: '+e.message,'error');
+    console.error(e);
+  }finally{
+    processBtn.disabled=false;
+    analyzeBtn.disabled=false;
+  }
+})();
+
+
+</script>
+<script src="js/matrix-rain.js"></script>
+</body>
+</html>

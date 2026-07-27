@@ -1,0 +1,1120 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>▌ MATRIX SHELL CLOCK ▌</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="js/matrix-rain.js"></script>
+  <style>
+    /* ============================================================
+       BLACK テーマ（デフォルト）
+    ============================================================ */
+    :root{
+      --bg:#000;
+      --panel:rgba(4,12,7,.97);
+      --border:rgba(0,200,83,.20); --bhi:rgba(0,200,83,.48);
+      --green:#00c853; --green2:#00e676; --green3:#69f0ae;
+      --gdim:#2a5c38;  --accent:#39ff14; --amber:#ffd600;
+      --text:#b2dfb8;  --texthi:#e8f5e9; --textdim:#4a7a52;
+      --glow:0 0 10px rgba(0,200,83,.30);
+      --glowhi:0 0 20px rgba(0,200,83,.60),0 0 45px rgba(0,200,83,.18);
+      --r:12px;
+      --mono:'Share Tech Mono',monospace;
+      --orb:'Orbitron',sans-serif;
+      --jp:'Noto Sans JP',sans-serif;
+      --inp-bg:rgba(0,15,6,.95);
+      --ssel-bg:rgba(0,15,6,.95);
+      --ibox-bg:rgba(0,12,6,.95);
+      --gshell-bg:rgba(0,8,3,.93);
+      --sbar-color:rgba(0,200,83,.55);
+      --olog-color:rgba(0,200,83,.7);
+      --aw-bg:radial-gradient(circle,rgba(0,200,83,.10) 0%,rgba(0,20,8,.96) 60%,#000 100%);
+      --aw-glow:inset 0 0 18px rgba(0,200,83,.15),var(--glowhi);
+      --cd-color:#ffd600; --cd-shadow:0 0 14px rgba(255,214,0,.5);
+      --gbar-bg:radial-gradient(circle,#fff 0%,var(--accent) 40%,var(--green) 100%);
+      --gbar-shadow:0 0 16px var(--accent),0 0 36px rgba(57,255,20,.4);
+      --gline-color:rgba(0,200,83,.55);
+    }
+
+    /* ============================================================
+       WHITE テーマ — 白背景 Notion風（ネオン・グロー完全除去）
+    ============================================================ */
+    html.white{
+      /* 背景・パネル */
+      --bg:#f7f7f5;
+      --panel:#ffffff;
+      --border:#e3e3df; --bhi:#c8c8c4;
+      /* アクセントカラー（落ち着いたグリーン系） */
+      --green:#2e7d52;  --green2:#1b5e38; --green3:#4caf80;
+      --gdim:#9abfaa;   --accent:#2e7d52; --amber:#d97706;
+      /* テキスト */
+      --text:#5a5a5a;  --texthi:#1a1a1a; --textdim:#9a9a9a;
+      /* 影・グロー → すべて無効化 */
+      --glow:none; --glowhi:none;
+      /* フォーム背景 */
+      --inp-bg:#f0f0ee;
+      --ssel-bg:#f0f0ee;
+      --ibox-bg:#fafaf8;
+      --gshell-bg:#f4f4f2;
+      --sbar-color:#9a9a9a;
+      --olog-color:#7a7a7a;
+      /* 時計フェイス */
+      --aw-bg:radial-gradient(circle,rgba(46,125,82,.06) 0%,#fafafa 60%,#f0f0f0 100%);
+      --aw-glow:none;
+      /* カウントダウン */
+      --cd-color:#1a4a2e; --cd-shadow:none;
+      /* ガイドバーマーカー */
+      --gbar-bg:radial-gradient(circle,#fff 0%,#2e7d52 50%,#1b5e38 100%);
+      --gbar-shadow:0 1px 6px rgba(46,125,82,.40);
+      --gline-color:rgba(46,125,82,.30);
+    }
+
+    /* ============================================================
+       BASE
+    ============================================================ */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{
+      height:100%; background:var(--bg); color:var(--text);
+      font-family:var(--mono); overflow:hidden;
+      transition:background .35s,color .35s;
+    }
+
+    /* Matrix canvas */
+    #mc{
+      position:fixed;top:0;left:0;width:100%;height:100%;
+      z-index:0;pointer-events:none;opacity:.12;transition:opacity .35s;
+    }
+    /* ホワイトモードではMatrixを非表示 */
+    html.white #mc{opacity:0}
+
+    /* テーマボタン */
+    #themeBtn{
+      position:fixed;top:10px;right:14px;z-index:200;
+      font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;
+      color:var(--green2);background:var(--panel);
+      border:1px solid var(--border);border-radius:20px;
+      padding:5px 14px;cursor:pointer;
+      box-shadow:0 1px 4px rgba(0,0,0,.08);
+      transition:all .2s;
+    }
+    #themeBtn:hover{background:var(--inp-bg)}
+
+    /* ============================================================
+       LAYOUT
+    ============================================================ */
+    .app{
+      position:relative;z-index:1;
+      display:grid; grid-template-columns:360px 1fr;
+      gap:12px; padding:12px; height:100vh;
+    }
+    .sidebar{
+      display:flex;flex-direction:column;gap:8px;
+      overflow-y:auto;overflow-x:hidden;min-height:0;
+      scrollbar-width:thin;scrollbar-color:var(--gdim) transparent;
+    }
+    .sidebar::-webkit-scrollbar{width:3px}
+    .sidebar::-webkit-scrollbar-thumb{background:var(--gdim);border-radius:3px}
+    .main{
+      display:grid;grid-template-rows:1fr auto;
+      gap:10px;min-height:0;overflow:hidden;
+    }
+
+    /* ============================================================
+       PANEL
+    ============================================================ */
+    .pnl{
+      background:var(--panel);border:1px solid var(--border);
+      border-radius:var(--r);
+      box-shadow:inset 0 0 24px rgba(0,200,83,.04),var(--glow);
+      position:relative;overflow:hidden;
+      transition:background .35s,border-color .35s,box-shadow .35s;
+      flex-shrink:0;
+    }
+    /* ブラックモードのみ上部ハイライト線 */
+    .pnl::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(0,200,83,.45),transparent);
+      transition:background .35s;
+    }
+    html.white .pnl{
+      box-shadow:0 1px 3px rgba(0,0,0,.06),0 0 0 1px var(--border);
+    }
+    html.white .pnl::before{ background:none; }
+    .pad{padding:13px 15px}
+    .cd-pnl{flex-shrink:2;padding-top:7px !important;padding-bottom:7px !important;}
+    .slbl{
+      font-size:.66rem;letter-spacing:.18em;color:var(--textdim);
+      text-transform:uppercase;margin-bottom:9px;
+    }
+    /* ホワイトモードではラベルをシンプルに */
+    html.white .slbl{
+      font-family:var(--jp);font-size:.70rem;letter-spacing:.05em;
+      font-weight:600;color:#9a9a9a;
+    }
+
+    /* ============================================================
+       CLOCK
+    ============================================================ */
+    .clock-body{display:grid;grid-template-columns:144px 1fr;gap:12px;align-items:center}
+    .aw{
+      width:140px;height:140px;border-radius:50%;
+      border:2px solid var(--bhi);
+      background:var(--aw-bg);
+      box-shadow:var(--aw-glow);
+      position:relative;flex-shrink:0;
+      transition:border-color .35s,background .35s,box-shadow .35s;
+    }
+    html.white .aw{border-color:#d0d0d0}
+    .cf{position:absolute;inset:0}
+    .tick{
+      position:absolute;left:50%;top:50%;
+      width:1.5px;height:7px;margin-left:-.75px;margin-top:-61px;
+      background:rgba(0,200,83,.45);transform-origin:center 61px;
+    }
+    html.white .tick{background:rgba(0,0,0,.15)}
+    .tick.mj{
+      width:2.5px;height:12px;margin-left:-1.25px;margin-top:-66px;
+      background:var(--green2);transform-origin:center 66px;
+    }
+    html.white .tick.mj{background:#2e7d52}
+    .nm{
+      position:absolute;font-family:var(--orb);font-size:.40rem;
+      color:var(--gdim);text-align:center;width:16px;margin-left:-8px;margin-top:-8px;
+    }
+    html.white .nm{color:#9a9a9a;font-family:var(--jp)}
+    .hl{position:absolute;inset:0}
+    .hnd{position:absolute;left:50%;bottom:50%;transform-origin:50% 100%;border-radius:4px}
+    .hh{width:4px;height:34px;margin-left:-2px;background:var(--green3)}
+    .mh{width:2.5px;height:48px;margin-left:-1.25px;background:var(--green);box-shadow:0 0 6px var(--green)}
+    .sh{width:1.5px;height:56px;margin-left:-.75px;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+    html.white .hh{background:#1b5e38}
+    html.white .mh{background:#2e7d52;box-shadow:none}
+    html.white .sh{background:#e05c5c;box-shadow:none}
+    .cdot{
+      position:absolute;left:50%;top:50%;width:9px;height:9px;
+      margin-left:-4.5px;margin-top:-4.5px;border-radius:50%;
+      background:var(--green2);box-shadow:0 0 8px var(--green2);z-index:10;
+    }
+    html.white .cdot{background:#2e7d52;box-shadow:none}
+    .dtime{
+      font-family:var(--orb);font-size:1.80rem;font-weight:700;
+      color:var(--green2);letter-spacing:.05em;text-shadow:var(--glowhi);line-height:1.1;
+      transition:color .35s,text-shadow .35s;
+    }
+    html.white .dtime{
+      font-family:var(--jp);color:#1a1a1a;text-shadow:none;
+      font-size:1.65rem;letter-spacing:.02em;
+    }
+    .ddate{margin-top:5px;font-size:.78rem;color:var(--textdim);letter-spacing:.06em}
+    html.white .ddate{font-family:var(--jp);font-size:.75rem;color:#9a9a9a;letter-spacing:.02em}
+    .dtz{margin-top:3px;font-size:.63rem;color:var(--textdim);letter-spacing:.10em;opacity:.6}
+    html.white .dtz{letter-spacing:.04em}
+
+    /* ============================================================
+       COUNTDOWN
+    ============================================================ */
+    .cddisp{
+      font-family:var(--orb);font-size:1.25rem;font-weight:700;
+      color:var(--cd-color);text-shadow:var(--cd-shadow);
+      letter-spacing:.08em;text-align:center;margin-bottom:4px;
+      transition:color .25s,text-shadow .25s;
+    }
+    html.white .cddisp{
+      font-family:var(--jp);font-size:1.20rem;
+      color:#1a1a1a;text-shadow:none;letter-spacing:.03em;
+    }
+    /* ラスト10秒 赤 */
+    .cddisp.urgent{
+      color:#e53e3e !important;
+      text-shadow:0 0 18px rgba(229,62,62,.5) !important;
+      animation:cdflash .5s step-end infinite;
+    }
+    html.white .cddisp.urgent{
+      text-shadow:none !important;
+    }
+    @keyframes cdflash{ 0%,100%{opacity:1} 50%{opacity:.5} }
+    .cdprog{
+      height:3px;background:rgba(0,200,83,.10);
+      border-radius:4px;margin-bottom:4px;overflow:hidden;
+    }
+    html.white .cdprog{background:#ebebeb}
+    .cdbar{
+      height:100%;background:linear-gradient(90deg,var(--green),var(--accent));
+      box-shadow:0 0 7px var(--green);
+      transition:width .4s linear,background .25s;
+      border-radius:4px;width:100%;
+    }
+    html.white .cdbar{background:#2e7d52;box-shadow:none}
+    .cdbar.urgent{
+      background:linear-gradient(90deg,#c53030,#e53e3e) !important;
+      box-shadow:none !important;
+    }
+    .cd-set{display:grid;grid-template-columns:1fr 1fr auto;gap:4px;margin-bottom:4px}
+    .cd-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
+
+    /* ============================================================
+       FORM ELEMENTS
+    ============================================================ */
+    .inp{
+      font-family:var(--mono);font-size:.82rem;color:var(--green2);
+      background:var(--inp-bg);border:1px solid var(--bhi);
+      border-radius:7px;padding:6px 8px;width:100%;text-align:center;
+      transition:background .35s,color .35s,border-color .35s;
+    }
+    html.white .inp{
+      font-family:var(--jp);color:#1a1a1a;border-color:#d8d8d4;
+    }
+    .btn{
+      font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;
+      color:var(--green2);background:var(--inp-bg);
+      border:1px solid var(--bhi);border-radius:7px;padding:6px 8px;
+      cursor:pointer;transition:background .15s,box-shadow .15s,color .35s;
+      white-space:nowrap;display:inline-block;text-align:center;
+    }
+    html.white .btn{
+      font-family:var(--jp);color:#3a3a3a;border-color:#d8d8d4;
+      font-size:.76rem;letter-spacing:.02em;
+    }
+    .btn:hover{box-shadow:var(--glow)}
+    html.white .btn:hover{background:#ebebeb;box-shadow:none}
+    .btn.pri{border-color:var(--green);color:var(--green);box-shadow:var(--glow)}
+    html.white .btn.pri{border-color:#2e7d52;color:#2e7d52;box-shadow:none}
+    .btn.pri:hover{box-shadow:var(--glowhi)}
+    html.white .btn.pri:hover{background:#ebebeb;box-shadow:none}
+    .frow{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+    .fname{flex:1;min-width:0;font-size:.72rem;color:var(--textdim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    html.white .fname{font-family:var(--jp);font-size:.73rem}
+    #dataFile{display:none}
+    .ssel{
+      width:100%;font-family:var(--mono);font-size:.78rem;color:var(--green2);
+      background:var(--ssel-bg);border:1px solid var(--bhi);
+      border-radius:7px;padding:7px 9px;cursor:pointer;
+      transition:background .35s,color .35s;
+    }
+    html.white .ssel{font-family:var(--jp);color:#1a1a1a;border-color:#d8d8d4;font-size:.76rem}
+    .ssel:disabled{opacity:.4;cursor:default}
+
+    /* ============================================================
+       OPERATION LOG
+    ============================================================ */
+    .olog-wrap{overflow:hidden;display:flex;flex-direction:column;max-height:75px}
+    #olog{
+      font-size:.72rem;line-height:1.65;color:var(--olog-color);
+      overflow-y:auto;flex:1;white-space:pre-wrap;word-break:break-all;
+      transition:color .35s;
+    }
+    html.white #olog{font-family:var(--jp);font-size:.73rem;color:#7a7a7a}
+
+    /* ============================================================
+       進行ガイド
+    ============================================================ */
+    .tl-card{
+      display:flex;flex-direction:column;padding:13px 15px;
+      min-height:0;overflow:hidden;flex:6 1 1000px;
+    }
+    .tl-head{display:flex;align-items:baseline;gap:12px;margin-bottom:9px;flex-shrink:0}
+    .tl-title{
+      font-family:var(--mono);font-size:.85rem;letter-spacing:.15em;
+      color:var(--green);text-shadow:var(--glow);
+    }
+    html.white .tl-title{
+      font-family:var(--jp);font-size:.80rem;letter-spacing:.04em;
+      color:#3a3a3a;text-shadow:none;font-weight:700;
+    }
+    .tl-status{font-family:var(--mono);font-size:.80rem;color:var(--amber);letter-spacing:.04em}
+    html.white .tl-status{font-family:var(--jp);font-size:.76rem;color:#d97706;letter-spacing:.02em}
+    .gshell{
+      position:relative;flex:1;min-height:0;
+      border:1px solid var(--border);border-radius:9px;
+      background:var(--gshell-bg);
+      overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--gdim) transparent;
+      transition:background .35s,border-color .35s;
+    }
+    html.white .gshell{border-color:#e3e3df}
+    .gshell::-webkit-scrollbar{width:3px}
+    .gshell::-webkit-scrollbar-thumb{background:var(--gdim);border-radius:3px}
+    .gline{
+      position:absolute;left:30px;top:0;bottom:0;width:2px;
+      background:linear-gradient(180deg,transparent 0%,var(--gline-color) 8%,var(--gline-color) 92%,transparent 100%);
+      pointer-events:none;
+    }
+    /* 丸マーカー */
+    .gbar{
+      position:absolute;left:19px;width:22px;height:22px;border-radius:50%;
+      background:var(--gbar-bg);
+      box-shadow:var(--gbar-shadow);
+      transition:top .9s cubic-bezier(.4,0,.2,1);
+      z-index:2;pointer-events:none;
+    }
+    .evlist{
+      position:relative;z-index:1;
+      padding:13px 13px 13px 58px;
+      display:flex;flex-direction:column;gap:0;
+    }
+    .evitem{
+      display:grid;grid-template-columns:90px 1fr;
+      gap:4px 10px;align-items:center;
+      padding:10px 7px;
+      border-bottom:1px solid rgba(0,200,83,.07);
+      border-radius:7px;transition:background .2s;
+    }
+    html.white .evitem{border-bottom-color:#e8e8e4}
+    .evitem:last-child{border-bottom:none}
+    .evtime{
+      font-family:var(--orb);font-size:.92rem;font-weight:500;
+      color:var(--texthi);letter-spacing:.05em;
+    }
+    html.white .evtime{
+      font-family:var(--jp);font-size:.88rem;color:#2a2a2a;
+      letter-spacing:.02em;font-weight:700;
+    }
+    .evlbl{font-family:var(--mono);font-size:.74rem;color:var(--textdim);letter-spacing:.03em}
+    html.white .evlbl{font-family:var(--jp);font-size:.72rem;color:#9a9a9a;letter-spacing:.01em}
+    /* アクティブ行ハイライト */
+    .evitem.active{background:rgba(0,200,83,.07)}
+    html.white .evitem.active{background:rgba(46,125,82,.07);border-radius:6px}
+    .evitem.active .evtime{color:var(--accent);text-shadow:0 0 10px rgba(57,255,20,.5)}
+    html.white .evitem.active .evtime{color:#2e7d52;text-shadow:none;font-weight:700}
+    .evitem.active .evlbl{color:var(--green2)}
+    html.white .evitem.active .evlbl{color:#2e7d52}
+    .evitem.past .evtime{color:var(--gdim)}
+    html.white .evitem.past .evtime{color:#c0c0c0}
+    .evitem.past .evlbl{opacity:.5}
+
+    /* ============================================================
+       INTRO
+    ============================================================ */
+    .intro-stack{
+      display:flex;flex-direction:column;gap:10px;
+      padding:12px 14px;overflow-y:auto;
+      scrollbar-width:thin;scrollbar-color:var(--gdim) transparent;
+    }
+    .intro-stack::-webkit-scrollbar{width:3px}
+    .intro-stack::-webkit-scrollbar-thumb{background:var(--gdim);border-radius:3px}
+    .ibox{
+      border:1px solid var(--border);border-radius:10px;
+      background:var(--ibox-bg);padding:13px 16px;
+      display:flex;flex-direction:column;gap:6px;
+      transition:border-color .2s,background .35s;
+    }
+    html.white .ibox{border-color:#e3e3df}
+    .ibox:focus-within{border-color:var(--bhi);box-shadow:var(--glow)}
+    html.white .ibox:focus-within{border-color:#2e7d52;box-shadow:0 0 0 3px rgba(46,125,82,.12)}
+    .ilbl{
+      font-family:var(--mono);font-size:.65rem;letter-spacing:.14em;
+      color:var(--textdim);text-transform:uppercase;flex-shrink:0;
+      display:flex;align-items:center;gap:8px;
+    }
+    html.white .ilbl{
+      font-family:var(--jp);font-size:.68rem;letter-spacing:.03em;
+      color:#9a9a9a;font-weight:600;
+    }
+    .ilbl::after{
+      content:'編集可';font-size:.58rem;letter-spacing:.06em;
+      color:var(--gdim);border:1px solid var(--gdim);border-radius:4px;padding:1px 5px;opacity:.7;
+    }
+    html.white .ilbl::after{color:#b0b0b0;border-color:#d0d0d0;font-size:.60rem}
+    .ival{
+      font-family:var(--jp);
+      font-size:clamp(1.05rem,2.0vw,1.65rem);
+      font-weight:700;color:var(--texthi);
+      line-height:1.6;word-break:break-all;
+      min-height:2.2em;outline:none;
+      border-bottom:1px dashed rgba(0,200,83,.15);
+      padding-bottom:4px;transition:border-color .2s,color .35s;
+    }
+    html.white .ival{
+      color:#1a1a1a;border-bottom-color:#e0e0e0;
+      font-size:clamp(1.05rem,2.0vw,1.60rem);
+    }
+    .ival:focus{border-bottom-color:var(--green2)}
+    html.white .ival:focus{border-bottom-color:#2e7d52}
+    .ival:empty::before{content:attr(data-placeholder);color:var(--textdim);opacity:.5;pointer-events:none}
+    html.white .ival:empty::before{color:#c0c0c0;opacity:1}
+    .iedit-hint{font-size:.60rem;color:var(--gdim);letter-spacing:.06em;text-align:right;margin-top:2px;opacity:.6}
+    html.white .iedit-hint{color:#b0b0b0;font-family:var(--jp);letter-spacing:.02em}
+
+    /* ============================================================
+       質疑応答 定型文パネル
+    ============================================================ */
+    .qa-box{
+      border-color:rgba(0,200,83,.18);
+    }
+    html.white .qa-box{border-color:#d4e8da}
+    /* qa-boxは編集不可 → ::after バッジを非表示 */
+    .qa-lbl{cursor:pointer;user-select:none}
+    .qa-lbl::after{display:none}
+    /* トグル用矢印 */
+    .qa-lbl .qa-arrow{
+      margin-left:auto;font-size:.78rem;opacity:.7;
+      transition:transform .22s;
+      display:inline-block;
+    }
+    .qa-box.open .qa-lbl .qa-arrow{transform:rotate(90deg)}
+    /* 折りたたみ本体 */
+    .qa-body{
+      overflow:hidden;
+      max-height:0;
+      transition:max-height .3s ease, opacity .25s ease;
+      opacity:0;
+    }
+    .qa-box.open .qa-body{
+      max-height:2000px;
+      opacity:1;
+    }
+    .qa-script{
+      font-family:var(--jp);
+      font-size:clamp(1.05rem,2.0vw,1.65rem);
+      font-weight:700;
+      line-height:1.75;
+      color:var(--texthi);
+      display:flex;flex-direction:column;gap:2px;
+      padding:6px 0 2px;
+    }
+    html.white .qa-script{color:#1a1a1a;}
+    .qa-script p{margin:0;padding:0}
+    .qa-cond{
+      color:var(--green3);
+      font-weight:700;
+      font-size:.90em;
+      margin-top:.55em !important;
+      letter-spacing:.04em;
+    }
+    html.white .qa-cond{color:#2e7d52}
+    .qa-indent{
+      padding-left:1.4em;
+      color:var(--text);
+      font-size:.96em;
+      font-weight:700;
+    }
+    html.white .qa-indent{color:#5a5a5a}
+    /* qa-script contenteditable スタイル */
+    .qa-script[contenteditable]{
+      outline:none;
+      border-bottom:1px dashed rgba(0,200,83,.15);
+      padding-bottom:6px;
+      cursor:text;
+      transition:border-color .2s;
+    }
+    .qa-script[contenteditable]:focus{
+      border-bottom-color:var(--green2);
+    }
+    html.white .qa-script[contenteditable]{
+      border-bottom-color:#e0e0e0;
+    }
+    html.white .qa-script[contenteditable]:focus{
+      border-bottom-color:#2e7d52;
+    }
+    .qa-script[contenteditable]:empty::before{
+      content:attr(data-placeholder);
+      color:var(--textdim);opacity:.5;pointer-events:none;
+    }
+
+    /* ============================================================
+       STATUS BAR
+    ============================================================ */
+    .sbar{
+      padding:7px 15px;font-family:var(--mono);font-size:.73rem;
+      color:var(--sbar-color);letter-spacing:.05em;
+      display:flex;gap:18px;flex-wrap:wrap;flex-shrink:0;
+    }
+    html.white .sbar{font-family:var(--jp);font-size:.72rem;color:#b0b0b0;letter-spacing:.02em}
+
+    /* ============================================================
+       EMPTY STATE
+    ============================================================ */
+    .empty{
+      display:flex;align-items:center;justify-content:center;
+      height:100%;font-size:.78rem;color:var(--textdim);
+      letter-spacing:.10em;padding:20px;text-align:center;
+    }
+    html.white .empty{font-family:var(--jp);color:#b0b0b0;letter-spacing:.03em}
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width:700px){
+      html,body{overflow-y:auto;height:auto}
+      .app{
+        grid-template-columns:1fr;grid-template-rows:auto auto;
+        height:auto;min-height:100vh;padding:8px;gap:8px;
+      }
+      #themeBtn{top:8px;right:8px;font-size:.68rem;padding:4px 11px}
+      .sidebar{overflow:visible;flex-shrink:0;gap:8px}
+      .tl-card{flex:none;height:600px}
+      .main{grid-template-rows:auto auto;overflow:visible;height:auto}
+      .intro-stack{max-height:none;overflow:visible}
+      .aw{width:110px;height:110px}
+      .hh{height:26px} .mh{height:37px} .sh{height:43px}
+      .dtime{font-size:1.45rem}
+      .cddisp{font-size:1.7rem}
+      .ival{font-size:clamp(1.0rem,3.5vw,1.4rem)}
+    }
+    @media (min-width:701px) and (max-width:1100px){
+      .app{grid-template-columns:300px 1fr}
+      .aw{width:120px;height:120px}
+      .dtime{font-size:1.55rem}
+    }
+
+    /* ============================================================
+       フォントサイズ調整コントロール
+    ============================================================ */
+    .font-ctrl{
+      display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0;
+    }
+    .font-ctrl-btn{
+      font-family:var(--mono);font-size:.68rem;font-weight:700;
+      color:var(--textdim);background:var(--inp-bg);
+      border:1px solid var(--border);border-radius:5px;
+      padding:2px 7px;cursor:pointer;line-height:1.4;
+      transition:color .15s,border-color .15s,background .15s;
+      user-select:none;
+    }
+    .font-ctrl-btn:hover{color:var(--green);border-color:var(--green)}
+    html.white .font-ctrl-btn{color:#6a6a6a;border-color:#d0d0d0;background:#f0f0ee}
+    html.white .font-ctrl-btn:hover{color:#2e7d52;border-color:#2e7d52;background:#e8f0ec}
+    .font-ctrl-size{
+      font-family:var(--mono);font-size:.62rem;color:var(--textdim);
+      min-width:2.8em;text-align:center;
+    }
+    html.white .font-ctrl-size{font-family:var(--jp);color:#9a9a9a}
+  </style>
+</head>
+<body>
+<canvas id="mc"></canvas>
+<button id="themeBtn" onclick="toggleTheme()">☀ WHITE MODE</button>
+
+<main class="app">
+  <aside class="sidebar">
+
+    <!-- Clock -->
+    <div class="pnl pad">
+      <div class="slbl">▸ CLOCK INTERFACE</div>
+      <div class="clock-body">
+        <div class="aw">
+          <div class="cf" id="cf"></div>
+          <div class="hl">
+            <div class="hnd hh" id="hh"></div>
+            <div class="hnd mh" id="mh"></div>
+            <div class="hnd sh" id="sh"></div>
+            <div class="cdot"></div>
+          </div>
+        </div>
+        <div>
+          <div class="dtime" id="dtime">00:00:00</div>
+          <div class="ddate" id="ddate">----/--/-- ---</div>
+          <div class="dtz">JST / live-sync</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Countdown -->
+    <div class="pnl pad">
+      <div class="slbl">▸ COUNTDOWN</div>
+      <div class="cddisp" id="cdd">00:05:00</div>
+      <div class="cdprog"><div class="cdbar" id="cdbar"></div></div>
+      <div class="cd-set">
+        <input class="inp" id="cdm" type="number" min="0" value="5" placeholder="分">
+        <input class="inp" id="cds" type="number" min="0" max="59" value="0" placeholder="秒">
+        <button class="btn pri" id="cdset">SET</button>
+      </div>
+      <div class="cd-btns">
+        <button class="btn" id="cdstart">START</button>
+        <button class="btn" id="cdpause">PAUSE</button>
+        <button class="btn" id="cdreset">RESET</button>
+      </div>
+    </div>
+
+    <!-- File / Select -->
+    <div class="pnl pad">
+      <div class="slbl">▸ DATA INPUT</div>
+      <div class="frow">
+        <label for="dataFile" class="btn pri" style="cursor:pointer">📂 ファイル選択</label>
+        <span class="fname" id="fndsp">CSV / Excel 未選択</span>
+      </div>
+      <input id="dataFile" type="file" accept=".csv,.xlsx,.xls">
+      <select class="ssel" id="ssel" disabled>
+        <option value="">── 研修会を選択してください ──</option>
+      </select>
+    </div>
+
+    <!-- Operation Log -->
+    <div class="pnl pad olog-wrap">
+      <div class="slbl">▸ OPERATION LOG</div>
+      <pre id="olog">CSV / Excel を読み込むと
+進行ガイドが自動追従します。
+&gt; SYSTEM READY_</pre>
+    </div>
+
+    <!-- 進行ガイドバー -->
+    <div class="pnl tl-card">
+      <div class="tl-head">
+        <span class="tl-title">▌ 進行ガイド ▌</span>
+        <span class="tl-status" id="tlst">待機中</span>
+      </div>
+      <div class="gshell" id="gshell">
+        <div class="gline"></div>
+        <div class="gbar" id="gbar" style="top:14px"></div>
+        <div class="evlist" id="evlist">
+          <div class="empty">CSV / Excel を<br>選択してください</div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <section class="main">
+    <div class="pnl intro-stack">
+      <div class="ibox">
+        <div class="ilbl">▸ 進行表導入_INTRO_1<div class="font-ctrl"><button class="font-ctrl-btn" onclick="adjFont('i1',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-i1">標準</span><button class="font-ctrl-btn" onclick="adjFont('i1',1)" aria-label="文字拡大">A＋</button></div></div>
+        <div class="ival" id="i1" contenteditable="true" data-placeholder="CSVを読み込むか直接入力してください"></div>
+        <div class="iedit-hint">クリックして直接編集できます</div>
+      </div>
+      <div class="ibox">
+        <div class="ilbl">▸ 趣旨説明_INTRO_2<div class="font-ctrl"><button class="font-ctrl-btn" onclick="adjFont('i2',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-i2">標準</span><button class="font-ctrl-btn" onclick="adjFont('i2',1)" aria-label="文字拡大">A＋</button></div></div>
+        <div class="ival" id="i2" contenteditable="true" data-placeholder="CSVを読み込むか直接入力してください"></div>
+        <div class="iedit-hint">クリックして直接編集できます</div>
+      </div>
+      <div class="ibox">
+        <div class="ilbl">▸ 講師紹介_INTRO_3<div class="font-ctrl"><button class="font-ctrl-btn" onclick="adjFont('i3',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-i3">標準</span><button class="font-ctrl-btn" onclick="adjFont('i3',1)" aria-label="文字拡大">A＋</button></div></div>
+        <div class="ival" id="i3" contenteditable="true" data-placeholder="CSVを読み込むか直接入力してください"></div>
+        <div class="iedit-hint">クリックして直接編集できます</div>
+      </div>
+
+      <!-- 質疑応答 定型文（トグル・デフォルト閉） -->
+      <div class="ibox qa-box" id="qabox1">
+        <div class="ilbl qa-lbl" onclick="toggleQA('qabox1')">
+          ▸ 質疑応答 定型文
+          <div class="font-ctrl" onclick="event.stopPropagation()"><button class="font-ctrl-btn" onclick="adjFont('qa-script-1',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-qa-script-1">標準</span><button class="font-ctrl-btn" onclick="adjFont('qa-script-1',1)" aria-label="文字拡大">A＋</button></div><span class="qa-arrow" style="margin-left:8px">▶</span>
+        </div>
+        <div class="qa-body">
+          <div class="qa-script" id="qa-script-1" contenteditable="true" data-placeholder="定型文を直接編集できます">
+            <p>先生、どうもありがとうございました。</p>
+            <p>それでは、ただいまより、質疑応答に入ります。</p>
+            <p class="qa-cond">（事前質問ありの場合）</p>
+            <p class="qa-indent">司会者から、Web参加の皆様から事前にいただいたご質問をご紹介いたします。</p>
+            <p class="qa-indent">一つ目の質問です。「○○についてご解説いただけますと幸いです。」</p>
+            <p class="qa-indent">先生、お願いいたします。</p>
+            <p class="qa-cond">（Q&amp;Aに質問があった場合）</p>
+            <p class="qa-indent">Web上でご質問をいただいております。</p>
+            <p class="qa-indent">Q&amp;A画面から、質問をお読み上げいただき、ご解説をお願いいたします。</p>
+          </div>
+          <div class="iedit-hint">クリックして直接編集できます</div>
+        </div>
+      </div>
+
+      <!-- 会場からの質疑応答 定型文（トグル・デフォルト閉） -->
+      <div class="ibox qa-box" id="qabox2">
+        <div class="ilbl qa-lbl" onclick="toggleQA('qabox2')">
+          ▸ 会場からの質疑応答 定型文
+          <div class="font-ctrl" onclick="event.stopPropagation()"><button class="font-ctrl-btn" onclick="adjFont('qa-script-2',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-qa-script-2">標準</span><button class="font-ctrl-btn" onclick="adjFont('qa-script-2',1)" aria-label="文字拡大">A＋</button></div><span class="qa-arrow" style="margin-left:8px">▶</span>
+        </div>
+        <div class="qa-body">
+          <div class="qa-script" id="qa-script-2" contenteditable="true" data-placeholder="定型文を直接編集できます">
+            <p>それでは、会場の方からの質疑応答に移りたいと思います。</p>
+            <p>質問がある方は挙手をしてからマイクの方にお進みください。</p>
+            <p class="qa-cond">会場（質問者）:</p>
+            <p class="qa-indent">○○についてご解説いただけますと幸いです。</p>
+            <p class="qa-cond">講師:</p>
+            <p class="qa-indent">（ご回答をお願いいたします。）（以下、時間内で、継続）</p>
+            <p class="qa-cond">会場（担当者）:</p>
+            <p>会場からの質問は以上です。</p>
+          </div>
+          <div class="iedit-hint">クリックして直接編集できます</div>
+        </div>
+      </div>
+
+      <!-- 締めの定型文（トグル・デフォルト閉） -->
+      <div class="ibox qa-box" id="qabox3">
+        <div class="ilbl qa-lbl" onclick="toggleQA('qabox3')">
+          ▸ 締めの定型文
+          <div class="font-ctrl" onclick="event.stopPropagation()"><button class="font-ctrl-btn" onclick="adjFont('qa-script-3',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-qa-script-3">標準</span><button class="font-ctrl-btn" onclick="adjFont('qa-script-3',1)" aria-label="文字拡大">A＋</button></div><span class="qa-arrow" style="margin-left:8px">▶</span>
+        </div>
+        <div class="qa-body">
+          <div class="qa-script" id="qa-script-3" contenteditable="true" data-placeholder="定型文を直接編集できます">
+            <p>先生ありがとうございました。これで質疑応答を終わります。</p>
+            <p>みなさま、最後に先生に感謝をこめまして、拍手をお願いいたします。</p>
+            <p>Zoomよりご参加の方は、リアクションボタンより、拍手をお願いいたします。</p>
+            <p>先生、本日の研修はこれで終了いたしますので、御退室くださいますようお願いいたします。</p>
+            <p>本日はどうもありがとうございました。</p>
+            <p>受講者の皆様には、ひきつづき本研修会の受講証と修了証書ならびにアンケートについてご案内させていただきます。</p>
+          </div>
+          <div class="iedit-hint">クリックして直接編集できます</div>
+        </div>
+      </div>
+
+      <!-- CLOSING_1 DB読み込み -->
+      <div class="ibox">
+        <div class="ilbl">▸ 進行表クロージング（選択）_CLOSING_1<div class="font-ctrl"><button class="font-ctrl-btn" onclick="adjFont('iclosing',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-iclosing">標準</span><button class="font-ctrl-btn" onclick="adjFont('iclosing',1)" aria-label="文字拡大">A＋</button></div></div>
+        <div class="ival" id="iclosing" contenteditable="true" data-placeholder="CSVを読み込むか直接入力してください"></div>
+        <div class="iedit-hint">クリックして直接編集できます</div>
+      </div>
+
+    </div>
+    <div class="pnl sbar">
+      <span>▌ MATRIX SHELL CLOCK v2.7</span>
+      <span id="sbfile">FILE: —</span>
+      <span id="sbrow">ROW: —</span>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+
+  /* ── QAトグル ── */
+  window.toggleQA = function(id){
+    document.getElementById(id).classList.toggle('open');
+  };
+
+  /* ── テーマ切替 ── */
+  let MATRIX_WHITE = false;
+  window.toggleTheme = function(){
+    MATRIX_WHITE = document.documentElement.classList.toggle('white');
+    document.getElementById('themeBtn').textContent =
+      MATRIX_WHITE ? '🌑 BLACK MODE' : '☀ WHITE MODE';
+  };
+
+  /* ── アプリ状態 ── */
+  const ST = { rows:[], headers:[], events:[] };
+
+  const EVENT_DEFS = [
+    { key:'事前打合せ開始時間_PRE_MEETING', label:'事前打合せ' },
+    { key:'研修会開始_START_1',             label:'研修会開始' },
+    { key:'講義開始_START_TIME',            label:'講義開始'   },
+    { key:'質疑応答締切_QA_DADLINE',        label:'QA締切'     },
+    { key:'質疑応答_QA_TIME',               label:'質疑応答'   },
+    { key:'研修会終了_END_1',               label:'終了'       },
+  ];
+  const INTRO_DEFS = [
+    { key:'進行表導入_INTRO_1',               elId:'i1'      },
+    { key:'進行表研修会趣旨説明_INTRO_2',     elId:'i2'      },
+    { key:'進行表講師紹介_INTRO_3',           elId:'i3'      },
+    { key:'進行表クロージング（選択）_CLOSING_1', elId:'iclosing'},
+  ];
+  const LBL = { no:'起案行No', date:'開催日_DATE_1', title:'テーマ(標題)_TITLE' };
+  const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  /* ── アナログ時計目盛り ── */
+  (function(){
+    const face = document.getElementById('cf');
+    for(let i = 0; i < 60; i++){
+      const t = document.createElement('div');
+      t.className = 'tick' + (i % 5 === 0 ? ' mj' : '');
+      t.style.transform = `rotate(${i*6}deg)`;
+      face.appendChild(t);
+    }
+    [{n:12,a:0},{n:3,a:90},{n:6,a:180},{n:9,a:270}].forEach(({n,a}) => {
+      const r = 54, rad = (a-90)*Math.PI/180;
+      const el = document.createElement('div');
+      el.className = 'nm';
+      el.style.left = (70 + r*Math.cos(rad)) + 'px';
+      el.style.top  = (70 + r*Math.sin(rad)) + 'px';
+      el.textContent = n;
+      face.appendChild(el);
+    });
+  })();
+
+  /* ══════════════════════════════════════════════
+     進行ガイド更新
+     — offsetTop ベースで gshell 内の絶対座標を取得し
+       現在セグメントの進行比率で補間してマーカーを移動
+  ══════════════════════════════════════════════ */
+  function getItemMidY(el){
+    // evlist は gshell の直接子
+    // el.offsetTop は evlist 相対 → evlist.offsetTop を加算で gshell 相対になる
+    const evlist = document.getElementById('evlist');
+    return evlist.offsetTop + el.offsetTop + el.offsetHeight / 2;
+  }
+
+  function placeMarker(y){
+    document.getElementById('gbar').style.top = Math.max(8, y - 11) + 'px';
+  }
+
+  function updateGuide(now){
+    const evs = ST.events;
+    if(!evs.length) return;
+
+    const items = [...document.querySelectorAll('.evitem')];
+    if(!items.length) return;
+
+    items.forEach(el => el.classList.remove('active','past'));
+
+    const nowMs = now.getTime();
+    let ai = 0;
+
+    if(nowMs < evs[0].date.getTime()){
+      ai = 0;
+      document.getElementById('tlst').textContent = '開始待機 ▸ ' + evs[0].label;
+    } else if(nowMs >= evs[evs.length-1].date.getTime()){
+      ai = evs.length - 1;
+      document.getElementById('tlst').textContent = '進行完了';
+      items.forEach((el,i) => el.classList.add(i < evs.length-1 ? 'past' : 'active'));
+    } else {
+      for(let i = 0; i < evs.length-1; i++){
+        if(nowMs >= evs[i].date.getTime() && nowMs < evs[i+1].date.getTime()){
+          ai = i;
+          document.getElementById('tlst').textContent = '進行中 ▸ ' + evs[i].label;
+          break;
+        }
+      }
+      items.forEach((el,i) => {
+        if(i < ai)        el.classList.add('past');
+        else if(i === ai) el.classList.add('active');
+      });
+    }
+
+    const target = items[ai];
+    if(!target){ placeMarker(14); return; }
+
+    // ── マーカー位置計算（offsetTopベース・補間あり）──
+    let markerY;
+    if(ai < evs.length-1 && items[ai+1]){
+      const t0 = evs[ai].date.getTime();
+      const t1 = evs[ai+1].date.getTime();
+      if(nowMs >= t0 && nowMs < t1){
+        const ratio = (nowMs - t0) / (t1 - t0);
+        const cy = getItemMidY(target);
+        const ny = getItemMidY(items[ai+1]);
+        markerY = cy + (ny - cy) * ratio;
+      } else {
+        markerY = getItemMidY(target);
+      }
+    } else {
+      markerY = getItemMidY(target);
+    }
+
+    placeMarker(markerY);
+
+    // スクロール追従
+    target.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
+  /* ── デジタル時計 tick ── */
+  function tickClock(){
+    const n = new Date();
+    const h = n.getHours(), m = n.getMinutes(), s = n.getSeconds();
+    document.getElementById('dtime').textContent =
+      String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    document.getElementById('ddate').textContent =
+      n.getFullYear()+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+
+      String(n.getDate()).padStart(2,'0')+' ('+DAYS[n.getDay()]+')';
+    document.getElementById('hh').style.transform = `rotate(${(h%12)*30+m*0.5+s*(0.5/60)}deg)`;
+    document.getElementById('mh').style.transform = `rotate(${m*6+s*0.1}deg)`;
+    document.getElementById('sh').style.transform = `rotate(${s*6}deg)`;
+    updateGuide(n);
+  }
+  setInterval(tickClock, 1000);
+  tickClock();
+
+  /* ── Countdown ── */
+  const CD = { init:300, rem:300, timer:null, run:false };
+
+  function renderCD(){
+    const s = Math.max(0, CD.rem);
+    const disp = document.getElementById('cdd');
+    const bar  = document.getElementById('cdbar');
+    disp.textContent =
+      String(Math.floor(s/3600)).padStart(2,'0')+':'+
+      String(Math.floor((s%3600)/60)).padStart(2,'0')+':'+
+      String(s%60).padStart(2,'0');
+    bar.style.width = (CD.init > 0 ? Math.max(0, s/CD.init)*100 : 0)+'%';
+    const urgent = (s > 0 && s <= 10);
+    disp.classList.toggle('urgent', urgent);
+    bar.classList.toggle('urgent', urgent);
+  }
+
+  document.getElementById('cdset').addEventListener('click', function(){
+    const min = Math.max(0, parseInt(document.getElementById('cdm').value)||0);
+    const sec = Math.max(0, Math.min(59, parseInt(document.getElementById('cds').value)||0));
+    clearInterval(CD.timer); CD.run = false;
+    CD.init = min*60+sec; CD.rem = CD.init; renderCD();
+  });
+  document.getElementById('cdstart').addEventListener('click', function(){
+    if(CD.run || CD.rem <= 0) return;
+    CD.run = true;
+    CD.timer = setInterval(function(){
+      CD.rem--;
+      if(CD.rem <= 0){ CD.rem = 0; clearInterval(CD.timer); CD.run = false; }
+      renderCD();
+    }, 1000);
+  });
+  document.getElementById('cdpause').addEventListener('click', function(){
+    clearInterval(CD.timer); CD.run = false;
+  });
+  document.getElementById('cdreset').addEventListener('click', function(){
+    clearInterval(CD.timer); CD.run = false; CD.rem = CD.init; renderCD();
+  });
+  renderCD();
+
+  /* ── データヘルパー ── */
+  function norm(h){ return String(h??'').trim().replace(/^\uFEFF/,''); }
+
+  function parseCsv(txt){
+    const rows=[];let cur='',row=[],inq=false;
+    for(let i=0;i<txt.length;i++){
+      const c=txt[i],nx=txt[i+1];
+      if(c==='"'){ if(inq&&nx==='"'){cur+='"';i++;}else inq=!inq; }
+      else if(c===','&&!inq){ row.push(cur);cur=''; }
+      else if((c==='\n'||c==='\r')&&!inq){
+        if(c==='\r'&&nx==='\n')i++;
+        row.push(cur);
+        if(row.some(x=>x!==''))rows.push(row);
+        row=[];cur='';
+      }else{ cur+=c; }
+    }
+    if(cur.length||row.length){row.push(cur);if(row.some(x=>x!==''))rows.push(row);}
+    return rows;
+  }
+
+  function xlTime(v){
+    if(typeof v!=='number')return v;
+    const t=Math.round(v*86400);
+    return String(Math.floor(t/3600)%24).padStart(2,'0')+':'+
+           String(Math.floor((t%3600)/60)).padStart(2,'0')+':'+
+           String(t%60).padStart(2,'0');
+  }
+
+  function toDate(v){
+    if(v===null||v===undefined||v==='')return null;
+    const s=String(xlTime(v)).trim();
+    const m=s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if(!m)return null;
+    const d=new Date();
+    return new Date(d.getFullYear(),d.getMonth(),d.getDate(),+m[1],+m[2],+(m[3]||0),0);
+  }
+
+  function toObj(h,v){ return Object.fromEntries(h.map((k,i)=>[k,v[i]??''])); }
+
+  function renderEvents(){
+    const el = document.getElementById('evlist');
+    if(!ST.events.length){
+      el.innerHTML = '<div class="empty">スケジュールデータなし</div>';
+      placeMarker(14);
+      return;
+    }
+    el.innerHTML = ST.events.map((e,i)=>
+      `<div class="evitem" id="ei${i}">` +
+        `<div class="evtime">${e.disp}</div>` +
+        `<div class="evlbl">${e.label}</div>` +
+      `</div>`
+    ).join('');
+  }
+
+  function loadRow(idx){
+    if(idx<1||idx>=ST.rows.length)return;
+    const row = toObj(ST.headers, ST.rows[idx]);
+    INTRO_DEFS.forEach(d=>{
+      const v=row[d.key];
+      document.getElementById(d.elId).textContent=(v!==undefined&&String(v).trim())?String(v):'';
+    });
+    ST.events = EVENT_DEFS.map(def=>{
+      const raw=row[def.key]??'';
+      const disp=typeof raw==='number'?xlTime(raw):String(raw||'');
+      return{...def,disp,date:toDate(raw)};
+    }).filter(e=>e.date);
+    renderEvents();
+    // DOM更新後に1フレーム待ってからガイド計算
+    requestAnimationFrame(() => updateGuide(new Date()));
+    document.getElementById('ssel').value=String(idx);
+    document.getElementById('sbrow').textContent='ROW: '+(idx+1)+'行目';
+    const no=String(row[LBL.no]||'');
+    const date=String(row[LBL.date]||'');
+    const title=String(row[LBL.title]||'');
+    document.getElementById('olog').textContent=
+      '> FILE LOADED\n> No.'+no+' / '+date+'\n> '+title+
+      '\n> EVENTS: '+ST.events.length+'件\n> TRACKING...';
+  }
+
+  function buildSelect(){
+    const sel=document.getElementById('ssel');
+    sel.innerHTML='<option value="">── 研修会を選択してください ──</option>';
+    for(let i=1;i<ST.rows.length;i++){
+      const row=toObj(ST.headers,ST.rows[i]);
+      const no=String(row[LBL.no]||'');
+      const date=String(row[LBL.date]||'');
+      const title=String(row[LBL.title]||'').slice(0,30);
+      const lbl=[no&&'No.'+no,date,title].filter(Boolean).join(' / ');
+      const opt=document.createElement('option');
+      opt.value=String(i);
+      opt.textContent=lbl||((i+1)+'行目');
+      sel.appendChild(opt);
+    }
+    sel.disabled=false;
+  }
+
+  document.getElementById('dataFile').addEventListener('change', async function(e){
+    const file=e.target.files[0];
+    if(!file)return;
+    document.getElementById('fndsp').textContent=file.name;
+    document.getElementById('sbfile').textContent='FILE: '+file.name;
+    try{
+      let rows;
+      const ext=file.name.split('.').pop().toLowerCase();
+      if(ext==='csv'){
+        const buf=await file.arrayBuffer();
+        const txt=new TextDecoder('utf-8').decode(buf).replace(/^\uFEFF/,'');
+        rows=parseCsv(txt);
+      }else if(ext==='xlsx'||ext==='xls'){
+        const buf=await file.arrayBuffer();
+        const wb=XLSX.read(buf,{type:'array',cellDates:false,raw:true});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});
+      }else{
+        throw new Error('未対応形式 (.csv / .xlsx / .xls のみ)');
+      }
+      rows=rows.filter(r=>Array.isArray(r)&&r.some(c=>String(c??'').trim()!==''));
+      if(rows.length<2)throw new Error('データ不足（ヘッダー行＋データ行が必要）');
+      ST.rows=rows;
+      ST.headers=rows[0].map(norm);
+      buildSelect();
+      loadRow(1);
+    }catch(err){
+      document.getElementById('olog').textContent='> ERROR: '+err.message;
+      document.getElementById('tlst').textContent='読込失敗';
+    }
+  });
+
+  document.getElementById('ssel').addEventListener('change', function(e){
+    if(e.target.value==='')return;
+    loadRow(Number(e.target.value));
+  });
+
+})();
+</script>
+
+<script>
+/* ── フォントサイズ調整 ── */
+(function(){
+  const FONT_SIZES = [
+    {label:'極小', size:'0.75rem'},
+    {label:'小',   size:'0.90rem'},
+    {label:'標準', size:'clamp(1.05rem,2.0vw,1.65rem)'},
+    {label:'大',   size:'1.80rem'},
+    {label:'特大', size:'2.20rem'},
+    {label:'超大', size:'2.80rem'},
+  ];
+  const fontState = {};
+
+  window.adjFont = function(id, dir){
+    const el = document.getElementById(id);
+    if(!el) return;
+    const cur = (fontState[id] !== undefined) ? fontState[id] : 2;
+    const next = Math.max(0, Math.min(FONT_SIZES.length - 1, cur + dir));
+    fontState[id] = next;
+    el.style.fontSize = FONT_SIZES[next].size;
+    const szEl = document.getElementById('fcsz-' + id);
+    if(szEl) szEl.textContent = FONT_SIZES[next].label;
+  };
+})();
+</script>
+</body>
+</html>

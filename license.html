@@ -1,0 +1,683 @@
+
+
+
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>受講証ジェネレーター</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme-base.css">
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- docx-preview: DOM描画（PDF変換のベース） -->
+  <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.7/dist/docx-preview.min.js"></script>
+  <!-- html2canvas + jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #080f0a;
+      --panel: rgba(11,21,13,0.92);
+      --panel-border: rgba(0,200,83,0.25);
+      --text: #b2dfb8;
+      --text-strong: #e8f5e9;
+      --muted: #4a7a52;
+      --accent: #69f0ae;
+      --accent-strong: #00c853;
+      --accent-dim: rgba(0,200,83,0.10);
+      --danger: #ef5350;
+      --warn: #ffab40;
+      --shadow: 0 0 30px rgba(0,200,83,0.12);
+      --radius: 14px;
+      --radius-sm: 8px;
+      --font-mono: 'Share Tech Mono', monospace;
+    }
+    
+    body {
+      min-height: 100vh;
+      font-family: 'Noto Sans JP', "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      overflow-x: hidden;
+      position: relative;
+    }
+    /* マトリックス背景 canvas */
+    #matrixCanvas {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0; pointer-events: none; opacity: .18;
+    }
+    /* 旧 .bg-grid は非表示に */
+    .bg-grid { display: none; }
+    .app-shell { position:relative; z-index:1; max-width:900px; margin:0 auto; padding:48px 20px 100px; }
+
+    /* Hero */
+    .hero { margin-bottom:32px; }
+    .hero-line {
+      width:140px; height:2px;
+      background:linear-gradient(90deg,transparent,var(--accent),transparent);
+      margin-bottom:16px; box-shadow:0 0 18px rgba(102,242,163,0.5);
+    }
+    .eyebrow {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: .78em;
+      letter-spacing: .14em;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-family: var(--font-mono);
+      font-size: 1.3em;
+      line-height: 1.2;
+      letter-spacing: .18em;
+      color: var(--accent-strong);
+      text-shadow: 0 0 12px rgba(0,200,83,.5);
+      margin-bottom: 10px;
+    }
+    .subtitle { color:#b8e6c9; line-height:1.8; max-width:700px; font-size:14px; }
+
+    /* Panel */
+    .panel {
+      background:var(--panel); border:1px solid var(--panel-border);
+      box-shadow:var(--shadow); backdrop-filter:blur(12px);
+      border-radius:var(--radius); padding:28px; margin-bottom:20px;
+    }
+    .panel-title {
+      font-size:11px; letter-spacing:0.2em; color:var(--accent);
+      text-transform:uppercase; font-weight:700; margin-bottom:18px;
+      padding-bottom:10px; border-bottom:1px solid rgba(102,242,163,0.15);
+    }
+
+    /* Fields */
+    .field { display:block; margin-bottom:20px; }
+    .field:last-child { margin-bottom:0; }
+    .field > span {
+      display:block; margin-bottom:8px;
+      color:#c7f8d9; font-size:13px; letter-spacing:0.04em;
+    }
+    input[type="text"], input[type="file"], select {
+      width:100%; padding:13px 16px;
+      border-radius:var(--radius-sm);
+      border:1px solid rgba(102,242,163,0.22);
+      background:rgba(5,16,12,0.92);
+      color:var(--text); outline:none;
+      font-family:inherit; font-size:14px;
+      transition:border-color 0.2s,box-shadow 0.2s;
+    }
+    input[type="text"]:focus, input[type="file"]:focus, select:focus {
+      border-color:var(--accent-strong);
+      box-shadow:0 0 0 3px rgba(102,242,163,0.12);
+    }
+    input[type="file"]::file-selector-button {
+      background:rgba(26,255,140,0.12);
+      border:1px solid rgba(102,242,163,0.3);
+      color:var(--accent); border-radius:8px;
+      padding:6px 12px; margin-right:12px;
+      cursor:pointer; font-size:13px;
+      transition:background 0.2s;
+    }
+    input[type="file"]::file-selector-button:hover { background:rgba(26,255,140,0.22); }
+
+    /* 出力形式ラジオ */
+    .format-row {
+      display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;
+    }
+    .format-btn {
+      flex:1; min-width:140px;
+      display:flex; align-items:center; gap:10px;
+      padding:13px 16px;
+      border-radius:var(--radius-sm);
+      border:1px solid rgba(102,242,163,0.22);
+      background:rgba(5,16,12,0.92);
+      color:var(--text); cursor:pointer;
+      font-size:14px; font-family:inherit;
+      transition:border-color 0.2s,background 0.2s;
+      user-select:none;
+    }
+    .format-btn input[type="radio"] {
+      width:16px; height:16px; min-height:auto;
+      accent-color:var(--accent-strong);
+      padding:0; margin:0; flex-shrink:0;
+    }
+    .format-btn:has(input:checked) {
+      border-color:var(--accent-strong);
+      background:rgba(26,255,140,0.08);
+    }
+    .format-badge {
+      margin-left:auto; font-size:10px; letter-spacing:0.1em;
+      padding:2px 7px; border-radius:999px;
+      background:rgba(102,242,163,0.12);
+      color:var(--accent); border:1px solid rgba(102,242,163,0.2);
+      white-space:nowrap;
+    }
+
+    /* col selector */
+    .col-selector-wrap { display:none; }
+    .col-selector-wrap.visible { display:block; }
+    .col-hint { font-size:12px; color:var(--muted); margin-top:6px; }
+
+    /* option grid */
+    .option-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    @media(max-width:560px){ .option-grid{ grid-template-columns:1fr; } }
+
+    /* PDF品質（PDF選択時のみ表示） */
+    #scaleWrap { display:block; }
+
+    /* Buttons */
+    .generate-btn {
+      width:100%; padding:16px;
+      border:none; border-radius:14px;
+      background:linear-gradient(135deg,#0d2d1f,#1aff8c);
+      color:#02110a; font-size:16px; font-weight:700;
+      cursor:pointer; letter-spacing:0.04em;
+      transition:transform 0.2s,box-shadow 0.2s,opacity 0.2s;
+      box-shadow:0 10px 30px rgba(26,255,140,0.24);
+      margin-bottom:4px;
+    }
+    .generate-btn:hover:not(:disabled){ transform:translateY(-1px); box-shadow:0 14px 36px rgba(26,255,140,0.32); }
+    .generate-btn:disabled{ opacity:0.45; cursor:not-allowed; }
+
+    /* Status */
+    .status-wrap { margin-top:18px; }
+    .status { min-height:22px; font-size:14px; color:var(--muted); line-height:1.5; }
+    .status.error { color:var(--danger); }
+    .status.success { color:var(--accent-strong); }
+    .progress-bar-outer {
+      display:none; height:6px; border-radius:999px;
+      background:rgba(102,242,163,0.1);
+      margin-top:12px; overflow:hidden;
+      border:1px solid rgba(102,242,163,0.15);
+    }
+    .progress-bar-outer.visible { display:block; }
+    .progress-bar-inner {
+      height:100%; width:0%;
+      background:linear-gradient(90deg,var(--accent),var(--accent-strong));
+      border-radius:999px;
+      transition:width 0.25s ease;
+      box-shadow:0 0 10px rgba(26,255,140,0.4);
+    }
+
+    /* Info box */
+    .info-box {
+      background:rgba(102,242,163,0.05);
+      border:1px solid rgba(102,242,163,0.18);
+      border-radius:var(--radius-sm);
+      padding:14px 16px;
+      font-size:13px; color:var(--muted); line-height:1.7;
+      margin-top:18px;
+    }
+    .info-box strong { color:var(--accent); }
+    .info-note { color:rgba(136,183,155,0.65); font-size:12px; }
+
+    /* previewHost: 画面外に配置してDOMレンダリングのみ行う */
+    #previewHost {
+      position:fixed;
+      left:-99999px; top:0;
+      width:794px;
+      background:#fff;
+      overflow:visible;
+    }
+    #previewHost section.docx {
+      box-sizing:border-box !important;
+      margin:0 !important;
+      background:#fff !important;
+    }
+  </style>
+</head>
+<body>
+<canvas id="matrixCanvas"></canvas>
+<div class="bg-grid"></div>
+<div id="previewHost"></div>
+
+<main class="app-shell">
+  <header class="hero">
+    <div class="hero-line"></div>
+    <p class="eyebrow">TOA HEAVY INDUSTRIES / SECTION-9 / MATRIX NODE</p>
+    <h1>▌ 受講証ジェネレーター ▌</h1>
+    <p class="subtitle">
+      DOCXテンプレートの置換キーワードをCSV/Excelの氏名データで差し替え、<br>
+      PDF または Word（.docx）形式で一括ZIP出力します。外部サーバー不使用。
+    </p>
+  </header>
+
+  <!-- ① 基本設定 -->
+  <section class="panel">
+    <div class="panel-title">▸ 基本設定</div>
+
+    <label class="field">
+      <span>日付（YYYYMMDD）　※ファイル名に使用</span>
+      <input id="dateInput" type="text" maxlength="8" placeholder="20260601" />
+    </label>
+
+    <label class="field">
+      <span>Wordファイル（.docx）テンプレート</span>
+      <input id="docxInput" type="file" accept=".docx" />
+    </label>
+
+    <label class="field">
+      <span>CSV / Excelファイル（氏名列を含む）</span>
+      <input id="csvInput" type="file" accept=".csv,.xlsx,.xls" />
+    </label>
+
+    <div class="col-selector-wrap" id="colSelectorWrap">
+      <label class="field">
+        <span>氏名列の選択</span>
+        <select id="colSelect"></select>
+        <span class="col-hint">CSVを読み込みました。氏名が入っている列を選択してください。</span>
+      </label>
+    </div>
+  </section>
+
+  <!-- ② 詳細設定 -->
+  <section class="panel">
+    <div class="panel-title">▸ 詳細設定</div>
+
+    <!-- 出力形式 -->
+    <span class="field" style="margin-bottom:10px;">
+      <span>出力形式</span>
+    </span>
+    <div class="format-row">
+      <label class="format-btn">
+        <input type="radio" name="outputFmt" value="pdf" checked>
+        <span>PDF形式</span>
+        <span class="format-badge">画像変換</span>
+      </label>
+      <label class="format-btn">
+        <input type="radio" name="outputFmt" value="docx">
+        <span>Word形式（.docx）</span>
+        <span class="format-badge">枠線完全保持</span>
+      </label>
+      <label class="format-btn">
+        <input type="radio" name="outputFmt" value="both">
+        <span>両方出力</span>
+        <span class="format-badge">PDF + DOCX</span>
+      </label>
+    </div>
+
+    <div class="option-grid">
+      <label class="field">
+        <span>DOCXの置換キーワード</span>
+        <input id="keywordInput" type="text" value="氏名" placeholder="氏名" />
+        <span class="col-hint">テンプレート内のこの文字列を氏名に置換します</span>
+      </label>
+      <label class="field">
+        <span>出力ファイル名のサフィックス</span>
+        <input id="suffixInput" type="text" value="受講証" placeholder="受講証" />
+        <span class="col-hint">例: 山田太郎_様_受講証_20260601.pdf</span>
+      </label>
+    </div>
+
+    <div id="scaleWrap">
+      <label class="field" style="margin-top:4px;">
+        <span>PDF品質（レンダリングスケール）</span>
+        <select id="scaleSelect">
+          <option value="1.5">標準（速い）</option>
+          <option value="2" selected>高品質（推奨）</option>
+          <option value="3">最高品質（遅い・大ファイル）</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <!-- ③ 出力 -->
+  <section class="panel">
+    <div class="panel-title">▸ 出力</div>
+    <button id="generateBtn" class="generate-btn">一括生成 &amp; ZIPダウンロード</button>
+
+    <div class="status-wrap">
+      <p id="status" class="status">待機中</p>
+      <div class="progress-bar-outer" id="progressOuter">
+        <div class="progress-bar-inner" id="progressInner"></div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>PDF出力：</strong>
+      DOCXを docx-preview でブラウザ描画 → html2canvas でキャプチャ → jsPDF でPDF化。<br>
+      Word独自のページ枠線は構造上再現されにくい場合があります。<br><br>
+      <strong>Word出力：</strong>
+      置換済みDOCXをそのまま保存。<strong>枠線・書式を完全保持。</strong><br>
+      <span class="info-note">※ Word形式はWordまたはLibreOfficeで開いてPDF印刷することを推奨します。</span>
+    </div>
+  </section>
+</main>
+
+<script>
+'use strict';
+
+/* ── docx-preview グローバル変数の解決 ── */
+const docxPreviewLib = (() => {
+  if (typeof window.docx !== 'undefined' && typeof window.docx.renderAsync === 'function') return window.docx;
+  if (typeof window.docxPreview !== 'undefined' && typeof window.docxPreview.renderAsync === 'function') return window.docxPreview;
+  if (typeof window.renderAsync === 'function') return window;
+  return null;
+})();
+
+/* ── DOM refs ── */
+const dateInput     = document.getElementById('dateInput');
+const docxInput     = document.getElementById('docxInput');
+const csvInput      = document.getElementById('csvInput');
+const colSelect     = document.getElementById('colSelect');
+const colWrap       = document.getElementById('colSelectorWrap');
+const keywordInput  = document.getElementById('keywordInput');
+const suffixInput   = document.getElementById('suffixInput');
+const scaleSelect   = document.getElementById('scaleSelect');
+const scaleWrap     = document.getElementById('scaleWrap');
+const generateBtn   = document.getElementById('generateBtn');
+const statusEl      = document.getElementById('status');
+const progressOuter = document.getElementById('progressOuter');
+const progressInner = document.getElementById('progressInner');
+const previewHost   = document.getElementById('previewHost');
+
+/* ── State ── */
+let parsedHeaders = [];
+let parsedRows    = [];
+
+/* ── 出力形式ラジオ切替 ── */
+document.querySelectorAll('input[name="outputFmt"]').forEach(r => {
+  r.addEventListener('change', () => {
+    const fmt = document.querySelector('input[name="outputFmt"]:checked').value;
+    scaleWrap.style.display = (fmt === 'docx') ? 'none' : 'block';
+    const btnLabel = fmt === 'pdf'  ? 'PDF一括生成 &amp; ZIPダウンロード'
+                   : fmt === 'docx' ? 'Word一括生成 &amp; ZIPダウンロード'
+                   :                  'PDF + Word 一括生成 &amp; ZIPダウンロード';
+    generateBtn.innerHTML = btnLabel;
+  });
+});
+
+/* ── Status / Progress ── */
+function setStatus(msg, type = '') {
+  statusEl.textContent = msg;
+  statusEl.className = `status ${type}`.trim();
+}
+function setProgress(done, total) {
+  const pct = total > 0 ? Math.round(done / total * 100) : 0;
+  progressInner.style.width = pct + '%';
+  if (done === 0) progressOuter.classList.add('visible');
+  if (done >= total) setTimeout(() => progressOuter.classList.remove('visible'), 800);
+}
+
+/* ── File utils ── */
+function readFileAsArrayBuffer(file) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = reject;
+    fr.readAsArrayBuffer(file);
+  });
+}
+
+async function parseCsvOrExcel(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const buf = await readFileAsArrayBuffer(file);
+
+  if (ext === 'xlsx' || ext === 'xls') {
+    const wb = XLSX.read(new Uint8Array(buf), { type: 'array' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const json = XLSX.utils.sheet_to_json(ws, { header: 1 });
+    if (json.length < 2) throw new Error('Excelにデータがありません。');
+    const headers = json[0].map(String);
+    const rows = json.slice(1).map(row => {
+      const obj = {};
+      headers.forEach((h, i) => { obj[h] = row[i] !== undefined ? String(row[i]) : ''; });
+      return obj;
+    });
+    return { headers, rows };
+  }
+
+  const bytes = new Uint8Array(buf);
+  let text;
+  if (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) {
+    text = new TextDecoder('utf-8').decode(bytes.slice(3));
+  } else {
+    try { text = new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
+    catch { text = new TextDecoder('shift-jis').decode(bytes); }
+  }
+  const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+  if (!parsed.data?.length) throw new Error('CSVにデータ行がありません。');
+  return { headers: Object.keys(parsed.data[0]), rows: parsed.data };
+}
+
+/* ── CSV読み込み → 列セレクター更新 ── */
+csvInput.addEventListener('change', async () => {
+  colWrap.classList.remove('visible');
+  colSelect.innerHTML = '';
+  parsedHeaders = []; parsedRows = [];
+  const file = csvInput.files[0];
+  if (!file) return;
+  try {
+    const { headers, rows } = await parseCsvOrExcel(file);
+    parsedHeaders = headers; parsedRows = rows;
+    headers.forEach(h => {
+      const opt = document.createElement('option');
+      opt.value = h; opt.textContent = h;
+      if (h.replace(/\s/g,'').includes('氏名')) opt.selected = true;
+      colSelect.appendChild(opt);
+    });
+    colWrap.classList.add('visible');
+    setStatus(`${file.name} を読み込みました（${rows.length} 件）`);
+  } catch(e) { setStatus(e.message, 'error'); }
+});
+
+/* ── XML 置換 ── */
+function escapeXml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
+
+function replaceInXml(xmlText, keyword, replacement) {
+  return xmlText.split(keyword).join(escapeXml(replacement));
+}
+
+/* ── DOCX Blob 生成（置換済み） ── */
+async function buildReplacedDocxBlob(docxBuffer, keyword, name) {
+  const zip = await JSZip.loadAsync(docxBuffer);
+
+  // document.xml
+  const docXml = zip.file('word/document.xml');
+  if (!docXml) throw new Error('word/document.xml が見つかりません。');
+  zip.file('word/document.xml', replaceInXml(await docXml.async('string'), keyword, name));
+
+  // header / footer も置換
+  for (const path of Object.keys(zip.files)) {
+    if (/^word\/(header|footer)\d*\.xml$/i.test(path)) {
+      const f = zip.file(path);
+      if (f) zip.file(path, replaceInXml(await f.async('string'), keyword, name));
+    }
+  }
+
+  return zip.generateAsync({ type: 'blob' });
+}
+
+/* ── docx-preview CSS 収集（onclone 用） ── */
+function collectDocxStyles() {
+  const parts = [];
+  try {
+    for (const sheet of document.styleSheets) {
+      try {
+        for (const rule of sheet.cssRules) {
+          const txt = rule.cssText || '';
+          if (txt.includes('.docx') || txt.includes('table') || txt.includes('border')) {
+            parts.push(txt);
+          }
+        }
+      } catch { }
+    }
+  } catch { }
+  return parts.join('\n');
+}
+
+/* ── DOCX → PDF 変換 ── */
+async function docxBlobToPdf(docxBlob, scale) {
+  const arrayBuffer = await docxBlob.arrayBuffer();
+  previewHost.innerHTML = '';
+
+  if (!docxPreviewLib) throw new Error('docx-previewライブラリの読み込みに失敗しました。');
+
+  await docxPreviewLib.renderAsync(arrayBuffer, previewHost, null, {
+    inWrapper: true,
+    ignoreWidth: false,
+    ignoreHeight: false,
+    ignoreFonts: false,
+    breakPages: true,
+    useBase64URL: true,
+    renderHeaders: true,
+    renderFooters: true,
+    renderFootnotes: true,
+    renderEndnotes: true,
+  });
+
+  if (document.fonts?.ready) await document.fonts.ready;
+  await new Promise(r => setTimeout(r, 800));
+
+  const pages   = Array.from(previewHost.querySelectorAll('section.docx'));
+  const targets = pages.length > 0 ? pages : [previewHost];
+  const extraStyles = collectDocxStyles();
+
+  const pdf   = new jspdf.jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+  let isFirst = true;
+
+  for (const target of targets) {
+    const elW = target.scrollWidth  || 794;
+    const elH = target.scrollHeight || 1122;
+
+    const canvas = await html2canvas(target, {
+      scale,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      width: elW, height: elH,
+      windowWidth: elW,
+      scrollX: 0, scrollY: 0,
+      onclone: (clonedDoc) => {
+        const s = clonedDoc.createElement('style');
+        s.textContent = `
+          * { box-sizing: border-box !important; }
+          table { border-collapse: collapse !important; }
+          td, th { border: inherit !important; }
+          ${extraStyles}
+        `;
+        clonedDoc.head.appendChild(s);
+      },
+    });
+
+    if (!isFirst) pdf.addPage();
+
+    // 1ページ必ず収まるようスケール調整
+    const aspect = canvas.height / canvas.width;
+    let imgW = pageW;
+    let imgH = pageW * aspect;
+    if (imgH > pageH) {
+      imgH = pageH;
+      imgW = pageH / aspect;
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', (pageW - imgW) / 2, 0, imgW, imgH);
+    } else {
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgW, imgH);
+    }
+    isFirst = false;
+  }
+
+  previewHost.innerHTML = '';
+  return pdf.output('blob');
+}
+
+/* ── メイン処理 ── */
+async function generateDocuments() {
+  const date    = dateInput.value.trim();
+  const keyword = keywordInput.value.trim() || '氏名';
+  const suffix  = suffixInput.value.trim()  || '受講証';
+  const scale   = parseFloat(scaleSelect.value) || 2;
+  const fmt     = document.querySelector('input[name="outputFmt"]:checked').value;
+  const docxFile = docxInput.files[0];
+
+  if (!/^\d{8}$/.test(date))  throw new Error('日付は YYYYMMDD 形式で入力してください。');
+  if (!docxFile)               throw new Error('Wordファイルを選択してください。');
+
+  let headers = parsedHeaders, rows = parsedRows;
+  if (!rows.length) {
+    const csvFile = csvInput.files[0];
+    if (!csvFile) throw new Error('CSVまたはExcelファイルを選択してください。');
+    const res = await parseCsvOrExcel(csvFile);
+    headers = res.headers; rows = res.rows;
+  }
+
+  const nameKey = colSelect.value || headers.find(h => h.replace(/\s/g,'').includes('氏名'));
+  if (!nameKey) throw new Error(`氏名列が見つかりません。列名: ${headers.join(', ')}`);
+
+  const nameRows = rows.filter(r => r[nameKey] && String(r[nameKey]).trim());
+  if (!nameRows.length) throw new Error('氏名列にデータがありません。');
+
+  const docxBuffer = await readFileAsArrayBuffer(docxFile);
+  const outputZip  = new JSZip();
+
+  // PDF/DOCX それぞれのサブフォルダ
+  const pdfFolder  = (fmt === 'both') ? outputZip.folder('PDF')  : outputZip;
+  const docxFolder = (fmt === 'both') ? outputZip.folder('DOCX') : outputZip;
+
+  const total = nameRows.length;
+  setProgress(0, total);
+
+  for (let i = 0; i < total; i++) {
+    const name = String(nameRows[i][nameKey]).trim();
+    if (!name) continue;
+
+    // 置換済み DOCX Blob を生成（PDF/DOCX 両方で使う）
+    const replacedDocxBlob = await buildReplacedDocxBlob(docxBuffer, keyword, name);
+
+    // DOCX 出力
+    if (fmt === 'docx' || fmt === 'both') {
+      docxFolder.file(`${name}_様_${suffix}_${date}.docx`, replacedDocxBlob);
+    }
+
+    // PDF 出力
+    if (fmt === 'pdf' || fmt === 'both') {
+      setStatus(`PDF変換中… ${i + 1} / ${total} 件（${name}）`);
+      const pdfBlob = await docxBlobToPdf(replacedDocxBlob, scale);
+      pdfFolder.file(`${name}_様_${suffix}_${date}.pdf`, pdfBlob);
+    }
+
+    setProgress(i + 1, total);
+    if (fmt === 'docx') setStatus(`生成中… ${i + 1} / ${total} 件（${name}）`);
+  }
+
+  const zipBlob = await outputZip.generateAsync({ type: 'blob' });
+  const fmtLabel = fmt === 'pdf' ? 'PDF' : fmt === 'docx' ? 'DOCX' : 'PDF+DOCX';
+  saveAs(zipBlob, `${suffix}_${fmtLabel}_${date}.zip`);
+}
+
+/* ── ボタンイベント ── */
+generateBtn.addEventListener('click', async () => {
+  try {
+    setStatus('準備中…');
+    generateBtn.disabled = true;
+    await generateDocuments();
+    setStatus('ZIPファイルを出力しました。', 'success');
+  } catch(e) {
+    setStatus(e.message || 'エラーが発生しました。', 'error');
+    console.error(e);
+  } finally {
+    generateBtn.disabled = false;
+  }
+});
+
+/* ── 日付フィールドの初期値（今日） ── */
+(function() {
+  const t = new Date();
+  if (!dateInput.value)
+    dateInput.value = `${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
+})();
+
+
+</script>
+<script src="js/matrix-rain.js"></script>
+</body>
+</html>

@@ -1,0 +1,864 @@
+
+
+
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>データ処理システム - Applicant Management Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme-base.css">
+    <style>
+        body {
+            font-family: 'Share Tech Mono', 'Courier New', monospace;
+            background-color: var(--bg);
+            background-image:
+                linear-gradient(var(--page-grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--page-grid-line) 1px, transparent 1px);
+            background-size: 40px 40px, 40px 40px;
+            color: var(--text);
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* マトリックス風背景 */
+        #matrixRain {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            opacity: 0.13;
+            pointer-events: none;
+        }
+
+        /* スキャンライン */
+        .scanline {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(91,255,156,.015) 50%);
+            background-size: 100% 4px;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: var(--scanline-opacity);
+        }
+
+        /* テーマ切替ボタン */
+        .theme-toggle {
+            position: fixed;
+            top: 14px; right: 16px;
+            z-index: 10000;
+            background: var(--button-bg);
+            border: 1px solid var(--line2);
+            color: var(--green);
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: .78rem;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: .08em;
+            transition: background .2s, border-color .2s;
+        }
+        .theme-toggle:hover { background: var(--panel3); border-color: var(--green); }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ヘッダー */
+        header {
+            text-align: center;
+            padding: 28px 20px;
+            border: var(--border-width) solid var(--line2);
+            background:
+                linear-gradient(180deg, color-mix(in srgb, var(--green) 4%, transparent), transparent 40%),
+                var(--panel);
+            margin-bottom: 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow), var(--glow);
+            position: relative;
+            overflow: hidden;
+        }
+        header::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--green) 3%, transparent), transparent);
+            pointer-events: none;
+        }
+
+        h1 {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.3em;
+            color: var(--green);
+            text-shadow: 0 0 12px rgba(91,255,156,.5);
+            letter-spacing: .18em;
+            margin-bottom: 8px;
+        }
+        [data-theme="light"] h1 {
+            color: var(--green2);
+            text-shadow: none;
+        }
+
+        .subtitle {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: .78em;
+            color: var(--muted);
+            letter-spacing: .12em;
+        }
+
+        /* パネル共通 */
+        .panel {
+            background:
+                linear-gradient(180deg, color-mix(in srgb, var(--green) 3%, transparent), transparent 32%),
+                var(--panel);
+            border: var(--border-width) solid var(--line);
+            border-radius: var(--radius);
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow), var(--glow);
+            position: relative;
+            overflow: hidden;
+        }
+        [data-theme="light"] .panel { background: var(--panel); }
+        .panel::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--green) 3%, transparent), transparent);
+            opacity: .8;
+            pointer-events: none;
+        }
+        [data-theme="light"] .panel::before { opacity: 0; }
+
+        .panel-title {
+            font-size: 1.1em;
+            color: var(--text-strong);
+            margin-bottom: 18px;
+            text-shadow: 0 0 4px color-mix(in srgb, var(--green) 20%, transparent);
+            border-bottom: 1px solid var(--line2);
+            padding-bottom: 10px;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        [data-theme="light"] .panel-title { text-shadow: none; }
+
+        /* 入力フィールド */
+        .input-group { margin-bottom: 16px; }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--muted);
+            font-size: .85em;
+            letter-spacing: 1px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--line2);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-family: inherit;
+            font-size: .95em;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--green) 14%, transparent);
+        }
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        /* ファイル選択ボタン カスタムスタイル */
+        input[type="file"] {
+            display: none;
+        }
+        .file-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            min-height: 44px;
+            padding: 0 20px;
+            background: var(--button-bg);
+            border: 1px solid var(--green);
+            border-radius: var(--radius-sm);
+            color: var(--green);
+            font-family: inherit;
+            font-size: .9em;
+            font-weight: 800;
+            letter-spacing: .08em;
+            cursor: pointer;
+            transition: background .15s, border-color .15s, box-shadow .15s;
+            box-sizing: border-box;
+        }
+        .file-label:hover {
+            background: var(--panel3);
+            border-color: var(--green);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--green) 25%, transparent);
+        }
+        .file-label-icon { font-size: 1.1em; flex-shrink: 0; }
+        .file-label-text { flex: 1; }
+        .file-name-display {
+            margin-top: 6px;
+            font-size: .82em;
+            color: var(--green);
+            letter-spacing: .04em;
+            min-height: 1.2em;
+            padding-left: 4px;
+            word-break: break-all;
+        }
+
+        /* ボタン */
+        .btn {
+            min-height: 44px;
+            padding: 0 20px;
+            background: var(--button-bg);
+            border: 1px solid var(--line2);
+            border-radius: var(--radius-sm);
+            color: var(--text-strong);
+            font-family: inherit;
+            font-size: .9em;
+            font-weight: 800;
+            letter-spacing: .08em;
+            cursor: pointer;
+            transition: background .15s, border-color .15s, box-shadow .15s;
+        }
+        .btn:hover {
+            background: var(--panel3);
+            border-color: var(--green);
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--green) 20%, transparent);
+        }
+        .btn:active { transform: translateY(1px); }
+        .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+        .btn-primary {
+            background: var(--button-primary-bg);
+            border-color: var(--button-primary-bg);
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background: color-mix(in srgb, var(--button-primary-bg) 90%, var(--green));
+            border-color: var(--green);
+        }
+
+        .btn-secondary {
+            border-color: var(--line2);
+            color: var(--green);
+        }
+        .btn-secondary:hover { border-color: var(--green); }
+
+        /* プログレスバー */
+        .progress-container { margin: 18px 0; }
+
+        .progress-bar {
+            width: 100%;
+            height: 28px;
+            background: var(--panel2);
+            border: 1px solid var(--line2);
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--progress-grad);
+            width: 0%;
+            transition: width .5s;
+            box-shadow: 0 0 8px color-mix(in srgb, var(--green) 50%, transparent);
+        }
+        .progress-text {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-strong);
+            font-weight: bold;
+            font-size: .85em;
+            z-index: 1;
+        }
+
+        /* データテーブル */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: .88em;
+        }
+        .data-table th,
+        .data-table td {
+            padding: 9px 12px;
+            border: 1px solid var(--line);
+            text-align: left;
+        }
+        .data-table th {
+            background: color-mix(in srgb, var(--green) 8%, var(--panel2));
+            color: var(--text-strong);
+            font-weight: bold;
+            letter-spacing: .05em;
+        }
+        .data-table tr:hover td {
+            background: color-mix(in srgb, var(--green) 5%, var(--panel2));
+        }
+
+        /* ログエリア */
+        .log-area {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            max-height: 280px;
+            overflow-y: auto;
+            font-size: .83em;
+            line-height: 1.7;
+        }
+        .log-entry {
+            margin-bottom: 4px;
+            opacity: 0;
+            animation: fadeIn .4s forwards;
+        }
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        .log-time { color: var(--faint); margin-right: 8px; }
+        .log-success { color: var(--green); }
+        .log-error { color: var(--danger); }
+        .log-warning { color: var(--warn); }
+
+        /* グリッド */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 18px;
+        }
+
+        /* ステータスインジケーター */
+        .status-indicator {
+            display: inline-block;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        .status-active { background: var(--green); box-shadow: 0 0 8px var(--green); }
+        .status-idle { background: var(--faint); }
+        .status-error { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+
+        /* 統計カード */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin: 16px 0;
+        }
+        .stat-card {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.9em;
+            font-weight: bold;
+            color: var(--green);
+            text-shadow: 0 0 8px color-mix(in srgb, var(--green) 40%, transparent);
+        }
+        [data-theme="light"] .stat-value { text-shadow: none; }
+        .stat-label {
+            font-size: .82em;
+            color: var(--muted);
+            margin-top: 5px;
+        }
+
+        /* 処理ステップ */
+        .process-steps { margin: 16px 0; }
+        .step {
+            display: flex;
+            align-items: center;
+            padding: 9px 12px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--line2);
+            background: var(--panel2);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            transition: border-color .2s, background .2s, box-shadow .2s;
+        }
+        .step.active {
+            border-left-color: var(--green);
+            background: color-mix(in srgb, var(--green) 7%, var(--panel2));
+            box-shadow: 0 0 8px color-mix(in srgb, var(--green) 20%, transparent);
+        }
+        .step.completed {
+            border-left-color: var(--line3);
+            opacity: .55;
+        }
+        .step-number {
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            width: 28px; height: 28px;
+            background: var(--panel3);
+            border: 1px solid var(--line2);
+            border-radius: 50%;
+            margin-right: 14px;
+            font-weight: bold;
+            font-size: .85em;
+            color: var(--green);
+            flex-shrink: 0;
+        }
+        .step.active .step-number { border-color: var(--green); }
+        .step-text { flex: 1; font-size: .9em; color: var(--text); }
+
+        /* アラート */
+        .alert {
+            padding: 13px 16px;
+            margin: 13px 0;
+            border-radius: var(--radius-sm);
+            border: 1px solid;
+            animation: slideIn .4s;
+        }
+        .alert-success { border-color: var(--green); background: color-mix(in srgb, var(--green) 8%, transparent); color: var(--green); }
+        .alert-error { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, transparent); color: var(--danger); }
+        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* ローディング */
+        .loading {
+            display: inline-block;
+            width: 18px; height: 18px;
+            border: 2px solid var(--line2);
+            border-top-color: var(--green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* スクロールバー */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--panel2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--line3); }
+
+        /* コーナー装飾 */
+        .panel-corners::after,
+        .panel-corners::before {
+            content: '';
+            position: absolute;
+            width: 16px; height: 16px;
+            border: 2px solid var(--line3);
+        }
+        .panel-corners::before { top: -1px; left: -1px; border-right: none; border-bottom: none; border-radius: var(--radius) 0 0 0; }
+        .panel-corners::after { bottom: -1px; right: -1px; border-left: none; border-top: none; border-radius: 0 0 var(--radius) 0; }
+
+        /* ホログラム */
+        .hologram::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--green) 6%, transparent), transparent);
+            animation: hologramScan 4s infinite;
+            pointer-events: none;
+        }
+        @keyframes hologramScan { 0%{left:-100%} 100%{left:200%} }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.5em; letter-spacing: 2px; }
+            .panel { padding: 14px; }
+            .grid, .stats-grid { grid-template-columns: 1fr; }
+            .btn { width: 100%; }
+            .theme-toggle { top: 10px; right: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- マトリックス背景 -->
+    <canvas id="matrixRain"></canvas>
+    <!-- スキャンライン -->
+    <div class="scanline"></div>
+    <!-- テーマ切替 -->
+    <button class="theme-toggle" onclick="SharedTheme.toggleTheme()">THEME</button>
+
+    <div class="container">
+        <!-- ヘッダー -->
+        <header class="hologram">
+            <h1>▌ Applicant Management Panel ▌</h1>
+            <div class="subtitle">DATA PROCESSING SYSTEM ver. 2.0</div>
+        </header>
+
+        <!-- システムステータス -->
+        <div class="panel panel-corners">
+            <div class="panel-title">
+                <span class="status-indicator status-idle" id="statusIndicator"></span>
+                SYSTEM STATUS
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="processedRows">0</div>
+                    <div class="stat-label">処理済み行数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="filteredRows">0</div>
+                    <div class="stat-label">フィルタ適用行数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="errorCount">0</div>
+                    <div class="stat-label">エラー件数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="processingTime">0.00s</div>
+                    <div class="stat-label">処理時間</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ファイルアップロード -->
+        <div class="panel">
+            <div class="panel-title">FILE INPUT</div>
+            <div class="input-group">
+                <label class="file-label" for="excelFile">
+                    <span class="file-label-icon">📂</span>
+                    <span class="file-label-text" id="fileLabelText">Excel/CSVファイルを選択</span>
+                </label>
+                <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" onchange="updateFileLabel(this)" />
+                <div class="file-name-display" id="fileNameDisplay"></div>
+            </div>
+            <div class="input-group">
+                <label for="dateInput">処理日付 (YYYYMMDD形式)</label>
+                <input type="text" id="dateInput" placeholder="例: 20260531" />
+            </div>
+            <button class="btn btn-primary" onclick="startProcessing()">処理開始</button>
+        </div>
+
+        <!-- 処理ステップ -->
+        <div class="panel">
+            <div class="panel-title">PROCESSING STEPS</div>
+            <div class="process-steps" id="processSteps">
+                <div class="step" id="step1"><div class="step-number">1</div><div class="step-text">ファイル読み込み</div></div>
+                <div class="step" id="step2"><div class="step-number">2</div><div class="step-text">不要行削除</div></div>
+                <div class="step" id="step3"><div class="step-number">3</div><div class="step-text">データフィルタリング</div></div>
+                <div class="step" id="step4"><div class="step-number">4</div><div class="step-text">データクレンジング</div></div>
+                <div class="step" id="step5"><div class="step-number">5</div><div class="step-text">列の追加・整形</div></div>
+                <div class="step" id="step6"><div class="step-number">6</div><div class="step-text">行データ処理</div></div>
+                <div class="step" id="step7"><div class="step-number">7</div><div class="step-text">ファイル保存</div></div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- データプレビュー -->
+        <div class="panel">
+            <div class="panel-title">DATA PREVIEW</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>No.</th><th>氏名</th><th>所属</th><th>メールアドレス</th><th>ステータス</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="5" style="text-align:center;opacity:.5;">データが読み込まれていません</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ログ出力 -->
+        <div class="panel">
+            <div class="panel-title">SYSTEM LOG</div>
+            <div class="log-area" id="logArea">
+                <div class="log-entry log-success">
+                    <span class="log-time">[SYSTEM]</span>システムを起動しました。
+                </div>
+            </div>
+        </div>
+
+        <!-- エクスポート -->
+        <div class="panel">
+            <div class="panel-title">EXPORT</div>
+            <button class="btn btn-secondary" onclick="exportToExcel()" id="exportBtn" disabled>
+                処理済みCSVをダウンロード
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="js/matrix-rain.js"></script>
+    <script src="js/theme-toggle.js"></script>
+    <script src="js/name-lists.js"></script>
+    <script>
+
+        let workbook = null;
+        let processedData = null;
+        let startTime = null;
+
+        function addLog(message, type = 'success'){
+            const logArea = document.getElementById('logArea');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            logEntry.innerHTML = `<span class="log-time">[${timeStr}]</span> ${message}`;
+            logArea.appendChild(logEntry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function updateProgress(percent, stepId){
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressText').textContent = Math.round(percent) + '%';
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+                if(parseInt(step.id.replace('step','')) < stepId) step.classList.add('completed');
+            });
+            if(stepId >= 1 && stepId <= 7) document.getElementById('step'+stepId).classList.add('active');
+        }
+
+        function updateStats(processed, filtered, errors){
+            document.getElementById('processedRows').textContent = processed;
+            document.getElementById('filteredRows').textContent = filtered;
+            document.getElementById('errorCount').textContent = errors;
+            if(startTime){
+                document.getElementById('processingTime').textContent = ((Date.now()-startTime)/1000).toFixed(2)+'s';
+            }
+        }
+
+        function updateDataTable(data, maxRows = 10){
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            data.slice(0, maxRows).forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${index+1}</td><td>${row['氏名']||'-'}</td><td>${row['所属施設']||'-'}</td><td>${row['メール']||'-'}</td><td>${row['承認ステータス']||'-'}</td>`;
+                tbody.appendChild(tr);
+            });
+            if(data.length > maxRows){
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="5" style="text-align:center;opacity:.6;">... 他 ${data.length-maxRows} 件</td>`;
+                tbody.appendChild(tr);
+            }
+        }
+
+        function sleep(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
+
+        async function startProcessing(){
+            const fileInput = document.getElementById('excelFile');
+            const dateInput = document.getElementById('dateInput').value;
+            if(!fileInput.files.length){ addLog('ファイルが選択されていません','error'); return; }
+            if(!dateInput || !/^\d{8}$/.test(dateInput)){ addLog('正しい日付形式（YYYYMMDD）を入力してください','error'); return; }
+
+            startTime = Date.now();
+            document.getElementById('statusIndicator').className = 'status-indicator status-active';
+            addLog('処理を開始します...');
+
+            try {
+                updateProgress(10,1); addLog('ファイルを読み込んでいます...'); await sleep(500);
+                const file = fileInput.files[0];
+                const fileName = file.name.toLowerCase();
+                const data = await file.arrayBuffer();
+                const readOpts = fileName.endsWith('.csv')
+                    ? {type:'array', raw:false}
+                    : {type:'array'};
+                workbook = XLSX.read(data, readOpts);
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                let jsonData = XLSX.utils.sheet_to_json(firstSheet, {header:1});
+                addLog(`ファイル読み込み完了: ${jsonData.length} 行 (${fileName.endsWith('.csv') ? 'CSV' : 'Excel'})`);
+
+                updateProgress(20,2); addLog('不要な行を削除しています...'); await sleep(300);
+                jsonData = jsonData.slice(5);
+                addLog(`不要行削除完了: 残り ${jsonData.length} 行`);
+
+                updateProgress(35,3); addLog('データをフィルタリングしています...'); await sleep(300);
+                const headers = jsonData[0];
+                let processedRows = jsonData.slice(1).map(row => {
+                    const obj = {};
+                    headers.forEach((h,i) => { obj[h] = row[i]; });
+                    return obj;
+                });
+                const originalCount = processedRows.length;
+                // 空行除外のみ
+                processedRows = processedRows.filter(row => Object.values(row).some(v => v!==undefined&&v!==null&&v!==''));
+                const filteredCount = originalCount - processedRows.length;
+                addLog(`フィルタリング完了: 空行除外で ${filteredCount} 行を除外 (残り ${processedRows.length} 行)`);
+
+                updateProgress(50,4); addLog('データをクレンジングしています...'); await sleep(300);
+                const CANONICAL_AFFILIATION = '静岡県立静岡がんセンター';
+                // 列名リネームマップ（「ご」を削除）
+                const COL_RENAME = { 'ご所属施設': '所属施設', 'ご所属部署': '所属部署', '職種：該当する職種にチェックを入れてください。': '職種' };
+                let normalizeCount = 0;
+                processedRows = processedRows.map(row => {
+                    const clean = {};
+                    Object.keys(row).forEach(k => {
+                        let v = row[k];
+                        const newKey = COL_RENAME[k] || k;  // 列名リネーム
+                        if(typeof v==='string'){
+                            v = v.trim().replace(/　/g,' ').replace(/'/g,'');
+                            // 「登録時間」列を YYYY/MM/DD HH:MM 形式に変換
+                            if(newKey === '登録時間'){
+                                const d = new Date(v);
+                                if(!isNaN(d.getTime())){
+                                    const yyyy = d.getFullYear();
+                                    const mm   = String(d.getMonth()+1).padStart(2,'0');
+                                    const dd   = String(d.getDate()).padStart(2,'0');
+                                    const hh   = String(d.getHours()).padStart(2,'0');
+                                    const mi   = String(d.getMinutes()).padStart(2,'0');
+                                    v = `${yyyy}/${mm}/${dd} ${hh}:${mi}`;
+                                }
+                            }
+                            }
+// 「所属施設」列の表記揺れ正規化
+if (newKey === '所属施設') {
+    const norm = v.replace(/[Ａ-Ｚａ-ｚ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+                  .toLowerCase();
+
+    const hasSCC = /\bscc\b/.test(norm);
+    const hasShizuCancerJa = /静岡.*(?:がん|ガン|癌)|(?:がん|ガン|癌).*静岡/.test(v);
+    const hasShizuCancerEn = /shizuoka.*cancer|cancer.*shizuoka/.test(norm);
+
+    if (hasSCC || hasShizuCancerJa || hasShizuCancerEn) {
+        if (v !== CANONICAL_AFFILIATION) normalizeCount++;
+        v = CANONICAL_AFFILIATION;
+    }
+}
+clean[newKey] = v;
+                    });
+                    return clean;
+                });
+                if(normalizeCount > 0) addLog(`所属施設正規化: ${normalizeCount} 件を「静岡県立静岡がんセンター」に統一しました`, 'warning');
+                addLog('データクレンジング完了（列名リネーム・所属施設正規化）');
+
+                // 姓名入れ替え処理
+                let swapCount = 0;
+                processedRows = processedRows.map(row => {
+                    const mei = String(row['名'] ?? '').trim();
+                    if(SharedNames.SURNAMES.has(mei)){
+                        // 名列の値が姓リストに一致 → 名列と姓列を入れ替え
+                        const tmp = row['名'];
+                        row['名'] = row['姓'];
+                        row['姓'] = tmp;
+                        swapCount++;
+                    }
+                    return row;
+                });
+                if(swapCount > 0) addLog(`姓名入れ替え: ${swapCount} 件を補正しました`, 'warning');
+
+                updateProgress(65,5); addLog('列を追加・整形しています...'); await sleep(300);
+                // 出力列順の定義（先頭に通し番号、以降は指定順、末尾に不明列）
+                const COL_ORDER = [
+                    '通し番号',
+                    '氏名', '所属施設', '所属部署', '職種', 'メール', '役割',
+                    '登録時間', '承認ステータス', '電話番号', '名', '姓',
+                    '質問とコメント', '本研修会をどのように知りましたか。'
+                ];
+                processedRows = processedRows.map((row, i) => {
+                    const fullName = ((row['姓']||'') + ' ' + (row['名']||'')).trim();
+                    // 氏名列・通し番号を加えた中間オブジェクト
+                    const base = { ...row, '氏名': fullName, '通し番号': i + 1 };
+                    // COL_ORDERの順に正確に並べる
+                    const ordered = {};
+                    COL_ORDER.forEach(col => {
+                        if (col in base) ordered[col] = base[col];
+                    });
+                    // COL_ORDERにない列を末尾に追加
+                    Object.keys(base).forEach(k => {
+                        if (!(k in ordered)) ordered[k] = base[k];
+                    });
+                    return ordered;
+                });
+                addLog('列の追加・整形完了（通し番号先頭・指定列順済み）');
+
+                updateProgress(80,6); addLog('各行のデータを処理しています...'); await sleep(500);
+                let errorCount = 0;
+                processedRows.forEach((row,i) => {
+                    try {
+                        if(row['メール'] && !validateEmail(row['メール'])){ row['エラー']='メールアドレス形式不正'; errorCount++; }
+                        // ※旧キー名フォールバック（念のため）
+                        // メールバリデーション（上記で処理済み）
+                    } catch(e){ addLog(`行 ${i+1} でエラー: ${e.message}`,'warning'); errorCount++; }
+                });
+                addLog(`行データ処理完了: エラー ${errorCount} 件`);
+
+                updateProgress(100,7); addLog('処理が完了しました','success');
+                updateStats(processedRows.length, filteredCount, errorCount);
+                updateDataTable(processedRows);
+                document.getElementById('exportBtn').disabled = false;
+                document.getElementById('statusIndicator').className = 'status-indicator status-idle';
+                processedData = processedRows;
+                addLog(`総処理時間: ${((Date.now()-startTime)/1000).toFixed(2)}秒`,'success');
+
+            } catch(error){
+                addLog(`エラーが発生しました: ${error.message}`,'error');
+                document.getElementById('statusIndicator').className = 'status-indicator status-error';
+                updateProgress(0,0);
+            }
+        }
+
+        function validateEmail(email){
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).toLowerCase());
+        }
+
+        function exportToExcel(){
+            if(!processedData){ addLog('処理済みデータがありません','error'); return; }
+            try {
+                const dateInput = document.getElementById('dateInput').value;
+                // 先頭行のキー順を基準にし、仙6行にしかないキーを末尾に追加
+                const allKeys = Object.keys(processedData[0] || {});
+                processedData.forEach(row => {
+                    Object.keys(row).forEach(k => { if(!allKeys.includes(k)) allKeys.push(k); });
+                });
+                // BOM付きUTF-8 CSV生成（Excelで開いた際の文字化け防止）
+                const csvRows = [];
+                csvRows.push(allKeys.map(k => '"' + String(k).replace(/"/g,'""') + '"').join(','));
+                processedData.forEach(row => {
+                    csvRows.push(allKeys.map(k => {
+                        const v = row[k] !== undefined && row[k] !== null ? String(row[k]) : '';
+                        return '"' + v.replace(/"/g,'""') + '"';
+                    }).join(','));
+                });
+                const csvStr = '\uFEFF' + csvRows.join('\r\n');
+                const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `処理済み_${dateInput}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+                addLog(`ファイルをエクスポートしました: 処理済み_${dateInput}.csv`,'success');
+            } catch(error){
+                addLog(`エクスポートエラー: ${error.message}`,'error');
+            }
+        }
+
+        function updateFileLabel(input){
+            const display = document.getElementById('fileNameDisplay');
+            const labelText = document.getElementById('fileLabelText');
+            if(input.files && input.files.length > 0){
+                const name = input.files[0].name;
+                labelText.textContent = '選択済み';
+                display.textContent = '▶ ' + name;
+            } else {
+                labelText.textContent = 'Excel/CSVファイルを選択';
+                display.textContent = '';
+            }
+        }
+
+        window.addEventListener('load', () => {
+            addLog('システムの初期化が完了しました','success');
+        });
+    </script>
+</body>
+</html>
