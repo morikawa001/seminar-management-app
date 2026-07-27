@@ -1273,7 +1273,7 @@ function renderTable(){
   const tbody=els.tableList;
   const cnt=document.getElementById('masterCount');
   if(!currentHeaders.length||!dataRows.length){
-    tbody.innerHTML='<tr><td colspan="10" style="padding:2rem;text-align:center;color:var(--muted)">CSVを読み込むか、新規データベースを作成してください。</td></tr>';
+    tbody.innerHTML='<tr><td colspan="11" style="padding:2rem;text-align:center;color:var(--muted)">CSVを読み込むか、新規データベースを作成してください。</td></tr>';
     if(cnt)cnt.textContent='';
     return;
   }
@@ -1306,10 +1306,33 @@ function renderTable(){
       <td>${hp?`<div class="dtg">🌐${esc(hp)}</div>`:''}</td>
       <td>${k2?`<div class="dtg">📄${esc(k2)}</div>`:''}</td>
       <td>${k3?`<div class="dtg">🏅${esc(k3)}</div>`:''}</td>
+      <td><button class="btn small" style="min-height:30px;padding:0 8px;font-size:.7rem;border-color:var(--danger);color:var(--danger)" onclick="deleteRecord('${esc(no)}')">削除</button></td>
     </tr>`;
   }).join('');
 }
 
+function deleteRecord(no){
+  if(!no||!confirm(`No.${no} を削除してもよろしいですか？\nこの操作は元に戻せません。`))return;
+  const rawIdx=rawRows.findIndex(r=>String(r?.[fullKeys.no]||'').trim()===String(no).trim());
+  if(rawIdx>=0)rawRows.splice(rawIdx,1);
+  rawRows=compactRawRows(rawRows);
+  dataRows=buildDisplayRowsFromRaw(rawRows);
+  selectedRow=dataRows.find(r=>String(r[fullKeys.no]||'').trim()===String(no).trim())||null;
+  if(selectedRow)selectedRow=null;
+  renderRecordOptions();
+  renderTable();
+  setNextNo();
+  renderStats();
+  renderAlerts();
+  renderTodayCommand();
+  renderExceptionQueue();
+  updateTrainingProgressFromRows(rawRows);
+  renderMergeOptions();
+  if(typeof FirebaseApp!=='undefined'&&FirebaseApp.getCurrentUser()){
+    FirebaseApp.deleteFromFirestore(no).catch(function(err){console.error('Firestore delete error:',err);});
+  }
+  setStatus(`No.${no} を削除しました。`);
+}
 function parseMonthDayText(v, yearText){
   const m=String(v||'').match(/(\d{1,2})\/(\d{1,2})/);
   const y=String(yearText||'').match(/(\d{4})/);
