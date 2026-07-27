@@ -914,6 +914,7 @@ function normalizeRowShape(row){
   const trimmedRow={};
   Object.keys(row||{}).forEach(k=>{trimmedRow[k.trim()]=row[k]});
   currentHeaders.forEach(h=>out[h]=trimmedRow[h]??row?.[h]??'');
+  if(row.__docId)out.__docId=row.__docId;
   return out
 }
 function isMeaningfulRow(row){return currentHeaders.some(h=>String(row?.[h]??'').trim()!=='')}
@@ -1325,11 +1326,11 @@ function renderTable(){
 function deleteRecord(no){
   if(!no||!confirm(`No.${no} を削除してもよろしいですか？\nこの操作は元に戻せません。`))return;
   const rawIdx=rawRows.findIndex(r=>String(r?.[fullKeys.no]||'').trim()===String(no).trim());
-  if(rawIdx>=0)rawRows.splice(rawIdx,1);
+  if(rawIdx<0){setStatus(`No.${no} が見つかりませんでした。`);return}
+  rawRows.splice(rawIdx,1);
   rawRows=compactRawRows(rawRows);
   dataRows=buildDisplayRowsFromRaw(rawRows);
-  selectedRow=dataRows.find(r=>String(r[fullKeys.no]||'').trim()===String(no).trim())||null;
-  if(selectedRow)selectedRow=null;
+  selectedRow=null;
   renderRecordOptions();
   renderTable();
   setNextNo();
@@ -1340,10 +1341,21 @@ function deleteRecord(no){
   updateTrainingProgressFromRows(rawRows);
   renderMergeOptions();
   if(typeof FirebaseApp!=='undefined'&&FirebaseApp.getCurrentUser()){
-    FirebaseApp.deleteFromFirestore(no).catch(function(err){console.error('Firestore delete error:',err);});
+    const rawRow=rawRows.find(r=>String(r?.[fullKeys.no]||'').trim()===String(no).trim());
+    if(rawRow&&rawRow.__docId){
+      FirebaseApp.deleteFromFirestore(rawRow.__docId).catch(function(err){console.error('Firestore delete error:',err);});
+    }else{
+      FirebaseApp.deleteFromFirestore(no).catch(function(err){console.error('Firestore delete error:',err);});
+    }
+  }
+  if(!dataRows.length){
+    Object.keys(fields).forEach(k=>{if(fields[k]&&typeof fields[k].value!=='undefined'&&k!=='subject'&&k!=='site'&&k!=='cohost')fields[k].value=''});
+    fields.subject.value='研究者';fields.site.value='Web会議室';fields.cohost.value=COHOST_OPTION_NONE;
+    syncCohostFields();resetScheduleChecks();
   }
   setStatus(`No.${no} を削除しました。`);
 }
+window.deleteRecord=deleteRecord;
 function parseMonthDayText(v, yearText){
   const m=String(v||'').match(/(\d{1,2})\/(\d{1,2})/);
   const y=String(yearText||'').match(/(\d{4})/);
