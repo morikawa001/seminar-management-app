@@ -2351,6 +2351,32 @@ function openMailTemplate(no, recipient, purpose){
 }
 window.openMailTemplate=openMailTemplate;
 
+function downloadMailAsEml(){
+  const subject=document.getElementById('mailSubjectDisplay');
+  const body=document.getElementById('mailBodyDisplay');
+  if(!subject||!body||!subject.value.trim()||!body.value.trim()){
+    alert('メールが生成されていません。先にメール文面を生成してください。'); return;
+  }
+  const eml=[
+    'To: ',
+    'Subject: =?UTF-8?B?'+btoa(unescape(encodeURIComponent(subject.value.trim())))+'?=',
+    'Content-Type: text/plain; charset="UTF-8"',
+    'Content-Transfer-Encoding: base64',
+    '',
+    btoa(unescape(encodeURIComponent(body.value)))
+  ].join('\r\n');
+  const blob=new Blob([eml],{type:'application/octet-stream'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='mail_'+Date.now()+'.eml';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+window.downloadMailAsEml=downloadMailAsEml;
+
 function tcCheckDone(cardId, checked){
   const card=document.getElementById(cardId);
   if(!card) return;
@@ -2758,6 +2784,10 @@ document.addEventListener('DOMContentLoaded',function(){
       setTimeout(()=>{ copyBtn2.textContent=orig; },1600);
     });
   });
+
+  // 出力（.emlダウンロード）
+  const dlBtn=document.getElementById('mailDownloadBtn');
+  if(dlBtn) dlBtn.addEventListener('click',downloadMailAsEml);
 
   // mailRecordSelect / recipient / purpose 変更時に自動生成
   const mailSel=document.getElementById('mailRecordSelect');
