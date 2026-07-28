@@ -144,7 +144,8 @@
       <button class="btn" onclick="scrollAndOpen('mailTemplateSection')">✉ メールを作成</button>
     </div>
 
-    <!-- Training Progress Panel: 研修会全体の進捗 -->
+    <!-- Training Progress Panel: 研修会全体の進捗 + Nixie Clock -->
+    <div class="two-col-grid" style="align-items:stretch">
     <section id="trainingProgressPanel" class="panel section-collapsible" data-collapsed="true">
       <div class="corner-label">Training Progress</div>
       <div class="panel-head">
@@ -182,6 +183,30 @@
         </div>
       </div>
     </section>
+    <section class="panel nixie-panel" id="nixieClockPanel">
+      <div class="panel-head">
+        <h2>Nixie Clock</h2>
+        <p>現在時刻</p>
+      </div>
+      <div class="nixie-clock-body">
+        <div class="nixie-date-row">
+          <span class="nixie-digit" id="nixieYear">2026</span>
+          <span class="nixie-sep">/</span>
+          <span class="nixie-digit" id="nixieMonth">01</span>
+          <span class="nixie-sep">/</span>
+          <span class="nixie-digit" id="nixieDay">01</span>
+        </div>
+        <div class="nixie-time-row">
+          <span class="nixie-time-digit" id="nixieHour">00</span>
+          <span class="nixie-colon">:</span>
+          <span class="nixie-time-digit" id="nixieMin">00</span>
+          <span class="nixie-colon">:</span>
+          <span class="nixie-time-digit" id="nixieSec">00</span>
+        </div>
+        <div class="nixie-day-badge" id="nixieDow">月曜日</div>
+      </div>
+    </section>
+    </div>
 
     <div class="section-group-label">⚡ 今日の優先アクション</div>
 
@@ -295,24 +320,6 @@
         </div>
       </div>
     </section>
-      <!-- 時計: 差出人情報直下・同幅 -->
-      <section class="nixie-panel" id="nixieClockPanel">
-        <div class="nixie-date-row">
-          <span class="nixie-digit" id="nixieYear">2026</span>
-          <span class="nixie-sep">/</span>
-          <span class="nixie-digit" id="nixieMonth">01</span>
-          <span class="nixie-sep">/</span>
-          <span class="nixie-digit" id="nixieDay">01</span>
-        </div>
-        <div class="nixie-time-row">
-          <span class="nixie-time-digit" id="nixieHour">00</span>
-          <span class="nixie-colon">:</span>
-          <span class="nixie-time-digit" id="nixieMin">00</span>
-          <span class="nixie-colon">:</span>
-          <span class="nixie-time-digit" id="nixieSec">00</span>
-        </div>
-        <div class="nixie-day-badge" id="nixieDow">月曜日</div>
-      </section>
     </div>
   </div>
 

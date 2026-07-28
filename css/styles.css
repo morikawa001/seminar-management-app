@@ -986,6 +986,15 @@ label[for="templateFiles"] {
   width:100%;
   text-align:center;
 }
+/* Nixie clock body vertical centering (when in two-col-grid) */
+.nixie-clock-body{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  flex:1;
+  gap:10px;
+}
 /* ── Task Checklist トグル ── */
 .task-toggle-btn{
   display:inline-flex; align-items:center; gap:5px;
