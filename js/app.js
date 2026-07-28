@@ -1344,6 +1344,7 @@ function deleteRecord(no){
   if(!no||!confirm(`No.${no} を削除してもよろしいですか？\nこの操作は元に戻せません。`))return;
   const rawIdx=rawRows.findIndex(r=>String(r?.[fullKeys.no]||'').trim()===String(no).trim());
   if(rawIdx<0){setStatus(`No.${no} が見つかりませんでした。`);return}
+  const deletedDocId=rawRows[rawIdx].__docId;
   rawRows.splice(rawIdx,1);
   rawRows=compactRawRows(rawRows);
   dataRows=buildDisplayRowsFromRaw(rawRows);
@@ -1357,13 +1358,8 @@ function deleteRecord(no){
   renderExceptionQueue();
   updateTrainingProgressFromRows(rawRows);
   renderMergeOptions();
-  if(typeof FirebaseApp!=='undefined'&&FirebaseApp.getCurrentUser()){
-    const rawRow=rawRows.find(r=>String(r?.[fullKeys.no]||'').trim()===String(no).trim());
-    if(rawRow&&rawRow.__docId){
-      FirebaseApp.deleteFromFirestore(rawRow.__docId).catch(function(err){console.error('Firestore delete error:',err);});
-    }else{
-      FirebaseApp.deleteFromFirestore(no).catch(function(err){console.error('Firestore delete error:',err);});
-    }
+  if(typeof FirebaseApp!=='undefined'&&FirebaseApp.getCurrentUser()&&deletedDocId){
+    FirebaseApp.deleteFromFirestore(deletedDocId).catch(function(err){console.error('Firestore delete error:',err);});
   }
   if(!dataRows.length){
     Object.keys(fields).forEach(k=>{if(fields[k]&&typeof fields[k].value!=='undefined'&&k!=='subject'&&k!=='site'&&k!=='cohost')fields[k].value=''});
