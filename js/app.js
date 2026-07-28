@@ -2323,7 +2323,7 @@ function openTaskMail(taskId){
     '08':{recipient:'cohost',purpose:'hp_done_report'},
     '09':{recipient:'cohost',purpose:'denshi_post_req'},
     '11':{recipient:'cohost',purpose:'denshi_replace_req'},
-    '12':{
+    '12':{recipient:'speaker',purpose:'honban_reminder_speaker'},
     '13':{recipient:'speaker',purpose:'data_reminder_speaker'},
     '20':{recipient:'speaker',purpose:'honban_reminder_speaker'},
     '22':{recipient:'speaker',purpose:'honban_reminder_speaker'},
