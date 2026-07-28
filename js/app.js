@@ -967,13 +967,19 @@ function updateTrainingProgressFromRows() {
   const doneEl = document.getElementById('trainingDoneCount');
   const remainEl = document.getElementById('trainingRemainCount');
   const pctEl = document.getElementById('trainingProgressPct');
-  const barEl = document.getElementById('trainingProgressBar');
+  const pieEl = document.getElementById('trainingPie');
+  const pieTextEl = document.getElementById('trainingPieText');
+  const doneEl2 = document.getElementById('trainingDoneCount2');
+  const remainEl2 = document.getElementById('trainingRemainCount2');
 
   if (totalEl) totalEl.textContent = String(total);
   if (doneEl) doneEl.textContent = String(done);
   if (remainEl) remainEl.textContent = String(remain);
   if (pctEl) pctEl.textContent = pct + '%';
-  if (barEl) barEl.style.width = pct + '%';
+  if (pieEl) pieEl.style.background = 'conic-gradient(var(--green) 0deg '+(pct*3.6)+'deg, var(--surface-3, #1a1a1a) '+(pct*3.6)+'deg 360deg)';
+  if (pieTextEl) pieTextEl.textContent = pct + '%';
+  if (doneEl2) doneEl2.textContent = String(done);
+  if (remainEl2) remainEl2.textContent = String(remain);
 }
   
 function applyScheduleChecksFromRow(row){

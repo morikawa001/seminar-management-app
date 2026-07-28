@@ -171,13 +171,15 @@
           <strong id="trainingProgressPct">0%</strong>
         </div>
       </div>
-      <div class="progress-bar-wrapper">
-        <div class="progress-bar-track">
-          <div id="trainingProgressBar" class="progress-bar-fill"></div>
+      <div class="training-pie-container">
+        <div class="training-pie" id="trainingPie">
+          <span class="training-pie-text" id="trainingPieText">0%</span>
         </div>
-      </div>
-      <div class="hint-box small">
-        Master Tableの進捗100%の行を終了件数として自動計算されます。
+        <div class="training-pie-legend">
+          <div><span class="legend-dot done"></span> 終了 <strong id="trainingDoneCount2">0</strong></div>
+          <div><span class="legend-dot remain"></span> 残り <strong id="trainingRemainCount2">0</strong></div>
+          <div class="hint-box small" style="margin-top:8px">Master Tableの進捗100%の行を終了件数として自動計算されます。</div>
+        </div>
       </div>
     </section>
 
