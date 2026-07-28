@@ -2771,8 +2771,14 @@ function onFirebaseLogin(user){
     els.openConfirmBtn.disabled = false;
     els.miniDbState.textContent = 'DB接続済';
     els.miniDbText.textContent = dataRows.length ? dataRows.length + '件のデータを読み込みました。' : 'データベースに接続しました。新規登録から追加できます。';
-    if(dataRows.length) prefillFromLast();
-    else {
+    if(dataRows.length){
+      const first=rawRows[0];
+      Object.entries({senderOrg:'senderOrg',senderName:'senderName',senderSig:'senderSignature'}).forEach(function(e){
+        var v=String(first[fullKeys[e[0]]]||'').trim();
+        if(v)document.getElementById(e[1]).value=v;
+      });
+      prefillFromLast();
+    }else{
       fields.no.value = '1';
       fields.cohost.value = COHOST_OPTION_NONE;
       syncCohostFields();
