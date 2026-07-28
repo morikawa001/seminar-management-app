@@ -2347,8 +2347,7 @@ function openMailTemplate(no, recipient, purpose){
     });
   }
   generateMailTemplate();
-  const mailEl=document.getElementById('mailTemplateSection');
-  if(mailEl) mailEl.scrollIntoView({behavior:'smooth',block:'start'});
+  scrollToSection('mailTemplateSection');
 }
 window.openMailTemplate=openMailTemplate;
 
