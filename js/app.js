@@ -2542,10 +2542,14 @@ function generateMailTemplate(){
     return;
   }
 
-  // 差出人情報取得（行データ優先→DOM要素→デフォルト）
-  const senderOrg=(row[fullKeys.senderOrg]||'').trim()||(document.getElementById('senderOrg')||{value:''}).value.trim()||'○○';
-  const senderName=(row[fullKeys.senderName]||'').trim()||(document.getElementById('senderName')||{value:''}).value.trim()||'○○';
-  const senderSig=(row[fullKeys.senderSig]||'').trim()||(document.getElementById('senderSignature')||{value:''}).value.trim()||'シグネチャー';
+  // 差出人情報をDOMに反映（行データ→DOM）
+  if(row[fullKeys.senderOrg]) document.getElementById('senderOrg').value=row[fullKeys.senderOrg];
+  if(row[fullKeys.senderName]) document.getElementById('senderName').value=row[fullKeys.senderName];
+  if(row[fullKeys.senderSig]) document.getElementById('senderSignature').value=row[fullKeys.senderSig];
+  // 差出人情報取得
+  const senderOrg=(document.getElementById('senderOrg')||{value:''}).value.trim()||'○○';
+  const senderName=(document.getElementById('senderName')||{value:''}).value.trim()||'○○';
+  const senderSig=(document.getElementById('senderSignature')||{value:''}).value.trim()||'シグネチャー';
 
   const sigBlock=`\n研修会担当　${senderName}\n＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊\n${senderSig}\n＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊`;
 
