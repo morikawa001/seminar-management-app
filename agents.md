@@ -6,7 +6,7 @@
 - コードコメントは追加しない
 - 新規関数を追加したら `window.xxx=xxx` でグローバル公開すること（onclick属性から呼べるように）
 
-## プロジェクト状態（2026-07-27）
+## プロジェクト状態（2026-07-28）
 
 ### 完了した作業
 - ✅ `index-v2.html` 削除（`index.html` に統合済み）
@@ -22,13 +22,21 @@
 - ✅ **レコード未発見時のエラーハンドリング**: `rawIdx<0` で早期リターン
 - ✅ **全件削除後にフォームクリア**: `dataRows` が空になったら Entry Console のフィールドをリセット
 - ✅ `window.deleteRecord=deleteRecord` でグローバル公開
+- ✅ **Task Checklist ✉ → Mail Template 開く**: `openMailTemplate` で `scrollIntoView` の代わりに `scrollToSection` を呼び、折りたたまれたセクションを開くよう修正
+- ✅ **Mail Template に .eml 出力ボタン追加**: `downloadMailAsEml` 関数で Outlook 対応 .eml ファイルをダウンロード可能に
+- ✅ **Mail Template ボタン並び順・サイズ調整**: 出力→件名＋本文をコピー→クリア の順、すべて `.btn.small`
+- ✅ **Training Progress 進捗バー→パイチャート**: conic-gradient のパイチャート + 凡例に変更
+- ✅ **Nixie時計を Training Progress 右隣に移動**: `.two-col-grid` で横並び、高さ揃え
+- ✅ **Training Progress / 差出人情報 デフォルト開き**: `data-collapsed="false"` + `open` クラス
+- ✅ **Training Progress ヒント文言削除**: "Master Tableの進捗100%..." を削除
+- ✅ **パイチャート拡大・数値横に配置**: 130px に拡大、`.progress-row` flex で数値サマリー右側に配置
 
 ### ファイル別役割
-- `index.html`: HTML構造 + ログイン画面（1024行）
+- `index.html`: HTML構造 + ログイン画面（1040行）
 - `css/theme-base.css`: CSS変数定義、テーマ切替、ベーススタイル（共有）
-- `css/styles.css`: 全コンポーネントスタイル + ログイン画面スタイル
+- `css/styles.css`: 全コンポーネントスタイル + ログイン画面スタイル（1620行）
 - `js/theme-toggle.js`: `SharedTheme` オブジェクトでテーマ切替（共有）
-- `js/app.js`: 全アプリケーションロジック（Firebase連携関数含む、2876行）
+- `js/app.js`: 全アプリケーションロジック（Firebase連携関数含む、2962行）
 - `js/firebase-config.js`: Firebase初期化、Auth（login/register/logout）、Firestore CRUD
 - `js/csv-utils.js`: CSVパース／エクスポートユーティリティ
 - `js/name-lists.js`: 名字辞書
