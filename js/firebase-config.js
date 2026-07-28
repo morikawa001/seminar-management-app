@@ -75,6 +75,7 @@
           var row = {};
           (headers || []).forEach(function(h){ row[h] = data[h] || ''; });
           row.__docId = doc.id;
+          row._order = data._order;
           rows.push(row);
         });
         if(callback) callback(rows);
@@ -91,6 +92,7 @@
     (headers || []).forEach(function(h){ data[h] = row[h] || ''; });
     data.createdBy = currentUser.uid;
     data.updatedAt = new Date().toISOString();
+    if(row._order!==undefined)data._order=Number(row._order);
     if(row.__docId){
       return db.collection(DB_COLLECTION).doc(row.__docId).set(data);
     } else {

@@ -848,7 +848,7 @@ function loadCsv(e){
   currentHeaders = ensureAdditionalHeaders(
     meta?.fields?.length ? meta.fields : [...DEFAULT_HEADERS]
   );
-  rawRows = Array.isArray(data) ? compactRawRows(data.map(r => normalizeRowShape(r))) : [];
+  rawRows = Array.isArray(data) ? compactRawRows(data.map(function(r,i){var nr=normalizeRowShape(r);if(nr._order===undefined)nr._order=(Number(nr[fullKeys.no]||0)||(i+1))*1000;return nr})):[];
       dataRows=buildDisplayRowsFromRaw(rawRows);
       selectedRow = null;
       els.recordSelect.value = '';
@@ -924,6 +924,7 @@ function normalizeRowShape(row){
   Object.keys(row||{}).forEach(k=>{trimmedRow[k.trim()]=row[k]});
   currentHeaders.forEach(h=>out[h]=trimmedRow[h]??row?.[h]??'');
   if(row.__docId)out.__docId=row.__docId;
+  if(row._order!==undefined)out._order=row._order;
   return out
 }
 function isMeaningfulRow(row){return currentHeaders.some(h=>String(row?.[h]??'').trim()!=='')}
@@ -931,7 +932,7 @@ function compactRawRows(rows){return rows.filter(r=>isMeaningfulRow(r))}
 function buildDisplayRowsFromRaw(rows){
   return compactRawRows(rows)
     .filter(r=>/^\d+$/.test(String(r[fullKeys.no]||'').trim()))
-    .sort((a,b)=>Number(a[fullKeys.no]||0)-Number(b[fullKeys.no]||0))
+    .sort((a,b)=>Number(a._order||Number(a[fullKeys.no]||0)*1000)-Number(b._order||Number(b[fullKeys.no]||0)*1000))
     .filter((r,i,arr)=>arr.findIndex(x=>String(x[fullKeys.no]).trim()===String(r[fullKeys.no]).trim())===i)
 }
 function setNextNo(){
@@ -1240,8 +1241,8 @@ function commitDraft(){
   stagedRow=buildRow();
   const no=String(stagedRow[fullKeys.no]||'').trim();
   const rawIndex=getRawRowIndexByNo(no);
-  if(rawIndex>=0){rawRows[rawIndex]=normalizeRowShape(stagedRow);lastSaveMode='update'}
-  else{rawRows=compactRawRows(rawRows);rawRows.push(normalizeRowShape(stagedRow));lastSaveMode='insert'}
+  if(rawIndex>=0){var nrUp=normalizeRowShape(stagedRow);if(nrUp._order===undefined)nrUp._order=rawRows[rawIndex]._order||0;rawRows[rawIndex]=nrUp;lastSaveMode='update'}
+  else{var nrNew=normalizeRowShape(stagedRow);if(nrNew._order===undefined)nrNew._order=(rawRows.reduce(function(m,r){return Math.max(m,Number(r._order||0))},0)||0)+1000;rawRows=compactRawRows(rawRows);rawRows.push(nrNew);lastSaveMode='insert'}
   rawRows=compactRawRows(rawRows);
   dataRows=buildDisplayRowsFromRaw(rawRows);
   selectedRow=dataRows.find(r=>String(r[fullKeys.no]||'').trim()===no)||null;
@@ -1319,7 +1320,7 @@ function renderTable(){
     const subjBadge=subject==='研究者'?'<span class="badge bb">研究者</span>'
       :subject==='倫理審査委員会委員'?'<span class="badge be">倫理委員</span>'
       :'<span class="badge bo">研究支援者</span>';
-    return `<tr data-no="${esc(no)}">
+    return `<tr data-no="${esc(no)}" style="cursor:pointer" onclick="clickTableRow('${esc(no)}')">
       <td style="color:var(--muted);font-weight:600">${esc(no)}</td>
       <td style="white-space:nowrap;font-weight:500">${esc(date)}${day?'（'+esc(day)+'）':''}</td>
       <td class="tc2"><div class="tt">${esc(title)}</div><div style="font-size:.65rem;color:var(--muted);margin-top:2px">${esc(speaker)}</div></td>
@@ -1330,7 +1331,11 @@ function renderTable(){
       <td>${hp?`<div class="dtg">🌐${esc(hp)}</div>`:''}</td>
       <td>${k2?`<div class="dtg">📄${esc(k2)}</div>`:''}</td>
       <td>${k3?`<div class="dtg">🏅${esc(k3)}</div>`:''}</td>
-      <td><button class="btn small" style="min-height:30px;padding:0 8px;font-size:.7rem;border-color:var(--danger);color:var(--danger)" onclick="deleteRecord('${esc(no)}')">削除</button></td>
+      <td style="white-space:nowrap">
+        <button class="btn small" style="min-height:26px;padding:0 6px;font-size:.65rem;border-color:var(--primary);color:var(--primary)" onclick="event.stopPropagation();moveRow('${esc(no)}',-1)" title="上に移動">▲</button>
+        <button class="btn small" style="min-height:26px;padding:0 6px;font-size:.65rem;border-color:var(--primary);color:var(--primary)" onclick="event.stopPropagation();moveRow('${esc(no)}',1)" title="下に移動">▼</button>
+        <button class="btn small" style="min-height:26px;padding:0 8px;font-size:.65rem;border-color:var(--danger);color:var(--danger)" onclick="event.stopPropagation();deleteRecord('${esc(no)}')">削除</button>
+      </td>
     </tr>`;
   }).join('');
 }
@@ -1368,6 +1373,36 @@ function deleteRecord(no){
   setStatus(`No.${no} を削除しました。`);
 }
 window.deleteRecord=deleteRecord;
+function moveRow(no,dir){
+  if(!no||dir===0)return;
+  var idx=dataRows.findIndex(function(r){return String(r[fullKeys.no]||'').trim()===String(no).trim()});
+  if(idx<0)return;
+  var targetIdx=idx+dir;
+  if(targetIdx<0||targetIdx>=dataRows.length)return;
+  var curRow=dataRows[idx],tgtRow=dataRows[targetIdx];
+  var curOrder=Number(curRow._order||0),tgtOrder=Number(tgtRow._order||0);
+  curRow._order=tgtOrder;tgtRow._order=curOrder;
+  rawRows=compactRawRows(rawRows);
+  dataRows=buildDisplayRowsFromRaw(rawRows);
+  selectedRow=dataRows.find(function(r){return r===curRow})||null;
+  renderTable();
+  renderRecordOptions();
+  renderMergeOptions();
+  if(typeof FirebaseApp!=='undefined'&&FirebaseApp.getCurrentUser()){
+    [curRow,tgtRow].forEach(function(r){
+      if(r.__docId)FirebaseApp.saveToFirestore(r,currentHeaders).catch(function(err){console.error('Firestore save error:',err);});
+    });
+  }
+  setStatus('No.'+no+' を移動しました。');
+}
+window.moveRow=moveRow;
+function clickTableRow(no){
+  if(typeof selectRecordByNo==='function')selectRecordByNo(no);
+  if(els.loadSelectedBtn)els.loadSelectedBtn.click();
+  var sec=document.getElementById('entryConsoleSection');
+  if(sec)sec.scrollIntoView({behavior:'smooth',block:'start'});
+}
+window.clickTableRow=clickTableRow;
 function parseMonthDayText(v, yearText){
   const m=String(v||'').match(/(\d{1,2})\/(\d{1,2})/);
   const y=String(yearText||'').match(/(\d{4})/);
@@ -2755,7 +2790,7 @@ function onFirebaseLogin(user){
   document.getElementById('loginMessage').style.display = 'none';
   currentHeaders = ensureAdditionalHeaders([...DEFAULT_HEADERS]);
   FirebaseApp.loadFromFirestore(currentHeaders, function(rows){
-    rawRows = rows.map(function(r){ return normalizeRowShape(r); });
+    rawRows = rows.map(function(r,i){var nr=normalizeRowShape(r);if(nr._order===undefined)nr._order=(Number(nr[fullKeys.no]||0)||(i+1))*1000;return nr;});
     dataRows = buildDisplayRowsFromRaw(rawRows);
     renderRecordOptions();
     renderTable();
