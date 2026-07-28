@@ -1068,6 +1068,9 @@ function loadSelectedIntoForm(){
   fields.intro1.value=selectedRow[fullKeys.intro1]||'';
   fields.intro2.value=selectedRow[fullKeys.intro2]||'';
   fields.intro3.value=selectedRow[fullKeys.intro3]||'';
+  document.getElementById('senderOrg').value=selectedRow[fullKeys.senderOrg]||'';
+  document.getElementById('senderName').value=selectedRow[fullKeys.senderName]||'';
+  document.getElementById('senderSignature').value=selectedRow[fullKeys.senderSig]||'';
   applyScheduleChecksFromRow(selectedRow);
   recalcDraft();
   els.deleteEntryBtn.disabled=false;
