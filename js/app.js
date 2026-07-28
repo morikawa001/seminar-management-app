@@ -953,17 +953,13 @@ function resetScheduleChecks(){
   updateTaskProgress();
 }
 
-// 研修会全体の進捗バーを更新（Computed Schedule「起案3」チェック済み = 修了とみなす）
-function updateTrainingProgressFromRows(rows) {
-  if (!Array.isArray(rows)) return;
-
-  const total = rows.length;
-
-  const done = rows.filter(r => {
-    // 起案3（checkK3）にチェックがある行を修了とみなす
-    return isCheckedValue(r[fullKeys.checkK3]);
+// 研修会全体の進捗バーを更新（Master Tableの進捗100%のみを終了とカウント）
+function updateTrainingProgressFromRows() {
+  const total = dataRows.length;
+  const done = dataRows.filter(r => {
+    const doneCount = [fullKeys.checkK1, fullKeys.checkHp, fullKeys.checkK2, fullKeys.checkK3].filter(k => isCheckedValue(r[k])).length;
+    return Math.round(doneCount / 4 * 100) === 100;
   }).length;
-
   const remain = total - done;
   const pct = total > 0 ? Math.round(done / total * 100) : 0;
 
