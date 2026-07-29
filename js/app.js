@@ -470,7 +470,7 @@ function syncCohostFields(){
 function setMergeStatus(msg){els.mergeStatusBox.textContent=msg}
 function setMergeState(){const hasTemplates=selectedTemplates.length>0;const hasNo=!!String(els.mergeRecordSelect.value||'').trim();els.templateState.value=`${selectedTemplates.length}件`;const en=hasTemplates&&hasNo;els.mergeAllBtn.disabled=!en;els.mergeAllZipBtn.disabled=!en;}
 function renderMergeOptions(){const options=['<option value="">Noを選択して差し込み</option>'].concat(dataRows.map(r=>`<option value="${esc(r[fullKeys.no]||'')}">No.${esc(r[fullKeys.no]||'')} / ${esc(r[fullKeys.date]||'-')} / ${esc(r[fullKeys.title]||'-')}</option>`));const cur=els.mergeRecordSelect.value;els.mergeRecordSelect.innerHTML=options.join('');els.mergeRecordSelect.disabled=!dataRows.length;if(cur&&dataRows.some(r=>String(r[fullKeys.no]||'')===cur))els.mergeRecordSelect.value=cur;setMergeState()}
-function renderTemplateList(){if(!selectedTemplates.length){els.templateList.innerHTML='<div class="template-row"><div><strong>テンプレート未選択</strong><p>pptx / xlsx / docx を複数まとめて選択できます。</p></div><div><span class="status s3">待機</span></div><div class="mono">-</div><div class="mono">-</div></div>';return}els.templateList.innerHTML=selectedTemplates.map(file=>`<div class="template-row"><div><strong>${esc(file.name)}</strong><p>${esc(file.type||'application/octet-stream')}</p></div><div><span class="status s2">読込済み</span></div><div class="mono">${esc(templateKind(file.name))}</div><div class="mono">${Math.round((file.size||0)/1024)} KB</div></div>`).join('')}
+function renderTemplateList(){if(!selectedTemplates.length){els.templateList.innerHTML='<div class="template-row"><div><strong>テンプレート未選択</strong><p>pptx / xlsx / docx を複数まとめて選択できます。</p></div><div><span class="status s3">待機</span></div><div class="mono">-</div><div class="mono">-</div><div></div></div>';return}els.templateList.innerHTML=selectedTemplates.map((file,i)=>`<div class="template-row"><div><strong>${esc(file.name)}</strong><p>${esc(file.type||'application/octet-stream')}</p></div><div><span class="status s2">読込済み</span></div><div class="mono">${esc(templateKind(file.name))}</div><div class="mono">${Math.round((file.size||0)/1024)} KB</div><div><button class="btn small" onclick="removeTemplateFile(${i})" title="このファイルを削除" style="background:var(--danger);color:#fff;padding:2px 8px;font-size:.75rem">✕</button></div></div>`).join('')}
 function handleTemplateFiles(e){
   selectedTemplates=Array.from(e.target.files||[]).filter(f=>/\.(docx|pptx|xlsx)$/i.test(f.name));
 
@@ -785,6 +785,20 @@ function clearTemplateFiles(){
   setMergeStatus('テンプレート選択をクリアしました。');
 }
 window.clearTemplateFiles=clearTemplateFiles;
+
+function removeTemplateFile(index){
+  if(index<0||index>=selectedTemplates.length) return;
+  selectedTemplates.splice(index,1);
+  // DataTransfer で input.files を再同期
+  var dt=new DataTransfer();
+  selectedTemplates.forEach(f=>dt.items.add(f));
+  els.templateFiles.files=dt.files;
+  els.templateFilesName.value=selectedTemplates.length?`${selectedTemplates.length}件選択`:'ファイル未選択';
+  renderTemplateList();
+  setMergeState();
+  setMergeStatus(selectedTemplates.length?`${selectedTemplates.length}件のテンプレートを登録しました。`:'テンプレートファイルが未選択です。');
+}
+window.removeTemplateFile=removeTemplateFile;
 
 // PRE_MEETING 自動入力 — START_1 の 30 分前
 function autoFillPreMeeting(){

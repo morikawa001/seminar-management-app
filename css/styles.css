@@ -572,7 +572,7 @@ label[for="templateFiles"] {
 .template-row{
   padding:14px;
   display:grid;
-  grid-template-columns:1.2fr 90px 120px 150px;
+  grid-template-columns:1.2fr 90px 120px 120px 56px;
   gap:12px;
   align-items:center;
 }
