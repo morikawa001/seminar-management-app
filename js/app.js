@@ -775,16 +775,6 @@ jszip.folder(folderName).file(baseName,blob);
 }
 window.mergeAllTemplatesZip=mergeAllTemplatesZip;
 
-function saveDataToLocalStorage(){
-  if(!rawRows.length||!currentHeaders.length)return;
-  try{
-    localStorage.setItem('shared_headers',JSON.stringify(currentHeaders));
-    const rows=rawRows.map(r=>currentHeaders.map(h=>r[h]??''));
-    localStorage.setItem('shared_rows',JSON.stringify(rows));
-  }catch(e){console.error('localStorage save error:',e)}
-}
-window.saveDataToLocalStorage=saveDataToLocalStorage;
-
 // テンプレート選択をクリア
 function clearTemplateFiles(){
   selectedTemplates=[];
@@ -893,7 +883,6 @@ renderAlerts();
       renderTodayCommand();
       renderExceptionQueue();
       updateTrainingProgressFromRows(rawRows); 
-      saveDataToLocalStorage();
       els.miniDbState.textContent='CSV読込済';
       els.miniDbText.textContent=dataRows.length?`${dataRows.length}件のCSVを読込済み`:'CSVに有効データがありません';
       renderMergeOptions();
@@ -2851,7 +2840,6 @@ function onFirebaseLogin(user){
     renderExceptionQueue();
     updateTrainingProgressFromRows(rawRows);
     renderMergeOptions();
-    saveDataToLocalStorage();
     els.recordSelect.disabled = !dataRows.length;
     els.loadSelectedBtn.disabled = !dataRows.length;
     els.prefillBtn.disabled = !dataRows.length;
