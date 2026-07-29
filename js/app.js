@@ -948,7 +948,7 @@ function compactRawRows(rows){return rows.filter(r=>isMeaningfulRow(r))}
 function buildDisplayRowsFromRaw(rows){
   return compactRawRows(rows)
     .filter(r=>/^\d+$/.test(String(r[fullKeys.no]||'').trim()))
-    .sort((a,b)=>Number(a._order||Number(a[fullKeys.no]||0)*1000)-Number(b._order||Number(b[fullKeys.no]||0)*1000))
+    .sort((a,b)=>(a._order!=null?Number(a._order):Number(a[fullKeys.no]||0)*1000)-(b._order!=null?Number(b._order):Number(b[fullKeys.no]||0)*1000))
     .filter((r,i,arr)=>arr.findIndex(x=>String(x[fullKeys.no]).trim()===String(r[fullKeys.no]).trim())===i)
 }
 function setNextNo(){
@@ -1259,7 +1259,7 @@ function commitDraft(){
   stagedRow=buildRow();
   const no=String(stagedRow[fullKeys.no]||'').trim();
   const rawIndex=getRawRowIndexByNo(no);
-  if(rawIndex>=0){var nrUp=normalizeRowShape(stagedRow);if(nrUp._order===undefined)nrUp._order=rawRows[rawIndex]._order||0;rawRows[rawIndex]=nrUp;lastSaveMode='update'}
+  if(rawIndex>=0){var nrUp=normalizeRowShape(stagedRow);if(nrUp._order===undefined||!rawRows[rawIndex]._order)nrUp._order=(Number(nrUp[fullKeys.no]||0)||rawRows.length)*1000+rawIndex;else nrUp._order=Number(rawRows[rawIndex]._order);rawRows[rawIndex]=nrUp;lastSaveMode='update'}
   else{var nrNew=normalizeRowShape(stagedRow);if(nrNew._order===undefined)nrNew._order=(rawRows.reduce(function(m,r){return Math.max(m,Number(r._order||0))},0)||0)+1000;rawRows=compactRawRows(rawRows);rawRows.push(nrNew);lastSaveMode='insert'}
   rawRows=compactRawRows(rawRows);
   dataRows=buildDisplayRowsFromRaw(rawRows);
@@ -1394,8 +1394,9 @@ function moveRow(no,dir){
   var targetIdx=idx+dir;
   if(targetIdx<0||targetIdx>=dataRows.length)return;
   var curRow=dataRows[idx],tgtRow=dataRows[targetIdx];
-  var curOrder=Number(curRow._order||0),tgtOrder=Number(tgtRow._order||0);
-  curRow._order=tgtOrder;tgtRow._order=curOrder;
+  var curOrder=curRow._order!=null?Number(curRow._order):undefined,tgtOrder=tgtRow._order!=null?Number(tgtRow._order):undefined;
+  if((curOrder===undefined||!curOrder)&&(tgtOrder===undefined||!tgtOrder)){curRow._order=targetIdx;tgtRow._order=idx}
+  else{curRow._order=tgtOrder;tgtRow._order=curOrder}
   rawRows=compactRawRows(rawRows);
   dataRows=buildDisplayRowsFromRaw(rawRows);
   selectedRow=dataRows.find(function(r){return r===curRow})||null;
