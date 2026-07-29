@@ -2329,6 +2329,7 @@ function openTaskMail(taskId){
     '13':{recipient:'speaker',purpose:'data_reminder_speaker'},
     '20':{recipient:'speaker',purpose:'honban_reminder_speaker'},
     '22':{recipient:'speaker',purpose:'honban_reminder_speaker'},
+    '24':{recipient:'cohost',purpose:'seminar_prep'},
     '26':{recipient:'cohost',purpose:'seminar_prep'},
     '31':{recipient:'cohost',purpose:'shakin_proc_req'},
     '32':{recipient:'speaker',purpose:'shakin_transfer'}
@@ -2338,6 +2339,13 @@ function openTaskMail(taskId){
   openMailTemplate(no,m.recipient,m.purpose);
 }
 window.openTaskMail=openTaskMail;
+
+function openMailPrep(){
+  var no=(typeof fields!=='undefined'&&fields.no)?String(fields.no.value||'').trim():document.getElementById('fNo')?.value?.trim()||'';
+  if(!no){ alert('先に研修会Noを選択してください。'); return; }
+  openMailTemplate(no,'cohost','seminar_prep');
+}
+window.openMailPrep=openMailPrep;
 
 function openMailTemplate(no, recipient, purpose){
   const sel=document.getElementById('mailRecordSelect');
@@ -2726,7 +2734,7 @@ function generateMailTemplate(){
   else if(purpose==='seminar_prep'){
     // 13: 当日 研修会準備依頼
     subj=`【研修会準備】${dateStr}研修会準備について`;
-    body=`皆様\n\nお忙しい中、失礼いたします。研修会担当の${senderName}です。\n\n本日${dateStr}の研修会準備につきまして、下記のとおりご協力をお願い申し上げます。\n\n■ 準備開始　XX:XX頃から\n■ 事前打合せ　14:30\n■ 会場　管理棟4階　XXXXXXX\n\n■ 皆様ご都合がつきましたら、XX:XX頃よりご自席にて、音声および画像のモニタリングにご協力いただけますと幸いです。\n\n何卒よろしくお願いいたします。${sigBlock}`;
+    body=`皆様\n\nお忙しい中、失礼いたします。\n研修会担当の${senderName}です。\n本日${dateStr}の研修会準備につきまして、下記のとおりご協力をお願い申し上げます。\n\n■ 準備開始\nXX:XX頃から\n\n■ 事前打合せ\n${preMeeting}\n\n■ 会場\n管理棟4階　XXXXXXX\n\n■ ○○様・○○様・○○様\nご都合がつきましたら、${preMeeting}頃よりご自席にて、\n音声および画像のモニタリングにご協力いただけますと幸いです。\n\n何卒よろしくお願いいたします。\n${senderName}\n＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊\n${senderSig}\n＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊`;
   }
   else if(purpose==='jikan_gaizangyo'){
     // 14: 当日 時間外勤務前申請

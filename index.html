@@ -598,9 +598,12 @@
       <div class="field" style="align-self:end">
         <button class="btn small" id="mailCopyAllBtn">件名＋本文をコピー</button>
       </div>
-      <div class="field">
+<div class="field">
         <label> </label>
         <button class="btn small" id="mailGenerateBtn">クリア</button>
+      </div>
+      <div class="field" style="align-self:end">
+        <button class="btn small" id="mailPrepBtn" onclick="openMailPrep()">研修会準備</button>
       </div>
     </div>
 
@@ -868,7 +871,10 @@
               <span class="small-label">Task 24</span>
               <strong>研修会本番</strong>
             </div>
+            <div class="schedule-actions">
+            <button class="task-mail-btn" onclick="openTaskMail('24')" title="メール案を作成">✉</button>
             <label class="schedule-check"><input type="checkbox" id="ck_task24" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
           </div>
 <div class="task-phase-label"><span class="small-label">事後処理フェーズ（起案3〜完了）</span></div>
           <div class="schedule-card" id="taskcard_task25">
