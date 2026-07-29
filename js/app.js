@@ -1662,15 +1662,19 @@ function renderResult(done=false){
 
 function downloadCsv(){
   if(!currentHeaders.length){setStatus('ダウンロード対象のマスターがありません。');return}
-  // rawRowsはチェック時点で即時書き込み済み→そのまま CSV 出力
   rawRows=compactRawRows(rawRows);
-  // 開催日_DATE_1（"6月2日" 形式）を parseShortJapaneseDate で Date に変換して昇順ソート
-  const sorted = [...rawRows].sort((a, b) => {
+  var seen=new Set();
+  var deduped=rawRows.filter(function(r){
+    var no=String(r[fullKeys.no]||'').trim();
+    if(!no||seen.has(no))return false;
+    seen.add(no);
+    return true;
+  });
+  const sorted = [...deduped].sort((a, b) => {
     const yearA = String(a[fullKeys.year] ?? '');
     const yearB = String(b[fullKeys.year] ?? '');
     const da = parseShortJapaneseDate(a[fullKeys.date], yearA);
     const db = parseShortJapaneseDate(b[fullKeys.date], yearB);
-    // 日付が解釈できない行は最後尾に
     if(!da && !db) return 0;
     if(!da) return 1;
     if(!db) return -1;
