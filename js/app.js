@@ -1350,9 +1350,9 @@ function renderTable(){
       <td>${k2?`<div class="dtg">📄${esc(k2)}</div>`:''}</td>
       <td>${k3?`<div class="dtg">🏅${esc(k3)}</div>`:''}</td>
       <td style="white-space:nowrap">
-        <button class="btn small" style="min-height:26px;padding:0 6px;font-size:.65rem;border-color:var(--primary);color:var(--primary)" onclick="event.stopPropagation();moveRow('${esc(no)}',-1)" title="上に移動">▲</button>
-        <button class="btn small" style="min-height:26px;padding:0 6px;font-size:.65rem;border-color:var(--primary);color:var(--primary)" onclick="event.stopPropagation();moveRow('${esc(no)}',1)" title="下に移動">▼</button>
-        <button class="btn small" style="min-height:26px;padding:0 8px;font-size:.65rem;border-color:var(--danger);color:var(--danger)" onclick="event.stopPropagation();deleteRecord('${esc(no)}')">削除</button>
+        <button class="btn small" style="min-height:26px;padding:0 6px;font-size:.65rem;border-color:var(--primary);color:var(--primary)" onclick="moveRow('${esc(no)}',-1);event.stopPropagation()" title="上に移動">▲</button>
+        <button class="btn small" style="min-height:26px;padding:0 6px;font-size:.65rem;border-color:var(--primary);color:var(--primary)" onclick="moveRow('${esc(no)}',1);event.stopPropagation()" title="下に移動">▼</button>
+        <button class="btn small" style="min-height:26px;padding:0 8px;font-size:.65rem;border-color:var(--danger);color:var(--danger)" onclick="deleteRecord('${esc(no)}');event.stopPropagation()">削除</button>
       </td>
     </tr>`;
   }).join('');
