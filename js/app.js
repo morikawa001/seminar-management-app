@@ -781,6 +781,8 @@ function saveDataToLocalStorage(){
     localStorage.setItem('shared_headers',JSON.stringify(currentHeaders));
     const rows=[currentHeaders].concat(rawRows.map(r=>currentHeaders.map(h=>r[h]??'')));
     localStorage.setItem('shared_rows',JSON.stringify(rows));
+    sessionStorage.setItem('shared_headers',JSON.stringify(currentHeaders));
+    sessionStorage.setItem('shared_rows',JSON.stringify(rows));
   }catch(e){console.error('localStorage save error:',e)}
 }
 window.saveDataToLocalStorage=saveDataToLocalStorage;
