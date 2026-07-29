@@ -76,3 +76,15 @@ js/matrix-rain.js             # 背景マトリックスレインエフェクト
 - 並列Editは競合しやすいので逐次実行推奨
 - CSS変更後は必ず 900px / 640px ブレークポイントの影響を確認
 - 変更後はコミットして push する（ユーザーが明示的に要求した場合のみ）
+
+## 変更履歴
+
+### 2026-07-29: 研修会準備ボタン・Task 24 メールボタン追加
+- ✅ Mail Template セクションに「研修会準備」ボタン追加（`#mailPrepBtn`, `onclick="openMailPrep()"`）
+- ✅ `openMailPrep()` 関数を作成（Entry Console の No を読み取り `openMailTemplate(no,'cohost','seminar_prep')` を呼ぶ）
+- ✅ Task 24（研修会本番）に ✉ メールボタン追加（`onclick="openTaskMail('24')"`）
+- ✅ `openTaskMail()` に `'24':{recipient:'cohost',purpose:'seminar_prep'}` マッピング追加
+- ✅ `seminar_prep` テンプレートを以下のように更新：
+  - `preMeeting`（開始30分前）を動的に使用
+  - 各項目を改行区切りで整形（準備開始／事前打合せ／会場／モニタリング依頼）
+  - 署名ブロックを `senderName` ＋アスタリスク囲み `senderSig` に変更
