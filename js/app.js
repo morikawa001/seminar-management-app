@@ -747,9 +747,11 @@ async function mergeAllTemplatesZip(){
           }
         });
         const ext=(String(file.name).split('.').pop()||'').toLowerCase();
-        const blob=pzip.generate({type:'blob',mimeType:mimeMap[ext]||'application/octet-stream'});
-        const outName=`No${safeName(row[fullKeys.no]||'')}_${safeName(row[fullKeys.title]||'template')}_${safeName(file.name)}`;
-        jszip.file(outName,blob);
+const blob=pzip.generate({type:'blob',mimeType:mimeMap[ext]||'application/octet-stream'});
+const baseName=String(file.name);
+const idx=baseName.indexOf('_');
+const folderName=idx>0?baseName.slice(0,idx):'不明';
+jszip.folder(folderName).file(baseName,blob);
         ok++;
         logs.push(`${templateKind(file.name)}: ${file.name}`);
       }catch(err){
