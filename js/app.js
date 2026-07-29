@@ -2324,6 +2324,7 @@ function openTaskMail(taskId){
     '03':{recipient:'cohost',purpose:'hp_upload_req'},
     '04a':{recipient:'speaker',purpose:'ishi_req'},
     '06':{recipient:'cohost',purpose:'hp_upload_req'},
+    '07':{recipient:'speaker',purpose:'hp_report_speaker'},
     '08':{recipient:'cohost',purpose:'hp_done_report'},
     '09':{recipient:'cohost',purpose:'denshi_post_req'},
     '11':{recipient:'cohost',purpose:'denshi_replace_req'},
