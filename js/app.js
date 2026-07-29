@@ -779,7 +779,7 @@ function saveDataToLocalStorage(){
   if(!rawRows.length||!currentHeaders.length)return;
   try{
     localStorage.setItem('shared_headers',JSON.stringify(currentHeaders));
-    const rows=rawRows.map(r=>currentHeaders.map(h=>r[h]??''));
+    const rows=[currentHeaders].concat(rawRows.map(r=>currentHeaders.map(h=>r[h]??'')));
     localStorage.setItem('shared_rows',JSON.stringify(rows));
   }catch(e){console.error('localStorage save error:',e)}
 }
