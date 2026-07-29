@@ -93,3 +93,9 @@ js/matrix-rain.js             # 背景マトリックスレインエフェクト
 - ✅ mergeAllTemplatesZip() の出力ロジックを修正：ファイル名の先頭XX_プレフィックスごとにフォルダに振り分け
 - ✅ 例: 01_01_起案.docx → 01/ フォルダ、01_02_チラシ案.docx → 01/ フォルダ
 - ✅ プレフィックス不一致のファイルは 不明/ フォルダにまとめる
+
+### 2026-07-29: live_session.html が index.html のデータを自動継承
+- ✅ `saveDataToLocalStorage()` 関数を app.js に追加（currentHeaders + rawRows を localStorage に保存）
+- ✅ データ読み込み完了時に自動保存（Firebaseログイン後・CSV読込後）
+- ✅ live_session.html 起動時に localStorage を確認し、データがあれば自動反映
+- ✅ ファイル選択がなくても index.html のデータベースが live_session.html に引き継がれる
