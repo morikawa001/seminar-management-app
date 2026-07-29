@@ -99,3 +99,4 @@ js/matrix-rain.js             # 背景マトリックスレインエフェクト
 - ✅ データ読み込み完了時に自動保存（Firebaseログイン後・CSV読込後）
 - ✅ live_session.html 起動時に localStorage を確認し、データがあれば自動反映
 - ✅ ファイル選択がなくても index.html のデータベースが live_session.html に引き継がれる
+- ✅ DOMContentLoaded 対応で起動時の読み込みを安定化
