@@ -1090,29 +1090,22 @@
 
   // localStorage から index.html のデータを自動継承
   (function(){
-    function loadSharedData(){
-      try{
-        var h=localStorage.getItem('shared_headers');
-        var r=localStorage.getItem('shared_rows');
-        if(h&&r){
-          var headers=JSON.parse(h);
-          var rows=JSON.parse(r);
-          if(rows.length>1){
-            ST.rows=rows;
-            ST.headers=rows[0].map(norm);
-            document.getElementById('fndsp').textContent='DB: index.html 連携';
-            document.getElementById('sbfile').textContent='DB: SHARED';
-            buildSelect();
-            loadRow(1);
-          }
+    try{
+      var h=localStorage.getItem('shared_headers');
+      var r=localStorage.getItem('shared_rows');
+      if(h&&r){
+        var headers=JSON.parse(h);
+        var rows=JSON.parse(r);
+        if(rows.length>1){
+          ST.rows=rows;
+          ST.headers=rows[0].map(norm);
+          document.getElementById('fndsp').textContent='DB: index.html 連携';
+          document.getElementById('sbfile').textContent='DB: SHARED';
+          buildSelect();
+          loadRow(1);
         }
-      }catch(e){console.error('localStorage load error:',e)}
-    }
-    if(document.readyState==='loading'){
-      document.addEventListener('DOMContentLoaded',loadSharedData);
-    }else{
-      loadSharedData();
-    }
+      }
+    }catch(e){console.error('localStorage load error:',e)}
   })();
 
 })();
