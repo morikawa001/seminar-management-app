@@ -267,6 +267,17 @@
                 <button id="btn-start-scan" onclick="appLayer.startScanner()" class="btn-green" style="flex:1;">スキャン開始</button>
                 <button id="btn-stop-scan" onclick="appLayer.stopScanner()" class="btn-red" style="flex:1;" disabled>スキャン停止</button>
             </div>
+            <div style="margin-top:12px;padding-top:12px;border-top:2px solid #e0e0e0;">
+                <label style="display:block;font-size:13px;font-weight:bold;color:#555;margin-bottom:6px;">QRコード画像ファイルを読み込み</label>
+                <input type="file" id="qrFileInput" accept="image/*" style="width:100%;padding:10px 0;font-size:14px;">
+            </div>
+            <div style="margin-top:10px;padding-top:10px;border-top:2px solid #e0e0e0;">
+                <label style="display:block;font-size:13px;font-weight:bold;color:#555;margin-bottom:6px;">または起案行Noを手動入力</label>
+                <div style="display:flex;gap:8px;">
+                    <input type="text" id="manualNoInput" placeholder="Noを入力" style="flex:1;padding:12px;border:1px solid #ccc;border-radius:10px;font-size:16px;">
+                    <button onclick="appLayer.lookupByNo()" class="btn-green" style="width:auto;padding:12px 20px;white-space:nowrap;">検索</button>
+                </div>
+            </div>
             <div id="scan-status" class="status-msg status-info hidden"></div>
         </div>
 
@@ -589,6 +600,38 @@
                 ).join("");
             }
 
+            // No直接指定で検索
+            async lookupByNo() {
+                const input = document.getElementById("manualNoInput");
+                const no = String(input.value || "").trim();
+                if (!no) { this.showStatus("scan-status", "Noを入力してください", "status-err"); return; }
+                this.showStatus("scan-status", `起案行No: ${no} を検索中…`, "status-info");
+                try {
+                    const result = await this.qrService.lookupByProposalNo(no);
+                    if (!result) {
+                        this.showStatus("scan-status", `起案行No「${no}」に該当する研修会が見つかりませんでした`, "status-err");
+                        document.getElementById("result-section").classList.add("hidden");
+                        return;
+                    }
+                    this.currentDoc = result;
+                    this.hideStatus("scan-status");
+                    this.displayResult(result.data);
+                    this.addHistory(result.data);
+                } catch (err) {
+                    this.showStatus("scan-status", "検索エラー: " + err.message, "status-err");
+                }
+            }
+            // QRコード画像ファイルをデコード
+            async scanFile(file) {
+                this.showStatus("scan-status", "QRコード画像を解析中…", "status-info");
+                try {
+                    const decodedText = await this.html5Qr.scanFile(file, true);
+                    await this.onQrCodeScanned(decodedText);
+                } catch (err) {
+                    this.showStatus("scan-status", "QRコードを読み取れませんでした: " + err.message, "status-err");
+                }
+            }
+
             showStatus(elementId, message, className) {
                 const el = document.getElementById(elementId);
                 el.textContent = message;
@@ -618,6 +661,14 @@
         const qrService = new QRCodeService(database);
         const appLayer = new ApplicationLayer();
         appLayer.init(qrService);
+
+        // ファイルアップロードQR読取のイベントリスナー
+        document.getElementById("qrFileInput").addEventListener("change", function(e) {
+            if (e.target.files && e.target.files[0]) {
+                appLayer.scanFile(e.target.files[0]);
+            }
+            e.target.value = "";
+        });
 
         // グローバル公開（HTML onclick から呼べるように）
         window.appLayer = appLayer;
