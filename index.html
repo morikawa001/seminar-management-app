@@ -1044,6 +1044,7 @@
       <span id="masterCount" class="badge" style="background:var(--panel3);color:var(--muted);font-size:.72rem;padding:2px 8px"></span>
       <div class="panel-nav-actions">
         <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
+        <button class="btn small manual-btn" onclick="toggleMasterView()" id="masterViewToggle">📊 ガントチャート</button>
       </div>
     </div>
     <div class="tw"><div class="ts">
@@ -1063,6 +1064,7 @@
         </tr></thead>
         <tbody id="masterTbody"></tbody>
       </table>
+      <div id="ganttContainer" class="hidden" style="overflow-x:auto;padding:8px 0;"></div>
     </div></div>
   </section>
 </div><!-- /wrap -->

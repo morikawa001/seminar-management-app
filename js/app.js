@@ -386,7 +386,7 @@ const fields={
   intro3:document.getElementById('fIntro3')
 };
 
-let currentHeaders=[], rawRows=[], dataRows=[], selectedRow=null, stagedRow=null, lastSaveMode='', selectedTemplates=[];
+let currentHeaders=[], rawRows=[], dataRows=[], selectedRow=null, stagedRow=null, lastSaveMode='', selectedTemplates=[], masterViewMode='table';
 // チェック時に即時 rawRows へ書き込む方式を使用（pendingChecks廃止）
 
 const HEAD_TEXT_DEFAULT='2026年度　臨床研究研修会';
@@ -1436,11 +1436,22 @@ function renderRecordOptions(){
 function renderTable(){
   const tbody=els.tableList;
   const cnt=document.getElementById('masterCount');
+  const gantt=document.getElementById('ganttContainer');
+  const toggle=document.getElementById('masterViewToggle');
+  if(toggle)toggle.textContent=masterViewMode==='gantt'?'📋 テーブル表示':'📊 ガントチャート';
   if(!currentHeaders.length||!dataRows.length){
     tbody.innerHTML='<tr><td colspan="11" style="padding:2rem;text-align:center;color:var(--muted)">CSVを読み込むか、新規データベースを作成してください。</td></tr>';
     if(cnt)cnt.textContent='';
+    if(gantt)gantt.innerHTML='';
     return;
   }
+  if(masterViewMode==='gantt'){
+    if(tbody)tbody.innerHTML='';
+    if(gantt){renderGanttChart();gantt.classList.remove('hidden');}
+    if(cnt)cnt.textContent=dataRows.length+'件';
+    return;
+  }
+  if(gantt)gantt.classList.add('hidden');
   if(cnt)cnt.textContent=dataRows.length+'件';
   tbody.innerHTML=dataRows.map(r=>{
     const no=r[fullKeys.no]||'';
@@ -1477,6 +1488,109 @@ function renderTable(){
       </td>
     </tr>`;
   }).join('');
+}
+
+window.toggleMasterView=toggleMasterView;
+function toggleMasterView(){
+  masterViewMode=masterViewMode==='table'?'gantt':'table';
+  renderTable();
+}
+
+function renderGanttChart(){
+  const container=document.getElementById('ganttContainer');
+  if(!container)return;
+  const rows=dataRows.filter(r=>r[fullKeys.date]);
+  if(!rows.length){container.innerHTML='<p style="text-align:center;color:var(--muted);padding:2rem">ガントチャートに表示できるデータがありません。</p>';return;}
+  const year=String(new Date().getFullYear());
+  const milestones=[];
+  rows.forEach(function(r){
+    const no=r[fullKeys.no]||'';
+    const title=r[fullKeys.title]||'';
+    const subject=r[fullKeys.subject]||'';
+    const dateRaw=r[fullKeys.date]||'';
+    const dateMatch=dateRaw.match(/(\d+)月(\d+)日/);
+    if(!dateMatch)return;
+    const mDate=Number(dateMatch[1]), dDate=Number(dateMatch[2]);
+    const parseMd=function(s){
+      if(!s)return null;
+      const m=s.match(/^(\d+)\/(\d+)$/);
+      return m?{m:Number(m[1]),d:Number(m[2])}:null;
+    };
+    const k1=parseMd(r[fullKeys.k1]);
+    const hp=parseMd(r[fullKeys.hp]);
+    const k2=parseMd(r[fullKeys.k2]);
+    const k3=parseMd(r[fullKeys.k3]);
+    milestones.push({no,title,subject,date:{m:mDate,d:dDate},k1,hp,k2,k3,
+      checkK1:isCheckedValue(r[fullKeys.checkK1]),
+      checkHp:isCheckedValue(r[fullKeys.checkHp]),
+      checkK2:isCheckedValue(r[fullKeys.checkK2]),
+      checkK3:isCheckedValue(r[fullKeys.checkK3])
+    });
+  });
+  if(!milestones.length){container.innerHTML='<p style="text-align:center;color:var(--muted);padding:2rem">日付データを解析できませんでした。</p>';return;}
+  var minM=12, maxM=1;
+  milestones.forEach(function(m){
+    if(m.date.m<minM)minM=m.date.m;
+    if(m.date.m>maxM)maxM=m.date.m;
+    if(m.k1&&m.k1.m<minM)minM=m.k1.m;
+    if(m.k1&&m.k1.m>maxM)maxM=m.k1.m;
+    if(m.hp&&m.hp.m<minM)minM=m.hp.m;
+    if(m.hp&&m.hp.m>maxM)maxM=m.hp.m;
+    if(m.k2&&m.k2.m<minM)minM=m.k2.m;
+    if(m.k2&&m.k2.m>maxM)maxM=m.k2.m;
+    if(m.k3&&m.k3.m<minM)minM=m.k3.m;
+    if(m.k3&&m.k3.m>maxM)maxM=m.k3.m;
+  });
+  if(minM>maxM){minM=1;maxM=12;}
+  var monthCount=maxM-minM+1;
+  var html='<div style="display:grid;grid-template-columns:220px repeat('+monthCount+',1fr);gap:1px;font-size:.78rem;min-width:600px">';
+  html+='<div style="padding:8px 10px;font-weight:900;color:var(--text-strong);border-bottom:2px solid var(--line)">研修会</div>';
+  for(var mi=minM;mi<=maxM;mi++){
+    html+='<div style="padding:8px 4px;font-weight:700;text-align:center;color:var(--text-strong);border-bottom:2px solid var(--line)">'+mi+'月</div>';
+  }
+  var dayInMonth=function(m){return [0,31,28,31,30,31,30,31,31,30,31,30,31][m];};
+  milestones.forEach(function(m){
+    var totalDays=0;
+    for(var mm=minM;mm<=maxM;mm++)totalDays+=dayInMonth(mm);
+    var dayOffset=function(md){
+      if(!md)return -1;
+      var offset=0;
+      for(var mm=minM;mm<md.m;mm++)offset+=dayInMonth(mm);
+      return offset+md.d-1;
+    };
+    var subjBadge=m.subject==='研究者'?'<span class="badge bb" style="font-size:.6rem">研究者</span>'
+      :m.subject==='倫理審査委員会委員'?'<span class="badge be" style="font-size:.6rem">倫理委員</span>'
+      :'<span class="badge bo" style="font-size:.6rem">支援者</span>';
+    html+='<div style="padding:4px 8px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">';
+    html+='<span style="color:var(--muted);font-weight:600;min-width:28px">'+esc(m.no)+'</span>';
+    html+='<span style="flex:1;overflow:hidden;text-overflow:ellipsis;color:var(--text-strong)">'+esc(m.title)+'</span>';
+    html+=subjBadge+'</div>';
+    html+='<div style="border-bottom:1px solid var(--line);position:relative;height:38px">';
+    var gridW=100/monthCount;
+    var dotSize=10;
+    var addMarker=function(md,color,checked){
+      var offset=dayOffset(md);
+      if(offset<0)return;
+      var pct=(offset/totalDays)*100;
+      var fill=checked?'opacity:1':'opacity:.45';
+      html+='<div style="position:absolute;left:'+pct.toFixed(1)+'%;top:50%;transform:translate(-50%,-50%);width:'+dotSize+'px;height:'+dotSize+'px;border-radius:50%;background:'+color+';'+fill+';border:1px solid rgba(255,255,255,.3)"></div>';
+    };
+    addMarker(m.k1,'var(--primary,#007bff)',m.checkK1);
+    addMarker(m.hp,'#2ecc71',m.checkHp);
+    addMarker(m.date,'var(--danger,#dc3545)',true);
+    addMarker(m.k2,'#f39c12',m.checkK2);
+    addMarker(m.k3,'#9b59b6',m.checkK3);
+    html+='</div>';
+  });
+  html+='</div>';
+  html+='<div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;font-size:.75rem;color:var(--muted)">';
+  html+='<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--primary,#007bff);margin-right:4px;vertical-align:middle"></span>起案1</span>';
+  html+='<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2ecc71;margin-right:4px;vertical-align:middle"></span>HP公開</span>';
+  html+='<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--danger,#dc3545);margin-right:4px;vertical-align:middle"></span>開催日</span>';
+  html+='<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f39c12;margin-right:4px;vertical-align:middle"></span>起案2</span>';
+  html+='<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#9b59b6;margin-right:4px;vertical-align:middle"></span>起案3</span>';
+  html+='</div>';
+  container.innerHTML=html;
 }
 
 function deleteRecord(no){
