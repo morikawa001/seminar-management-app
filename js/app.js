@@ -638,6 +638,11 @@ function buildTemplateData(row){
   map[fullKeys.closing1]=String(row?.[fullKeys.closing1] ?? '');
   map['進行表クロージング（選択）_CLOSING_1']=String(row?.[fullKeys.closing1] ?? '');
 
+  const qrNo=String(row?.[fullKeys.no]??'');
+  map['QR']=qrNo;
+  map['QR_URL']=qrNo;
+  map['QR_IMAGE']='';
+
   map[fullKeys.lectureStart]=String(row?.[fullKeys.lectureStart] ?? '');
   map['講義開始_START_TIME']=String(row?.[fullKeys.lectureStart] ?? '');
   map[fullKeys.qaDeadline]=String(row?.[fullKeys.qaDeadline] ?? '');
@@ -673,12 +678,80 @@ function targetXmlPathsForTemplate(zip,fileName){
   if(ext==='xlsx') return names.filter(n=>/^(xl\/worksheets\/.*\.xml|xl\/sharedStrings\.xml|xl\/workbook\.xml|xl\/comments.*\.xml|xl\/drawings\/.*\.xml)$/i.test(n));
   return [];
 }
+function generateQRBlob(text,size){
+  return new Promise(function(resolve){
+    var div=document.createElement('div');
+    div.style.position='fixed';div.style.left='-9999px';div.style.top='-9999px';
+    document.body.appendChild(div);
+    try{
+      new QRCode(div,{text:String(text||''),width:size||160,height:size||160,correctLevel:QRCode.CorrectLevel.M});
+      var canvas=div.querySelector('canvas');
+      if(canvas){canvas.toBlob(function(blob){document.body.removeChild(div);resolve(blob)},'image/png')}
+      else{document.body.removeChild(div);resolve(null)}
+    }catch(e){document.body.removeChild(div);resolve(null)}
+  });
+}
+function embedQRImageInZip(zip,ext,blob){
+  return new Promise(function(resolve){
+    var reader=new FileReader();
+    reader.onload=function(){
+      var arrayBuffer=reader.result;
+      if(ext==='docx'){
+        var mediaPath='word/media/qr_code.png';
+        var relsPath='word/_rels/document.xml.rels';
+        var existingRels=zip.file(relsPath)?zip.file(relsPath).asText():'';
+        var rId=1;
+        while(existingRels.indexOf('Id="rId'+rId+'"')>=0||existingRels.indexOf("Id='rId"+rId+"'")>=0) rId++;
+        var relEntry='<Relationship Id="rId'+rId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/qr_code.png"/>';
+        zip.file(relsPath,existingRels.replace('</Relationships>',relEntry+'</Relationships>'));
+        var imgXml='<w:r xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:drawing xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="685800" cy="685800"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="QR"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="0" name="QR"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId'+rId+'" cstate="print"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="685800" cy="685800"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
+        zip.file(mediaPath,arrayBuffer);
+        var ctXml=zip.file('[Content_Types].xml')?zip.file('[Content_Types].xml').asText():'';
+        if(ctXml&&ctXml.indexOf('"image/png"')<0){
+          var ctEntry='<Default Extension="png" ContentType="image/png"/>';
+          zip.file('[Content_Types].xml',ctXml.replace('</Types>',ctEntry+'</Types>'));
+        }
+        resolve(imgXml);
+      }else if(ext==='pptx'){
+        mediaPath='ppt/media/qr_code.png';
+        relsPath='ppt/_rels/presentation.xml.rels';
+        var existingRels=zip.file(relsPath)?zip.file(relsPath).asText():'';
+        var rId=1;
+        while(existingRels.indexOf('Id="rId'+rId+'"')>=0||existingRels.indexOf("Id='rId"+rId+"'")>=0) rId++;
+        relEntry='<Relationship Id="rId'+rId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/qr_code.png"/>';
+        zip.file(relsPath,existingRels.replace('</Relationships>',relEntry+'</Relationships>'));
+        imgXml='<p:pic xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><p:nvPicPr><p:cNvPr id="0" name="QR"/><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill><a:blip r:embed="rId'+rId+'"/><a:stretch><a:fillRect/></a:stretch></p:blipFill><p:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="685800" cy="685800"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic>';
+        zip.file(mediaPath,arrayBuffer);
+        ctXml=zip.file('[Content_Types].xml')?zip.file('[Content_Types].xml').asText():'';
+        if(ctXml&&ctXml.indexOf('"image/png"')<0){
+          ctEntry='<Default Extension="png" ContentType="image/png"/>';
+          zip.file('[Content_Types].xml',ctXml.replace('</Types>',ctEntry+'</Types>'));
+        }
+        resolve(imgXml);
+      }else{
+        resolve(null);
+      }
+    };
+    reader.onerror=function(){resolve(null)};
+    reader.readAsArrayBuffer(blob);
+  });
+}
 async function mergeSingleTemplate(file,row){
   const arrayBuffer=await file.arrayBuffer();
   const zip=new PizZip(arrayBuffer);
   const data=buildTemplateData(row);
   const targets=targetXmlPathsForTemplate(zip,file.name);
   if(!targets.length) throw new Error('差し込み対象XMLが見つかりません');
+  var hasQR=false;
+  targets.forEach(function(path){if(zip.file(path)){var t=zip.file(path).asText();if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;}});
+  if(hasQR){
+    var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),160);
+    if(qrBlob){
+      var ext=(String(file.name).split('.').pop()||'').toLowerCase();
+      var imgXml=await embedQRImageInZip(zip,ext,qrBlob);
+      if(imgXml){data['QR_IMAGE']=imgXml;data['QR']=''}
+    }
+  }
   targets.forEach(path=>{
     if(zip.file(path)){
       const xml=zip.file(path).asText();
@@ -740,10 +813,21 @@ async function mergeAllTemplatesZip(){
         const pzip=new PizZip(arrayBuffer);
         const targets=targetXmlPathsForTemplate(pzip,file.name);
         if(!targets.length) throw new Error('差し込み対象XMLが見つかりません');
+        var hasQR=false;
+        targets.forEach(function(path){if(pzip.file(path)){var t=pzip.file(path).asText();if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;}});
+        var fileData=data;
+        if(hasQR){
+          var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),160);
+          if(qrBlob){
+            var ext0=(String(file.name).split('.').pop()||'').toLowerCase();
+            var imgXml=await embedQRImageInZip(pzip,ext0,qrBlob);
+            if(imgXml){fileData=Object.assign({},data);fileData['QR_IMAGE']=imgXml;fileData['QR']=''}
+          }
+        }
         targets.forEach(path=>{
           if(pzip.file(path)){
             const xml=pzip.file(path).asText();
-            pzip.file(path,replacePlaceholdersInXml(xml,data));
+            pzip.file(path,replacePlaceholdersInXml(xml,fileData));
           }
         });
         const ext=(String(file.name).split('.').pop()||'').toLowerCase();
