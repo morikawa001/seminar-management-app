@@ -46,6 +46,7 @@
             font-size: 15px; width: auto; display: inline-block;
         }
         #qr-reader__dashboard_section_swaplink { display: none !important; }
+        #qr-reader button:not(.btn){ background:var(--primary,#007bff); color:#fff; border:none; border-radius:10px; padding:12px 20px; font-size:15px; }
         .scanner-controls { margin-top: 12px; }
 
         #result-card {
@@ -330,7 +331,13 @@
 
             init(qrService) {
                 this.qrService = qrService;
-                this.html5Qr = new Html5Qrcode("qr-reader");
+            }
+
+            ensureQrReader() {
+                if (!this.html5Qr) {
+                    this.html5Qr = new Html5Qrcode("qr-reader");
+                }
+                return this.html5Qr;
             }
 
             // QRスキャナー開始
@@ -341,7 +348,7 @@
                 try {
                     btnStart.disabled = true;
                     this.hideStatus("scan-status");
-                    await this.html5Qr.start(
+                    await this.ensureQrReader().start(
                         { facingMode: "environment" },
                         { fps: 10, qrbox: { width: 250, height: 250 } },
                         (decodedText) => this.onQrCodeScanned(decodedText),
@@ -360,7 +367,7 @@
                 const btnStart = document.getElementById("btn-start-scan");
                 const btnStop = document.getElementById("btn-stop-scan");
                 try {
-                    await this.html5Qr.stop();
+                    if (this.html5Qr) await this.html5Qr.stop();
                     btnStart.disabled = false;
                     btnStop.disabled = true;
                     this.hideStatus("scan-status");
@@ -557,7 +564,7 @@
             async scanFile(file) {
                 this.showStatus("scan-status", "QRコード画像を解析中…", "status-info");
                 try {
-                    const decodedText = await this.html5Qr.scanFile(file, true);
+                    const decodedText = await this.ensureQrReader().scanFile(file, true);
                     await this.onQrCodeScanned(decodedText);
                 } catch (err) {
                     this.showStatus("scan-status", "QRコードを読み取れませんでした: " + err.message, "status-err");
@@ -617,7 +624,7 @@
                 document.getElementById("login-section").style.display = "block";
                 document.getElementById("main-section").classList.add("hidden");
                 // スキャナー停止
-                if (appLayer.html5Qr && appLayer.html5Qr.isScanning) {
+                if (appLayer.html5Qr) {
                     appLayer.html5Qr.stop().catch(() => {});
                 }
             }
