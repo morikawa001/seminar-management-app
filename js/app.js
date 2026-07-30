@@ -1500,9 +1500,8 @@ function renderGanttChart(){
   const container=document.getElementById('ganttContainer');
   if(!container)return;
   const rows=dataRows.filter(r=>r[fullKeys.date]);
-  if(!rows.length){container.innerHTML='<p style="text-align:center;color:var(--muted);padding:2rem">ガントチャートに表示できるデータがありません。</p>';return;}
-  const year=String(new Date().getFullYear());
-  const milestones=[];
+  if(!rows.length){container.innerHTML='<p style="text-align:center;color:var(--muted);padding:2rem">表示できるデータがありません。</p>';return;}
+  var milestones=[];
   rows.forEach(function(r){
     const no=r[fullKeys.no]||'';
     const title=r[fullKeys.title]||'';
@@ -1520,75 +1519,43 @@ function renderGanttChart(){
     const hp=parseMd(r[fullKeys.hp]);
     const k2=parseMd(r[fullKeys.k2]);
     const k3=parseMd(r[fullKeys.k3]);
-    milestones.push({no,title,subject,date:{m:mDate,d:dDate},k1,hp,k2,k3,
-      checkK1:isCheckedValue(r[fullKeys.checkK1]),
-      checkHp:isCheckedValue(r[fullKeys.checkHp]),
-      checkK2:isCheckedValue(r[fullKeys.checkK2]),
-      checkK3:isCheckedValue(r[fullKeys.checkK3])
-    });
+    var ms=[];
+    if(k1)ms.push({key:'k1',m:k1.m,d:k1.d,color:'var(--primary,#007bff)',label:r[fullKeys.k1],done:isCheckedValue(r[fullKeys.checkK1])});
+    if(hp)ms.push({key:'hp',m:hp.m,d:hp.d,color:'#2ecc71',label:r[fullKeys.hp],done:isCheckedValue(r[fullKeys.checkHp])});
+    ms.push({key:'date',m:mDate,d:dDate,color:'var(--danger,#dc3545)',label:dateRaw, done:true});
+    if(k2)ms.push({key:'k2',m:k2.m,d:k2.d,color:'#f39c12',label:r[fullKeys.k2],done:isCheckedValue(r[fullKeys.checkK2])});
+    if(k3)ms.push({key:'k3',m:k3.m,d:k3.d,color:'#9b59b6',label:r[fullKeys.k3],done:isCheckedValue(r[fullKeys.checkK3])});
+    ms.sort(function(a,b){return a.m!==b.m?a.m-b.m:a.d-b.d});
+    if(ms.length<2)return;
+    milestones.push({no,title,subject,ms});
   });
   if(!milestones.length){container.innerHTML='<p style="text-align:center;color:var(--muted);padding:2rem">日付データを解析できませんでした。</p>';return;}
-  var minM=12, maxM=1;
+  var html='<div style="display:flex;flex-direction:column;gap:4px;font-size:.82rem">';
   milestones.forEach(function(m){
-    if(m.date.m<minM)minM=m.date.m;
-    if(m.date.m>maxM)maxM=m.date.m;
-    if(m.k1&&m.k1.m<minM)minM=m.k1.m;
-    if(m.k1&&m.k1.m>maxM)maxM=m.k1.m;
-    if(m.hp&&m.hp.m<minM)minM=m.hp.m;
-    if(m.hp&&m.hp.m>maxM)maxM=m.hp.m;
-    if(m.k2&&m.k2.m<minM)minM=m.k2.m;
-    if(m.k2&&m.k2.m>maxM)maxM=m.k2.m;
-    if(m.k3&&m.k3.m<minM)minM=m.k3.m;
-    if(m.k3&&m.k3.m>maxM)maxM=m.k3.m;
-  });
-  if(minM>maxM){minM=1;maxM=12;}
-  var monthCount=maxM-minM+1;
-  var html='<div style="display:grid;grid-template-columns:220px repeat('+monthCount+',1fr);gap:1px;font-size:.78rem;min-width:600px">';
-  html+='<div style="padding:8px 10px;font-weight:900;color:var(--text-strong);border-bottom:2px solid var(--line)">研修会</div>';
-  for(var mi=minM;mi<=maxM;mi++){
-    html+='<div style="padding:8px 4px;font-weight:700;text-align:center;color:var(--text-strong);border-bottom:2px solid var(--line)">'+mi+'月</div>';
-  }
-  var dayInMonth=function(m){return [0,31,28,31,30,31,30,31,31,30,31,30,31][m];};
-  milestones.forEach(function(m){
-    var totalDays=0;
-    for(var mm=minM;mm<=maxM;mm++)totalDays+=dayInMonth(mm);
-    var dayOffset=function(md){
-      if(!md)return -1;
-      var offset=0;
-      for(var mm=minM;mm<md.m;mm++)offset+=dayInMonth(mm);
-      return offset+md.d-1;
-    };
     var subjBadge=m.subject==='研究者'?'<span class="badge bb" style="font-size:.6rem">研究者</span>'
       :m.subject==='倫理審査委員会委員'?'<span class="badge be" style="font-size:.6rem">倫理委員</span>'
       :'<span class="badge bo" style="font-size:.6rem">支援者</span>';
-    html+='<div style="padding:4px 8px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">';
-    html+='<span style="color:var(--muted);font-weight:600;min-width:28px">'+esc(m.no)+'</span>';
-    html+='<span style="flex:1;overflow:hidden;text-overflow:ellipsis;color:var(--text-strong)">'+esc(m.title)+'</span>';
-    html+=subjBadge+'</div>';
-    html+='<div style="border-bottom:1px solid var(--line);position:relative;height:38px">';
-    var gridW=100/monthCount;
-    var dotSize=10;
-    var addMarker=function(md,color,checked){
-      var offset=dayOffset(md);
-      if(offset<0)return;
-      var pct=(offset/totalDays)*100;
-      var fill=checked?'opacity:1':'opacity:.45';
-      html+='<div style="position:absolute;left:'+pct.toFixed(1)+'%;top:50%;transform:translate(-50%,-50%);width:'+dotSize+'px;height:'+dotSize+'px;border-radius:50%;background:'+color+';'+fill+';border:1px solid rgba(255,255,255,.3)"></div>';
-    };
-    addMarker(m.k1,'var(--primary,#007bff)',m.checkK1);
-    addMarker(m.hp,'#2ecc71',m.checkHp);
-    addMarker(m.date,'var(--danger,#dc3545)',true);
-    addMarker(m.k2,'#f39c12',m.checkK2);
-    addMarker(m.k3,'#9b59b6',m.checkK3);
-    html+='</div>';
+    html+='<div style="background:var(--surface);border-radius:10px;border:1px solid var(--line);padding:10px 12px;display:flex;align-items:center;gap:10px">';
+    html+='<div style="min-width:50px;font-weight:600;color:var(--muted);font-size:.72rem">No'+esc(m.no)+'</div>';
+    html+='<div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-strong);font-weight:700;font-size:.85rem">'+esc(m.title)+'</div>';
+    html+=subjBadge;
+    html+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+    m.ms.forEach(function(mil){
+      var dot=mil.done?'●':'○';
+      html+='<span style="display:inline-flex;align-items:center;gap:3px;font-size:.72rem;color:var(--muted)">';
+      html+='<span style="color:'+mil.color+'">'+dot+'</span>';
+      html+='<span style="font-weight:600;color:'+mil.color+'">'+esc(mil.label)+'</span>';
+      html+='</span>';
+    });
+    html+='</div></div>';
   });
   html+='</div>';
-  html+='<div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;font-size:.75rem;color:var(--muted)">';
-  html+='<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--primary,#007bff);margin-right:4px;vertical-align:middle"></span>起案1</span>';
-  html+='<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2ecc71;margin-right:4px;vertical-align:middle"></span>HP公開</span>';
-  html+='<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--danger,#dc3545);margin-right:4px;vertical-align:middle"></span>開催日</span>';
-  html+='<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f39c12;margin-right:4px;vertical-align:middle"></span>起案2</span>';
-  html+='<span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#9b59b6;margin-right:4px;vertical-align:middle"></span>起案3</span>';
+  html+='<div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;font-size:.75rem;color:var(--muted)">';
+  html+='<span><span style="color:var(--primary,#007bff)">●</span> 起案1</span>';
+  html+='<span><span style="color:#2ecc71">●</span> HP公開</span>';
+  html+='<span><span style="color:var(--danger,#dc3545)">●</span> 開催日</span>';
+  html+='<span><span style="color:#f39c12">●</span> 起案2</span>';
+  html+='<span><span style="color:#9b59b6">●</span> 起案3</span>';
   html+='</div>';
   container.innerHTML=html;
 }
