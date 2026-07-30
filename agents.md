@@ -18,6 +18,7 @@ js/app.js                     # 全アプリケーションロジック（2963�
 js/csv-utils.js               # CSV パース・エクスポート（IIFE, 92行）
 js/name-lists.js              # 名字辞書
 js/matrix-rain.js             # 背景マトリックスレインエフェクト
+QR_reader.html                # QRコード出席管理（別ページ、Firebase ES Module, 653行）
 ```
 **読み込み順（重要）**: theme-base.css → styles.css → 外部CDN → theme-toggle.js → firebase-config.js → app.js → csv-utils.js → name-lists.js → matrix-rain.js
 
@@ -107,3 +108,15 @@ js/matrix-rain.js             # 背景マトリックスレインエフェクト
 - ✅ `moveRow` の swap で両行に有効な `_order` がない場合、現在位置に基づく値を新規割り当て
 - ✅ Master Table 行の onclick で action（`deleteRecord`/`moveRow`）を `event.stopPropagation()` より先に実行
 - ✅ `downloadCsv()` で出力前に No の重複を排除（`rawRows` をそのまま使わず Set で重複除去）
+
+### 2026-07-30: QR_reader.html 作成＋Computed Schedule 保存済み連携
+- ✅ `QR_reader.html` を新規追加（Firebase Auth + Firestore を ES Module で直接利用、別ページ）
+- ✅ QRコード読み取り（カメラスキャン・ファイルアップロード）＋起案行No手動検索
+- ✅ 保存ボタンを「起案１」「起案２」「起案３」の3つに分割、各々 `qr_saved_k1/k2/k3` を Firestore に記録
+- ✅ 再クリックで保存解除（トグル動作）
+- ✅ Computed Schedule に「保存済み」チェックボックス追加（`#ckK1Saved/ckK2Saved/ckK3Saved`、disabled）
+- ✅ `applyScheduleChecksFromRow` で `qr_saved_k1/k2/k3` の有無を判定して自動反映
+- ✅ `schedule-card` のグリッドレイアウト修正（`grid-template-columns: 1fr auto`）、`schedule-actions` コンテナで縦積み
+- ✅ `fullKeys` に `qrK1Saved/qrK2Saved/qrK3Saved` 追加、CSVヘッダーに `qr_saved_k1/k2/k3` 追加
+- ✅ QR_reader.html のUIをメインアプリに統一（`theme-base.css` + `styles.css` 読み込み、`.panel` / `.btn.primary` 使用）
+- ✅ QR_reader.html タイトルを「QRファイル管理」に変更
