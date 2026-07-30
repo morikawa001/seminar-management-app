@@ -120,3 +120,8 @@ QR_reader.html                # QRコード出席管理（別ページ、Firebas
 - ✅ `fullKeys` に `qrK1Saved/qrK2Saved/qrK3Saved` 追加、CSVヘッダーに `qr_saved_k1/k2/k3` 追加
 - ✅ QR_reader.html のUIをメインアプリに統一（`theme-base.css` + `styles.css` 読み込み、`.panel` / `.btn.primary` 使用）
 - ✅ QR_reader.html タイトルを「QRファイル管理」に変更
+- ✅ `color-mix` の非互換対応 → 深緑 `#0d2818` 背景＋明るいグリーン文字に変更（結果カード・履歴リスト）
+- ✅ `button { background: none }` が html5-qrcode 内部ボタンに干渉 → `#qr-reader button:not(.btn)` で上書き
+- ✅ `new Html5Qrcode()` をページ読み込み即実行→ `ensureQrReader()` による遅延初期化に変更（`display:none` 起因のエラー回避）
+- ✅ `schedule-card` グリッドを `1fr auto auto` → `1fr auto` に戻し、`.schedule-actions` コンテナで縦積み
+- ✅ QRコードパネルのラベルを「QR Attendance Code」→「QR File Code」、「出席登録用QRコード」→「ファイル管理用QRコード」に修正
