@@ -177,7 +177,10 @@ const DEFAULT_HEADERS=[
   '受講者数内訳報告_CHECK',
   '謝金支払い_CHECK',
   '謝金講師メール_CHECK',
-  '受講証修了証メール交付_CHECK'
+  '受講証修了証メール交付_CHECK',
+  'qr_saved_k1',
+  'qr_saved_k2',
+  'qr_saved_k3'
 ];
 
 const fullKeys={
@@ -261,7 +264,10 @@ const fullKeys={
   task30:'受講者数内訳報告_CHECK',
   task31:'謝金支払い_CHECK',
   task32:'謝金講師メール_CHECK',
-  task33:'受講証修了証メール交付_CHECK'
+  task33:'受講証修了証メール交付_CHECK',
+  qrK1Saved:'qr_saved_k1',
+  qrK2Saved:'qr_saved_k2',
+  qrK3Saved:'qr_saved_k3'
 };
 
 const els={
@@ -310,6 +316,9 @@ const els={
   ckHp:document.getElementById('ckHp'),
   ckK2:document.getElementById('ckK2'),
   ckK3:document.getElementById('ckK3'),
+  ckK1Saved:document.getElementById('ckK1Saved'),
+  ckK2Saved:document.getElementById('ckK2Saved'),
+  ckK3Saved:document.getElementById('ckK3Saved'),
   checkList:document.getElementById('checkList'),
   confirmCount:document.getElementById('confirmCount'),
   confirmWarn:document.getElementById('confirmWarn'),
@@ -1049,6 +1058,9 @@ function resetScheduleChecks(){
   els.ckHp.checked=false;
   els.ckK2.checked=false;
   els.ckK3.checked=false;
+  if(els.ckK1Saved) els.ckK1Saved.checked=false;
+  if(els.ckK2Saved) els.ckK2Saved.checked=false;
+  if(els.ckK3Saved) els.ckK3Saved.checked=false;
   const TASK_IDS=['01','02','03','04','04a','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33'];
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=false;}
   updateTaskProgress();
@@ -1088,6 +1100,9 @@ function applyScheduleChecksFromRow(row){
   els.ckHp.checked = isCheckedValue(row?.[fullKeys.checkHp]) || String(row?.['STATUS_HP'] || '').trim().toUpperCase() === 'DONE';
   els.ckK2.checked = isCheckedValue(row?.[fullKeys.checkK2]) || String(row?.['STATUS_K2'] || '').trim().toUpperCase() === 'DONE';
   els.ckK3.checked = isCheckedValue(row?.[fullKeys.checkK3]) || String(row?.['STATUS_K3'] || '').trim().toUpperCase() === 'DONE';
+  if(els.ckK1Saved) els.ckK1Saved.checked = isCheckedValue(row?.[fullKeys.qrK1Saved]);
+  if(els.ckK2Saved) els.ckK2Saved.checked = isCheckedValue(row?.[fullKeys.qrK2Saved]);
+  if(els.ckK3Saved) els.ckK3Saved.checked = isCheckedValue(row?.[fullKeys.qrK3Saved]);
   const TASK_IDS=['01','02','03','04','04a','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33'];
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=isCheckedValue(row?.[fullKeys['task'+id]]);}
   updateTaskProgress();

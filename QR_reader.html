@@ -288,14 +288,19 @@
                 <div id="result-fields"></div>
                 <div class="save-section">
                     <p style="text-align:center;color:#666;font-size:14px;margin-bottom:8px;">
-                        保存ボタンを押すと、本日の日付が記録されます
+                        QR出席保存ボタンで、各起案の実施日を記録します
                     </p>
-                    <div class="save-date-display" id="save-date-display">
-                        保存日付: <span id="date-display-value">----年--月--日</span>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <button id="btn-save-k1" onclick="appLayer.handleSaveK1()" class="btn-green" style="padding:14px;font-size:16px;">
+                            起案１ 保存
+                        </button>
+                        <button id="btn-save-k2" onclick="appLayer.handleSaveK2()" class="btn-green" style="padding:14px;font-size:16px;">
+                            起案２ 保存
+                        </button>
+                        <button id="btn-save-k3" onclick="appLayer.handleSaveK3()" class="btn-green" style="padding:14px;font-size:16px;">
+                            起案３ 保存
+                        </button>
                     </div>
-                    <button id="btn-save" onclick="appLayer.handleSave()" class="btn-green" style="padding:16px;font-size:18px;">
-                        📅 保存（日付を記録）
-                    </button>
                     <div id="save-status" class="status-msg hidden" style="margin-top:10px;"></div>
                 </div>
             </div>
@@ -359,10 +364,28 @@
                 return { id: docs[0].id, data: docs[0].data() };
             }
 
-            // 保存日付を更新
+            // 保存日付を更新（汎用）
             async updateSaveDate(docId, dateStr) {
                 await updateDoc(doc(this.db, "seminars", docId), {
                     qrDate: dateStr
+                });
+            }
+
+            async updateSaveDateK1(docId, dateStr) {
+                await updateDoc(doc(this.db, "seminars", docId), {
+                    qr_saved_k1: dateStr
+                });
+            }
+
+            async updateSaveDateK2(docId, dateStr) {
+                await updateDoc(doc(this.db, "seminars", docId), {
+                    qr_saved_k2: dateStr
+                });
+            }
+
+            async updateSaveDateK3(docId, dateStr) {
+                await updateDoc(doc(this.db, "seminars", docId), {
+                    qr_saved_k3: dateStr
                 });
             }
 
@@ -395,13 +418,14 @@
             }
 
             // 保存日付を記録（yyyy/mm/dd 形式）
-            async recordSaveDate(docId) {
+            async recordSaveDate(field, docId) {
                 const now = new Date();
                 const yyyy = now.getFullYear();
                 const mm = String(now.getMonth() + 1).padStart(2, "0");
                 const dd = String(now.getDate()).padStart(2, "0");
                 const dateStr = `${yyyy}/${mm}/${dd}`;
-                await this.db.updateSaveDate(docId, dateStr);
+                const method = this.db['updateSaveDate' + field];
+                if (method) await method.call(this.db, docId, dateStr);
                 return dateStr;
             }
 
@@ -511,29 +535,34 @@
                     `<div class="result-field"><span class="result-label">${f.label}</span><span class="result-value">${f.value || "-"}</span></div>`
                 ).join("");
 
-                // 保存状態
-                const dateDisplay = document.getElementById("date-display-value");
-                if (data.qrDate) {
-                    dateDisplay.textContent = data.qrDate;
-                    document.getElementById("btn-save").textContent = "再保存（日付を更新）";
-                    this.showStatus("save-status", "この研修会は既に保存済みです", "status-ok");
-                } else {
-                    const now = new Date();
-                    const yyyy = now.getFullYear();
-                    const mm = String(now.getMonth() + 1).padStart(2, "0");
-                    const dd = String(now.getDate()).padStart(2, "0");
-                    dateDisplay.textContent = `${yyyy}/${mm}/${dd}`;
-                    document.getElementById("btn-save").textContent = "保存（日付を記録）";
-                    document.getElementById("save-status").classList.add("hidden");
-                }
+                // 各起案ボタンの保存状態を反映
+                const k1Btn = document.getElementById("btn-save-k1");
+                const k2Btn = document.getElementById("btn-save-k2");
+                const k3Btn = document.getElementById("btn-save-k3");
+                this.updateSaveButtonState(k1Btn, data.qr_saved_k1, "起案１");
+                this.updateSaveButtonState(k2Btn, data.qr_saved_k2, "起案２");
+                this.updateSaveButtonState(k3Btn, data.qr_saved_k3, "起案３");
 
                 document.getElementById("logic-layer-data").dataset.currentProposal = _("起案行No");
                 document.getElementById("logic-layer-data").dataset.currentDocId = this.currentDoc.id || "";
             }
 
-            // 保存処理
-            async handleSave() {
-                const btn = document.getElementById("btn-save");
+            updateSaveButtonState(btn, savedDate, label) {
+                if (savedDate) {
+                    btn.textContent = label + " ✅ " + savedDate;
+                    btn.classList.add("saved");
+                    btn.style.background = "#6c757d";
+                } else {
+                    btn.textContent = label + " 保存";
+                    btn.classList.remove("saved");
+                    btn.style.background = "";
+                }
+                btn.disabled = false;
+            }
+
+            // 汎用保存処理
+            async handleSaveK(field, btnId, dataField) {
+                const btn = document.getElementById(btnId);
                 const statusEl = document.getElementById("save-status");
                 if (!this.currentDoc) {
                     this.showStatus("save-status", "保存するデータがありません", "status-err");
@@ -542,39 +571,52 @@
                 try {
                     btn.disabled = true;
                     btn.textContent = "保存中…";
-                    const dateStr = await this.qrService.recordSaveDate(this.currentDoc.id);
-                    this.currentDoc.data.qrDate = dateStr;
-                    document.getElementById("date-display-value").textContent = dateStr;
-                    this.showStatus("save-status", `保存完了: ${dateStr}`, "status-ok");
-                    btn.textContent = "再保存（日付を更新）";
-                    btn.disabled = false;
+                    const dateStr = await this.qrService.recordSaveDate(field, this.currentDoc.id);
+                    this.currentDoc.data[dataField] = dateStr;
+                    this.updateSaveButtonState(btn, dateStr, btnId === "btn-save-k1" ? "起案１" : btnId === "btn-save-k2" ? "起案２" : "起案３");
+                    this.showStatus("save-status", `${btnId === "btn-save-k1" ? "起案１" : btnId === "btn-save-k2" ? "起案２" : "起案３"} 保存完了: ${dateStr}`, "status-ok");
                     this.updateHistoryDate(dateStr);
                 } catch (err) {
                     this.showStatus("save-status", "保存エラー: " + err.message, "status-err");
                     btn.disabled = false;
-                    btn.textContent = "保存（日付を記録）";
+                    this.updateSaveButtonState(btn, this.currentDoc.data[dataField], btnId === "btn-save-k1" ? "起案１" : btnId === "btn-save-k2" ? "起案２" : "起案３");
                 }
+            }
+
+            async handleSaveK1() {
+                await this.handleSaveK("K1", "btn-save-k1", "qr_saved_k1");
+            }
+
+            async handleSaveK2() {
+                await this.handleSaveK("K2", "btn-save-k2", "qr_saved_k2");
+            }
+
+            async handleSaveK3() {
+                await this.handleSaveK("K3", "btn-save-k3", "qr_saved_k3");
             }
 
             // スキャン履歴に追加
             addHistory(data) {
                 const no = data["起案行No"] ?? "";
                 const title = data["テーマ(標題)_TITLE"] ?? "";
+                const hasSaved = !!(data.qr_saved_k1 || data.qr_saved_k2 || data.qr_saved_k3);
                 const existing = this.scanHistory.findIndex(h => h.proposalNo === no);
                 if (existing >= 0) {
-                    this.scanHistory[existing] = { proposalNo: no, title, qrDate: data.qrDate, saved: !!data.qrDate };
+                    this.scanHistory[existing] = { proposalNo: no, title, qrDate: data.qrDate, saved: hasSaved };
                 } else {
-                    this.scanHistory.unshift({ proposalNo: no, title, qrDate: data.qrDate, saved: !!data.qrDate });
+                    this.scanHistory.unshift({ proposalNo: no, title, qrDate: data.qrDate, saved: hasSaved });
                 }
                 this.renderHistory();
             }
 
             updateHistoryDate(dateStr) {
                 const proposal = this.currentDoc.data["起案行No"] ?? "";
+                const data = this.currentDoc.data;
+                const hasSaved = !!(data.qr_saved_k1 || data.qr_saved_k2 || data.qr_saved_k3);
                 const entry = this.scanHistory.find(h => h.proposalNo === proposal);
                 if (entry) {
-                    entry.qrDate = dateStr;
-                    entry.saved = true;
+                    if (!entry.qrDate) entry.qrDate = dateStr;
+                    entry.saved = hasSaved;
                 }
                 this.renderHistory();
             }
