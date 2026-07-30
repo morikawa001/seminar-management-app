@@ -22,7 +22,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-<script src="https://davidshimjs.github.io/qrcodejs/qrcode.min.js"></script>
 <script src="js/firebase-config.js"></script>
 </head>
 <body>
@@ -104,7 +103,6 @@
     <a class="v2-sidebar-btn" href="https://morikawa001.github.io/seminar/kenshukai-notion-csv-generator.html" target="_blank"><i>▤</i><span>申込者管理</span></a>
     <a class="v2-sidebar-btn" href="https://morikawa001.github.io/seminar/attend.html" target="_blank"><i>◈</i><span>受講者管理</span></a>
     <a class="v2-sidebar-btn" href="https://morikawa001.github.io/seminar/license.html" target="_blank"><i>◎</i><span>受講証交付</span></a>
-    <a class="v2-sidebar-btn" href="https://morikawa001.github.io/seminar-app-file-manager/" target="_blank"><i>◉</i><span>QR出席管理</span></a>
   </nav>
   <main class="v2-main">
   <div class="wrap">
@@ -472,22 +470,6 @@
         <div class="hint-box">CSV保存時には、起案1 / HP / 起案2 / 起案3 のチェック状態も一緒に保持します。</div>
       </section>
 
-      <section class="panel" id="qrCodePanel">
-        <div class="corner-label">QR Attendance</div>
-        <div class="panel-head">
-          <div>
-            <h2>QR Attendance Code</h2>
-            <p>出席登録用QRコード。スキャンで研修会出席日を記録できます。</p>
-          </div>
-        </div>
-        <div style="text-align:center;padding:6px 0;">
-          <div id="qrCodeContainer" style="display:inline-block;background:#fff;padding:10px;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.1);">
-            <div id="qrcode" style="width:160px;height:160px;margin:0 auto;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">Noを選択</div>
-          </div>
-          <div id="qrUrlDisplay" style="margin-top:8px;font-size:11px;word-break:break-all;color:#666;padding:0 4px;"></div>
-          <button id="qrDownloadBtn" class="btn small" style="margin-top:8px;display:none;" onclick="downloadQR()">QRコードをダウンロード</button>
-        </div>
-      </section>
       <section class="panel" id="operationalSummaryPanel" style="display:none">
         <div class="corner-label">Operational Summary</div>
         <div class="panel-head">
