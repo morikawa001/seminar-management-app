@@ -1100,9 +1100,9 @@ function applyScheduleChecksFromRow(row){
   els.ckHp.checked = isCheckedValue(row?.[fullKeys.checkHp]) || String(row?.['STATUS_HP'] || '').trim().toUpperCase() === 'DONE';
   els.ckK2.checked = isCheckedValue(row?.[fullKeys.checkK2]) || String(row?.['STATUS_K2'] || '').trim().toUpperCase() === 'DONE';
   els.ckK3.checked = isCheckedValue(row?.[fullKeys.checkK3]) || String(row?.['STATUS_K3'] || '').trim().toUpperCase() === 'DONE';
-  if(els.ckK1Saved) els.ckK1Saved.checked = isCheckedValue(row?.[fullKeys.qrK1Saved]);
-  if(els.ckK2Saved) els.ckK2Saved.checked = isCheckedValue(row?.[fullKeys.qrK2Saved]);
-  if(els.ckK3Saved) els.ckK3Saved.checked = isCheckedValue(row?.[fullKeys.qrK3Saved]);
+  if(els.ckK1Saved) els.ckK1Saved.checked = !!(row?.[fullKeys.qrK1Saved] && String(row[fullKeys.qrK1Saved]).trim());
+  if(els.ckK2Saved) els.ckK2Saved.checked = !!(row?.[fullKeys.qrK2Saved] && String(row[fullKeys.qrK2Saved]).trim());
+  if(els.ckK3Saved) els.ckK3Saved.checked = !!(row?.[fullKeys.qrK3Saved] && String(row[fullKeys.qrK3Saved]).trim());
   const TASK_IDS=['01','02','03','04','04a','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33'];
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=isCheckedValue(row?.[fullKeys['task'+id]]);}
   updateTaskProgress();
