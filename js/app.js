@@ -704,7 +704,7 @@ function embedQRImageInZip(zip,ext,blob){
         while(existingRels.indexOf('Id="rId'+rId+'"')>=0||existingRels.indexOf("Id='rId"+rId+"'")>=0) rId++;
         var relEntry='<Relationship Id="rId'+rId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/qr_code.png"/>';
         zip.file(relsPath,existingRels.replace('</Relationships>',relEntry+'</Relationships>'));
-        var imgXml='<w:r xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:drawing xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="685800" cy="685800"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="QR"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="0" name="QR"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId'+rId+'" cstate="print"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="685800" cy="685800"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
+        var imgXml='<w:r xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:drawing xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="1524000" cy="1524000"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="QR"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="0" name="QR"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId'+rId+'" cstate="print"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="1524000" cy="1524000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
         zip.file(mediaPath,arrayBuffer);
         var ctXml=zip.file('[Content_Types].xml')?zip.file('[Content_Types].xml').asText():'';
         if(ctXml&&ctXml.indexOf('"image/png"')<0){
@@ -720,7 +720,7 @@ function embedQRImageInZip(zip,ext,blob){
         while(existingRels.indexOf('Id="rId'+rId+'"')>=0||existingRels.indexOf("Id='rId"+rId+"'")>=0) rId++;
         relEntry='<Relationship Id="rId'+rId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/qr_code.png"/>';
         zip.file(relsPath,existingRels.replace('</Relationships>',relEntry+'</Relationships>'));
-        imgXml='<p:pic xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><p:nvPicPr><p:cNvPr id="0" name="QR"/><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill><a:blip r:embed="rId'+rId+'"/><a:stretch><a:fillRect/></a:stretch></p:blipFill><p:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="685800" cy="685800"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic>';
+        imgXml='<p:pic xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><p:nvPicPr><p:cNvPr id="0" name="QR"/><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill><a:blip r:embed="rId'+rId+'"/><a:stretch><a:fillRect/></a:stretch></p:blipFill><p:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="1524000" cy="1524000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic>';
         zip.file(mediaPath,arrayBuffer);
         ctXml=zip.file('[Content_Types].xml')?zip.file('[Content_Types].xml').asText():'';
         if(ctXml&&ctXml.indexOf('"image/png"')<0){
@@ -745,7 +745,7 @@ async function mergeSingleTemplate(file,row){
   var hasQR=false,qrImgXml=null;
   targets.forEach(function(path){if(zip.file(path)){var t=zip.file(path).asText();if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;}});
   if(hasQR){
-    var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),160);
+    var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),300);
     if(qrBlob){
       var ext0=(String(file.name).split('.').pop()||'').toLowerCase();
       qrImgXml=await embedQRImageInZip(zip,ext0,qrBlob);
@@ -817,7 +817,7 @@ async function mergeAllTemplatesZip(){
         var hasQR=false,qrImgXml=null;
         targets.forEach(function(path){if(pzip.file(path)){var t=pzip.file(path).asText();if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;}});
         if(hasQR){
-          var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),160);
+          var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),300);
           if(qrBlob){
             var ext0=(String(file.name).split('.').pop()||'').toLowerCase();
             qrImgXml=await embedQRImageInZip(pzip,ext0,qrBlob);
