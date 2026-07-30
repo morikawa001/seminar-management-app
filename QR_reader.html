@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QRコード出席管理 - 研修会システム</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        /* ===== リセット ===== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; }
+
+        /* ===== ベース（モバイルファースト） ===== */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f0f2f5;
+            padding: 12px;
+            padding: env(safe-area-inset-top, 12px) env(safe-area-inset-right, 12px) env(safe-area-inset-bottom, 12px) env(safe-area-inset-left, 12px);
+            color: #333;
+            -webkit-text-size-adjust: 100%;
+        }
+        h1 { font-size: 22px; text-align: center; margin: 8px 0 4px; }
+        h2 { font-size: 18px; }
+        h3 { font-size: 16px; color: #333; }
+
+        /* ===== フォーム・入力 ===== */
+        input, button, select, textarea {
+            font-size: 16px; /* iOS自動ズーム防止 */
+            font-family: inherit;
+        }
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 14px 12px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background: #fff;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        /* ===== ボタン（タップターゲット44px以上） ===== */
+        button {
+            display: block;
+            width: 100%;
+            padding: 14px 16px;
+            margin: 6px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background: #007bff;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            touch-action: manipulation;
+            transition: opacity 0.15s;
+        }
+        button:active { opacity: 0.7; }
+        button:disabled { background: #aaa; opacity: 0.6; }
+        .btn-green { background: #28a745; }
+        .btn-red { background: #dc3545; }
+        .btn-outline { background: none; color: #dc3545; border: 2px solid #dc3545; }
+
+        /* インラインボタン（横並び用） */
+        .btn-row { display: flex; gap: 10px; }
+        .btn-row button { margin: 0; }
+
+        /* ===== セクションカード ===== */
+        .section {
+            background: #fff;
+            padding: 16px;
+            margin: 12px 0;
+            border-radius: 14px;
+            border: none;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        .section h3 {
+            margin: 0 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #007bff;
+            font-size: 15px;
+        }
+
+        #user-info {
+            color: #28a745;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .hidden { display: none !important; }
+
+        /* ===== QRスキャナー ===== */
+        #qr-reader {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+        }
+        #qr-reader video { border-radius: 12px; }
+        #qr-reader img[alt="Info icon"] { display: none; }
+        #qr-reader__scan_region {
+            min-height: 50vw;
+            max-height: 70vh;
+            background: #000;
+            border-radius: 12px;
+        }
+        #qr-reader__dashboard_section { padding: 0 !important; }
+        #qr-reader__dashboard_section_csr span { display: none !important; }
+        #qr-reader__dashboard_section_csr button {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 15px;
+            width: auto;
+            display: inline-block;
+        }
+        #qr-reader__dashboard_section_swaplink { display: none !important; }
+
+        .scanner-controls { margin-top: 12px; }
+
+        /* ===== 結果カード ===== */
+        #result-card {
+            border: 3px solid #28a745;
+            border-radius: 12px;
+            padding: 16px;
+            background: #f6fff6;
+        }
+        .result-field {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .result-field:last-child { border-bottom: none; }
+        .result-label {
+            font-weight: bold;
+            color: #555;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .result-value {
+            font-size: 15px;
+            color: #222;
+            display: block;
+        }
+
+        /* ===== ステータスメッセージ ===== */
+        .status-msg {
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .status-ok { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status-err { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+        /* ===== 保存セクション ===== */
+        .save-section { margin-top: 16px; padding-top: 16px; border-top: 2px solid #e0e0e0; }
+        .save-date-display {
+            font-size: 20px;
+            text-align: center;
+            padding: 14px;
+            background: #e8f4fd;
+            border-radius: 10px;
+            margin: 12px 0;
+            font-weight: bold;
+        }
+
+        /* ===== スキャン履歴 ===== */
+        #scanned-list { list-style: none; padding: 0; }
+        #scanned-list li {
+            background: #fff;
+            margin: 8px 0;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        #scanned-list .scanned-title { font-weight: bold; font-size: 15px; }
+        #scanned-list .scanned-date { color: #888; font-size: 13px; margin-top: 3px; }
+        .badge-saved {
+            background: #28a745;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .badge-unsaved {
+            background: #fff3cd;
+            color: #856404;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* ===== iPad / タブレット（768px以上） ===== */
+        @media (min-width: 768px) {
+            body { max-width: 700px; margin: 0 auto; padding: 24px; }
+            h1 { font-size: 26px; }
+            #qr-reader__scan_region { min-height: 400px; max-height: 60vh; }
+            .result-label { font-size: 14px; }
+            .result-value { font-size: 16px; }
+        }
+
+        /* ===== 横置きスマホ対策 ===== */
+        @media (max-width: 767px) and (orientation: landscape) {
+            #qr-reader__scan_region { min-height: 40vh; max-height: 60vh; }
+            .section { padding: 12px; margin: 8px 0; }
+            h1 { font-size: 18px; margin: 4px 0; }
+        }
+
+        /* ===== iPhone SE / 小画面 ===== */
+        @media (max-width: 374px) {
+            body { padding: 8px; }
+            .section { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== アプリケーション層：ログイン画面 ========== -->
+    <div id="login-section">
+        <div class="section" style="margin-top:40px;">
+            <h1 style="margin-bottom:16px;">QRコード出席管理</h1>
+            <h2 style="margin-bottom:16px;">ログイン</h2>
+            <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:13px;font-weight:bold;color:#555;margin-bottom:4px;">メールアドレス</label>
+                <input type="email" id="email" placeholder="メールアドレス" autocomplete="email">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:13px;font-weight:bold;color:#555;margin-bottom:4px;">パスワード</label>
+                <input type="password" id="password" placeholder="パスワード（6文字以上）" autocomplete="current-password">
+            </div>
+            <button onclick="window.login()">ログイン</button>
+            <button onclick="window.register()" class="btn-green">新規登録</button>
+        </div>
+    </div>
+
+    <!-- ========== アプリケーション層：メイン画面 ========== -->
+    <div id="main-section" class="hidden">
+        <!-- ヘッダー -->
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
+            <h1 style="margin:0;text-align:left;">QR出席管理</h1>
+            <button onclick="window.logout()" class="btn-outline" style="width:auto;padding:8px 16px;font-size:13px;">ログアウト</button>
+        </div>
+        <div id="user-info"></div>
+
+        <!-- QRリーダー -->
+        <div class="section">
+            <h3>📷 QRコード読み取り</h3>
+            <div id="qr-reader"></div>
+            <div class="btn-row scanner-controls">
+                <button id="btn-start-scan" onclick="appLayer.startScanner()" class="btn-green" style="flex:1;">スキャン開始</button>
+                <button id="btn-stop-scan" onclick="appLayer.stopScanner()" class="btn-red" style="flex:1;" disabled>スキャン停止</button>
+            </div>
+            <div id="scan-status" class="status-msg status-info hidden"></div>
+        </div>
+
+        <!-- 読み取り結果表示 -->
+        <div id="result-section" class="section hidden">
+            <h3>📋 読み取り結果</h3>
+            <div id="result-card">
+                <div id="result-fields"></div>
+                <div class="save-section">
+                    <p style="text-align:center;color:#666;font-size:14px;margin-bottom:8px;">
+                        保存ボタンを押すと、本日の日付が記録されます
+                    </p>
+                    <div class="save-date-display" id="save-date-display">
+                        保存日付: <span id="date-display-value">----年--月--日</span>
+                    </div>
+                    <button id="btn-save" onclick="appLayer.handleSave()" class="btn-green" style="padding:16px;font-size:18px;">
+                        📅 保存（日付を記録）
+                    </button>
+                    <div id="save-status" class="status-msg hidden" style="margin-top:10px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- スキャン履歴 -->
+        <div class="section">
+            <h3>📜 スキャン履歴</h3>
+            <ul id="scanned-list"></ul>
+            <p id="history-empty" style="text-align:center;color:#999;padding:20px 0;font-size:14px;">
+                まだスキャン履歴がありません
+            </p>
+        </div>
+
+        <!-- 業務ロジック層制御（非表示） -->
+        <div id="logic-layer-data" data-current-proposal="" data-current-doc-id=""></div>
+    </div>
+
+    <script type="module">
+        // ======================================================================
+        // インフラストラクチャ層：Firebase / Firestore データベース管理
+        // ======================================================================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        class FirestoreDatabase {
+            constructor(config) {
+                this.app = initializeApp(config);
+                this.auth = getAuth(this.app);
+                this.db = getFirestore(this.app);
+            }
+
+            getAuth() { return this.auth; }
+
+            // 重複排除：同一 proposalNo（Firestore上のキーは「起案行No」）のドキュメントを検索し、重複があれば古い方を削除
+            async findUniqueByProposalNo(proposalNo, userId) {
+                const q = query(
+                    collection(this.db, "seminars"),
+                    where("createdBy", "==", userId),
+                    where("起案行No", "==", proposalNo)
+                );
+                const snapshot = await getDocs(q);
+                if (snapshot.empty) return null;
+
+                const docs = snapshot.docs;
+                // 重複削除：同じproposalNoのドキュメントが複数あれば、最新（createdAt降順）以外を削除
+                if (docs.length > 1) {
+                    docs.sort((a, b) => {
+                        const aTime = new Date(a.data().createdAt || 0).getTime();
+                        const bTime = new Date(b.data().createdAt || 0).getTime();
+                        return bTime - aTime;
+                    });
+                    const keep = docs[0];
+                    const remove = docs.slice(1);
+                    for (const d of remove) {
+                        await deleteDoc(doc(this.db, "seminars", d.id));
+                    }
+                    return { id: keep.id, data: keep.data() };
+                }
+                return { id: docs[0].id, data: docs[0].data() };
+            }
+
+            // 保存日付を更新
+            async updateSaveDate(docId, dateStr) {
+                await updateDoc(doc(this.db, "seminars", docId), {
+                    qrDate: dateStr
+                });
+            }
+
+            async getAllScanned(proposalNos, userId) {
+                if (proposalNos.length === 0) return [];
+                const q = query(
+                    collection(this.db, "seminars"),
+                    where("createdBy", "==", userId),
+                    where("起案行No", "in", proposalNos)
+                );
+                const snapshot = await getDocs(q);
+                return snapshot.docs.map(d => ({ id: d.id, data: d.data() }));
+            }
+        }
+
+        // ======================================================================
+        // 業務ロジック層：QRコードデータ処理
+        // ======================================================================
+        class QRCodeService {
+            constructor(database) {
+                this.db = database;
+            }
+
+            // QRコードから読み取った提案番号で該当レコードを検索
+            async lookupByProposalNo(proposalNo) {
+                const user = this.db.getAuth().currentUser;
+                if (!user) throw new Error("ログインが必要です");
+                const result = await this.db.findUniqueByProposalNo(proposalNo, user.uid);
+                return result;
+            }
+
+            // 保存日付を記録（yyyy/mm/dd 形式）
+            async recordSaveDate(docId) {
+                const now = new Date();
+                const yyyy = now.getFullYear();
+                const mm = String(now.getMonth() + 1).padStart(2, "0");
+                const dd = String(now.getDate()).padStart(2, "0");
+                const dateStr = `${yyyy}/${mm}/${dd}`;
+                await this.db.updateSaveDate(docId, dateStr);
+                return dateStr;
+            }
+
+            formatDate(dateStr) {
+                if (!dateStr) return "----年--月--日";
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return dateStr;
+                return `${d.getFullYear()}年${String(d.getMonth() + 1).padStart(2, "0")}月${String(d.getDate()).padStart(2, "0")}日`;
+            }
+        }
+
+        // ======================================================================
+        // アプリケーション層：UI制御
+        // ======================================================================
+        class ApplicationLayer {
+            constructor() {
+                this.qrService = null;
+                this.html5Qr = null;
+                this.currentDoc = null;   // { id, data }
+                this.scanHistory = [];
+            }
+
+            init(qrService) {
+                this.qrService = qrService;
+                this.html5Qr = new Html5Qrcode("qr-reader");
+            }
+
+            // QRスキャナー開始
+            async startScanner() {
+                const btnStart = document.getElementById("btn-start-scan");
+                const btnStop = document.getElementById("btn-stop-scan");
+                const statusEl = document.getElementById("scan-status");
+                try {
+                    btnStart.disabled = true;
+                    this.hideStatus("scan-status");
+                    await this.html5Qr.start(
+                        { facingMode: "environment" },
+                        { fps: 10, qrbox: { width: 250, height: 250 } },
+                        (decodedText) => this.onQrCodeScanned(decodedText),
+                        () => {}
+                    );
+                    btnStop.disabled = false;
+                    this.showStatus("scan-status", "スキャン中…カメラをQRコードに向けてください", "status-info");
+                } catch (err) {
+                    btnStart.disabled = false;
+                    this.showStatus("scan-status", "カメラ起動エラー: " + err.message, "status-err");
+                }
+            }
+
+            // QRスキャナー停止
+            async stopScanner() {
+                const btnStart = document.getElementById("btn-start-scan");
+                const btnStop = document.getElementById("btn-stop-scan");
+                try {
+                    await this.html5Qr.stop();
+                    btnStart.disabled = false;
+                    btnStop.disabled = true;
+                    this.hideStatus("scan-status");
+                } catch (err) {
+                    // ignore
+                }
+            }
+
+            // QRコード読み取り成功コールバック
+            async onQrCodeScanned(decodedText) {
+                await this.stopScanner();
+                const proposalNo = decodedText.trim();
+                if (!proposalNo) {
+                    this.showStatus("scan-status", "QRコードデータが空です", "status-err");
+                    return;
+                }
+                this.showStatus("scan-status", `読み取り成功（起案行No: ${proposalNo}）。データを検索中…`, "status-info");
+                try {
+                    const result = await this.qrService.lookupByProposalNo(proposalNo);
+                    if (!result) {
+                        this.showStatus("scan-status", `起案行No「${proposalNo}」に該当する研修会が見つかりませんでした`, "status-err");
+                        document.getElementById("result-section").classList.add("hidden");
+                        return;
+                    }
+                    this.currentDoc = result;
+                    this.hideStatus("scan-status");
+                    this.displayResult(result.data);
+                    this.addHistory(result.data);
+                } catch (err) {
+                    this.showStatus("scan-status", "検索エラー: " + err.message, "status-err");
+                }
+            }
+
+            // 結果表示
+            displayResult(data) {
+                const section = document.getElementById("result-section");
+                section.classList.remove("hidden");
+                const container = document.getElementById("result-fields");
+                const _ = k => data[k] ?? "";
+                const fields = [
+                    { label: "起案行No", value: _("起案行No") },
+                    { label: "テーマ（標題）", value: _("テーマ(標題)_TITLE") },
+                    { label: "開催日", value: _("開催日_DATE_1") },
+                    { label: "担当講師", value: _("担当講師_SPEAKER") },
+                    { label: "場所", value: _("講演場所_SITE") },
+                    { label: "対象", value: _("対象_SUBJECT_1") },
+                    { label: "目的", value: _("目的_PURPOSE") },
+                    { label: "年度", value: _("年度_YEAR_1") },
+                    { label: "謝金", value: _("謝金_COST") },
+                ];
+                container.innerHTML = fields.map(f =>
+                    `<div class="result-field"><span class="result-label">${f.label}</span><span class="result-value">${f.value || "-"}</span></div>`
+                ).join("");
+
+                // 保存状態
+                const dateDisplay = document.getElementById("date-display-value");
+                if (data.qrDate) {
+                    dateDisplay.textContent = data.qrDate;
+                    document.getElementById("btn-save").textContent = "再保存（日付を更新）";
+                    this.showStatus("save-status", "この研修会は既に保存済みです", "status-ok");
+                } else {
+                    const now = new Date();
+                    const yyyy = now.getFullYear();
+                    const mm = String(now.getMonth() + 1).padStart(2, "0");
+                    const dd = String(now.getDate()).padStart(2, "0");
+                    dateDisplay.textContent = `${yyyy}/${mm}/${dd}`;
+                    document.getElementById("btn-save").textContent = "保存（日付を記録）";
+                    document.getElementById("save-status").classList.add("hidden");
+                }
+
+                document.getElementById("logic-layer-data").dataset.currentProposal = _("起案行No");
+                document.getElementById("logic-layer-data").dataset.currentDocId = this.currentDoc.id || "";
+            }
+
+            // 保存処理
+            async handleSave() {
+                const btn = document.getElementById("btn-save");
+                const statusEl = document.getElementById("save-status");
+                if (!this.currentDoc) {
+                    this.showStatus("save-status", "保存するデータがありません", "status-err");
+                    return;
+                }
+                try {
+                    btn.disabled = true;
+                    btn.textContent = "保存中…";
+                    const dateStr = await this.qrService.recordSaveDate(this.currentDoc.id);
+                    this.currentDoc.data.qrDate = dateStr;
+                    document.getElementById("date-display-value").textContent = dateStr;
+                    this.showStatus("save-status", `保存完了: ${dateStr}`, "status-ok");
+                    btn.textContent = "再保存（日付を更新）";
+                    btn.disabled = false;
+                    this.updateHistoryDate(dateStr);
+                } catch (err) {
+                    this.showStatus("save-status", "保存エラー: " + err.message, "status-err");
+                    btn.disabled = false;
+                    btn.textContent = "保存（日付を記録）";
+                }
+            }
+
+            // スキャン履歴に追加
+            addHistory(data) {
+                const no = data["起案行No"] ?? "";
+                const title = data["テーマ(標題)_TITLE"] ?? "";
+                const existing = this.scanHistory.findIndex(h => h.proposalNo === no);
+                if (existing >= 0) {
+                    this.scanHistory[existing] = { proposalNo: no, title, qrDate: data.qrDate, saved: !!data.qrDate };
+                } else {
+                    this.scanHistory.unshift({ proposalNo: no, title, qrDate: data.qrDate, saved: !!data.qrDate });
+                }
+                this.renderHistory();
+            }
+
+            updateHistoryDate(dateStr) {
+                const proposal = this.currentDoc.data["起案行No"] ?? "";
+                const entry = this.scanHistory.find(h => h.proposalNo === proposal);
+                if (entry) {
+                    entry.qrDate = dateStr;
+                    entry.saved = true;
+                }
+                this.renderHistory();
+            }
+
+            renderHistory() {
+                const list = document.getElementById("scanned-list");
+                const empty = document.getElementById("history-empty");
+                if (this.scanHistory.length === 0) {
+                    list.innerHTML = "";
+                    empty.classList.remove("hidden");
+                    return;
+                }
+                empty.classList.add("hidden");
+                list.innerHTML = this.scanHistory.map(h =>
+                    `<li>
+                        <div style="flex:1;min-width:0;">
+                            <div class="scanned-title">${h.title || "（タイトル未設定）"}</div>
+                            <div class="scanned-date">No: ${h.proposalNo}</div>
+                            <div class="scanned-date">保存: ${h.qrDate || "未保存"}</div>
+                        </div>
+                        <span class="${h.saved ? 'badge-saved' : 'badge-unsaved'}">${h.saved ? '保存済' : '未保存'}</span>
+                    </li>`
+                ).join("");
+            }
+
+            showStatus(elementId, message, className) {
+                const el = document.getElementById(elementId);
+                el.textContent = message;
+                el.className = "status-msg " + className;
+                el.classList.remove("hidden");
+            }
+
+            hideStatus(elementId) {
+                document.getElementById(elementId).classList.add("hidden");
+            }
+        }
+
+        // ======================================================================
+        // 初期化
+        // ======================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDkII6eW8Yz0noTFLw7iGqywhxX_xubpp8",
+            authDomain: "seminar-management-app-data.firebaseapp.com",
+            projectId: "seminar-management-app-data",
+            storageBucket: "seminar-management-app-data.firebasestorage.app",
+            messagingSenderId: "428635837329",
+            appId: "1:428635837329:web:dba5dff12d906943ce4030",
+            measurementId: "G-HRPCFGFVHL"
+        };
+
+        const database = new FirestoreDatabase(firebaseConfig);
+        const qrService = new QRCodeService(database);
+        const appLayer = new ApplicationLayer();
+        appLayer.init(qrService);
+
+        // グローバル公開（HTML onclick から呼べるように）
+        window.appLayer = appLayer;
+
+        // ========== 認証関連 ==========
+        const auth = database.getAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById("login-section").style.display = "none";
+                document.getElementById("main-section").classList.remove("hidden");
+                document.getElementById("user-info").textContent = `ログイン中: ${user.email}`;
+            } else {
+                document.getElementById("login-section").style.display = "block";
+                document.getElementById("main-section").classList.add("hidden");
+                // スキャナー停止
+                if (appLayer.html5Qr && appLayer.html5Qr.isScanning) {
+                    appLayer.html5Qr.stop().catch(() => {});
+                }
+            }
+        });
+
+        window.login = async () => {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (e) {
+                alert("ログインエラー: " + e.message);
+            }
+        };
+
+        window.register = async () => {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            if (password.length < 6) { alert("パスワードは6文字以上にしてください"); return; }
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                alert("登録完了。自動ログインします。");
+            } catch (e) {
+                alert("登録エラー: " + e.message);
+            }
+        };
+
+        window.logout = async () => {
+            await signOut(auth);
+        };
+    </script>
+</body>
+</html>
