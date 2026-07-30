@@ -100,3 +100,10 @@ js/matrix-rain.js             # 背景マトリックスレインエフェクト
 - ✅ live_session.html 起動時に localStorage を確認し、データがあれば自動反映
 - ✅ ファイル選択がなくても index.html のデータベースが live_session.html に引き継がれる
 - ✅ DOMContentLoaded 対応で起動時の読み込みを安定化
+
+### 2026-07-29: Master Table 削除・移動・CSV重複行の修正
+- ✅ `buildDisplayRowsFromRaw` の sort を `_order||...` → `_order!=null?...` に修正（`_order=0` を falsy 扱いしない）
+- ✅ `commitDraft` 更新パスで `_order` が未定義/0 の時に正の値を計算して代入（`_order||0` を廃止）
+- ✅ `moveRow` の swap で両行に有効な `_order` がない場合、現在位置に基づく値を新規割り当て
+- ✅ Master Table 行の onclick で action（`deleteRecord`/`moveRow`）を `event.stopPropagation()` より先に実行
+- ✅ `downloadCsv()` で出力前に No の重複を排除（`rawRows` をそのまま使わず Set で重複除去）

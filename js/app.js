@@ -566,6 +566,8 @@ function ensureAdditionalHeaders(headers){
   return Array.from(set);
 }
   
+function getQRAttendanceUrl(no){return 'https://morikawa001.github.io/seminar-app-file-manager/?no='+encodeURIComponent(String(no||''))}
+
 function buildTemplateData(row){
   const map={};
   currentHeaders.forEach(h=>map[h]=String(row?.[h]??''));
@@ -638,6 +640,11 @@ function buildTemplateData(row){
   map[fullKeys.closing1]=String(row?.[fullKeys.closing1] ?? '');
   map['進行表クロージング（選択）_CLOSING_1']=String(row?.[fullKeys.closing1] ?? '');
 
+  const qrNo=row?.[fullKeys.no]??'';
+  const qrUrl=getQRAttendanceUrl(qrNo);
+  map['QR_URL']=qrUrl;
+  map['QR']=qrUrl;
+
   map[fullKeys.lectureStart]=String(row?.[fullKeys.lectureStart] ?? '');
   map['講義開始_START_TIME']=String(row?.[fullKeys.lectureStart] ?? '');
   map[fullKeys.qaDeadline]=String(row?.[fullKeys.qaDeadline] ?? '');
@@ -673,12 +680,87 @@ function targetXmlPathsForTemplate(zip,fileName){
   if(ext==='xlsx') return names.filter(n=>/^(xl\/worksheets\/.*\.xml|xl\/sharedStrings\.xml|xl\/workbook\.xml|xl\/comments.*\.xml|xl\/drawings\/.*\.xml)$/i.test(n));
   return [];
 }
+function generateQRBlob(text,size){
+  return new Promise(function(resolve){
+    var div=document.createElement('div');
+    div.style.position='fixed';div.style.left='-9999px';div.style.top='-9999px';
+    document.body.appendChild(div);
+    try{
+      new QRCode(div,{text:String(text||''),width:size||160,height:size||160,correctLevel:QRCode.CorrectLevel.M});
+      var canvas=div.querySelector('canvas');
+      if(canvas){canvas.toBlob(function(blob){document.body.removeChild(div);resolve(blob)},'image/png')}
+      else{document.body.removeChild(div);resolve(null)}
+    }catch(e){document.body.removeChild(div);resolve(null)}
+  });
+}
+function embedQRImageInZip(zip,ext,blob){
+  var mediaPath,relsPath,imageXml;
+  return new Promise(function(resolve,reject){
+    var reader=new FileReader();
+    reader.onload=function(){
+      var arrayBuffer=reader.result;
+      if(ext==='docx'){
+        mediaPath='word/media/qr_code.png';
+        relsPath='word/_rels/document.xml.rels';
+        var existingRels=zip.file(relsPath) ? zip.file(relsPath).asText() : '';
+        var rId=1;
+        while(existingRels.indexOf('Id="rId'+rId+'"')>=0||existingRels.indexOf("Id='rId"+rId+"'")>=0) rId++;
+        var relEntry='<Relationship Id="rId'+rId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/qr_code.png"/>';
+        zip.file(relsPath,existingRels.replace('</Relationships>',relEntry+'</Relationships>'));
+        imageXml='<w:r xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:drawing xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="685800" cy="685800"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="QR"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="0" name="QR"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId'+rId+'" cstate="print"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="685800" cy="685800"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
+        zip.file(mediaPath,arrayBuffer);
+        var ctXml=zip.file('[Content_Types].xml') ? zip.file('[Content_Types].xml').asText() : '';
+        if(ctXml&&ctXml.indexOf('"image/png"')<0){
+          var ctEntry='<Default Extension="png" ContentType="image/png"/>';
+          zip.file('[Content_Types].xml',ctXml.replace('</Types>',ctEntry+'</Types>'));
+        }
+      }else if(ext==='pptx'){
+        mediaPath='ppt/media/qr_code.png';
+        relsPath='ppt/_rels/presentation.xml.rels';
+        var existingRels=zip.file(relsPath) ? zip.file(relsPath).asText() : '';
+        var rId=1;
+        while(existingRels.indexOf('Id="rId'+rId+'"')>=0||existingRels.indexOf("Id='rId"+rId+"'")>=0) rId++;
+        var relEntry='<Relationship Id="rId'+rId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/qr_code.png"/>';
+        zip.file(relsPath,existingRels.replace('</Relationships>',relEntry+'</Relationships>'));
+        imageXml='<p:pic xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><p:nvPicPr><p:cNvPr id="0" name="QR"/><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill><a:blip r:embed="rId'+rId+'"/><a:stretch><a:fillRect/></a:stretch></p:blipFill><p:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="685800" cy="685800"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic>';
+        zip.file(mediaPath,arrayBuffer);
+        var ctXml=zip.file('[Content_Types].xml') ? zip.file('[Content_Types].xml').asText() : '';
+        if(ctXml&&ctXml.indexOf('"image/png"')<0){
+          var ctEntry='<Default Extension="png" ContentType="image/png"/>';
+          zip.file('[Content_Types].xml',ctXml.replace('</Types>',ctEntry+'</Types>'));
+        }
+      }else{
+        resolve(null); return;
+      }
+      resolve(imageXml);
+    };
+    reader.onerror=function(){resolve(null)};
+    reader.readAsArrayBuffer(blob);
+  });
+}
 async function mergeSingleTemplate(file,row){
   const arrayBuffer=await file.arrayBuffer();
   const zip=new PizZip(arrayBuffer);
   const data=buildTemplateData(row);
   const targets=targetXmlPathsForTemplate(zip,file.name);
   if(!targets.length) throw new Error('差し込み対象XMLが見つかりません');
+  var hasQRImage=false;
+  targets.forEach(function(path){
+    if(zip.file(path)){
+      var xml=zip.file(path).asText();
+      if(xml.indexOf('{{QR_IMAGE}}')>=0) hasQRImage=true;
+    }
+  });
+  if(hasQRImage){
+    var qrNo=String(row?.[fullKeys.no]??'');
+    var qrUrl=getQRAttendanceUrl(qrNo);
+    var qrBlob=await generateQRBlob(qrUrl,160);
+    if(qrBlob){
+      var ext=(String(file.name).split('.').pop()||'').toLowerCase();
+      var imgXml=await embedQRImageInZip(zip,ext,qrBlob);
+      if(imgXml) data['QR_IMAGE']=imgXml;
+    }
+  }
   targets.forEach(path=>{
     if(zip.file(path)){
       const xml=zip.file(path).asText();
@@ -740,6 +822,20 @@ async function mergeAllTemplatesZip(){
         const pzip=new PizZip(arrayBuffer);
         const targets=targetXmlPathsForTemplate(pzip,file.name);
         if(!targets.length) throw new Error('差し込み対象XMLが見つかりません');
+        var hasQRImage=false;
+        targets.forEach(function(path){
+          if(pzip.file(path)&&pzip.file(path).asText().indexOf('{{QR_IMAGE}}')>=0) hasQRImage=true;
+        });
+        if(hasQRImage){
+          var qrNo=String(row?.[fullKeys.no]??'');
+          var qrUrl=getQRAttendanceUrl(qrNo);
+          var qrBlob=await generateQRBlob(qrUrl,160);
+          if(qrBlob){
+            var ext0=(String(file.name).split('.').pop()||'').toLowerCase();
+            var imgXml=await embedQRImageInZip(pzip,ext0,qrBlob);
+            if(imgXml) data['QR_IMAGE']=imgXml;
+          }
+        }
         targets.forEach(path=>{
           if(pzip.file(path)){
             const xml=pzip.file(path).asText();
@@ -1050,6 +1146,27 @@ function handleSelectRecord(){
   if(selectedRow)setStatus(`No.${selectedRow[fullKeys.no]} を選択しました。`);
 }
 
+function updateQRCode(){
+  const no=String(fields.no.value||'').trim();
+  const container=document.getElementById('qrcode');
+  const urlDisplay=document.getElementById('qrUrlDisplay');
+  const dlBtn=document.getElementById('qrDownloadBtn');
+  if(!no){container.innerHTML='<div style="width:160px;height:160px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">Noを選択</div>';urlDisplay.textContent='';dlBtn.style.display='none';return}
+  const qrUrl='https://morikawa001.github.io/seminar-app-file-manager/?no='+encodeURIComponent(no);
+  container.innerHTML='';
+  try{new QRCode(container,{text:qrUrl,width:160,height:160,correctLevel:QRCode.CorrectLevel.M})}catch(e){container.textContent='QR生成エラー'}
+  urlDisplay.textContent=qrUrl;
+  dlBtn.style.display='inline-block';
+}
+function downloadQR(){
+  const canvas=document.querySelector('#qrcode canvas');
+  if(!canvas)return;
+  const a=document.createElement('a');
+  a.href=canvas.toDataURL('image/png');
+  a.download='QR_'+String(fields.no.value||'attendance')+'.png';
+  a.click();
+}
+
 function loadSelectedIntoForm(){
   if(!selectedRow){setStatus('先に表示したい No を選択してください。');return}
   fields.no.value=selectedRow[fullKeys.no]||'';
@@ -1093,6 +1210,7 @@ function loadSelectedIntoForm(){
   applyScheduleChecksFromRow(selectedRow);
   recalcDraft();
   els.deleteEntryBtn.disabled=false;
+  updateQRCode();
   setStatus(`No.${selectedRow[fullKeys.no]} を入力欄へ反映しました。保存すると同じNoを上書きします。`);
 }
 
@@ -2978,6 +3096,8 @@ rawRows=[dummy1,dummy2,dummy3,dummy4].map(r=>normalizeRowShape(r));
   setStatus('ダミーデータを4件読み込みました。Today Command / Exception Queueを確認してください。');
 }
 window.loadDummyData=loadDummyData;
+window.downloadQR=downloadQR;
+window.updateQRCode=updateQRCode;
 
 document.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('a[href="#topControlPanel"]').forEach(link=>{
