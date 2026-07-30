@@ -125,3 +125,9 @@ QR_reader.html                # QRコード出席管理（別ページ、Firebas
 - ✅ `new Html5Qrcode()` をページ読み込み即実行→ `ensureQrReader()` による遅延初期化に変更（`display:none` 起因のエラー回避）
 - ✅ `schedule-card` グリッドを `1fr auto auto` → `1fr auto` に戻し、`.schedule-actions` コンテナで縦積み
 - ✅ QRコードパネルのラベルを「QR Attendance Code」→「QR File Code」、「出席登録用QRコード」→「ファイル管理用QRコード」に修正
+
+### 2026-07-31: Master Table にガントチャート切替機能
+- ✅ Master Table のパネルヘッダーに「📊 ガントチャート」切替ボタンを追加
+- ✅ `toggleMasterView()` 関数でテーブル／ガントチャートを切り替え
+- ✅ `renderGanttChart()` を新規作成（月間グリッド＋マイルストーンドット、完了チェックは半透明で表示）
+- ✅ ガントチャート凡例：起案1（青）／HP公開（緑）／開催日（赤）／起案2（橙）／起案3（紫）
