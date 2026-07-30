@@ -747,8 +747,8 @@ async function mergeSingleTemplate(file,row){
   if(hasQR){
     var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),160);
     if(qrBlob){
-      var ext=(String(file.name).split('.').pop()||'').toLowerCase();
-      var imgXml=await embedQRImageInZip(zip,ext,qrBlob);
+      var ext0=(String(file.name).split('.').pop()||'').toLowerCase();
+      var imgXml=await embedQRImageInZip(zip,ext0,qrBlob);
       if(imgXml){data['QR_IMAGE']=imgXml;data['QR']=''}
     }
   }
