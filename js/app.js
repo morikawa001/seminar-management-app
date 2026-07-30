@@ -1050,6 +1050,26 @@ function handleSelectRecord(){
   if(selectedRow)setStatus(`No.${selectedRow[fullKeys.no]} を選択しました。`);
 }
 
+function updateQRCode(){
+  const no=String(fields.no.value||'').trim();
+  const container=document.getElementById('qrcode');
+  const urlDisplay=document.getElementById('qrUrlDisplay');
+  const dlBtn=document.getElementById('qrDownloadBtn');
+  if(!no||!container){if(container)container.innerHTML='<div style="width:160px;height:160px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">Noを選択</div>';if(urlDisplay)urlDisplay.textContent='';if(dlBtn)dlBtn.style.display='none';return}
+  container.innerHTML='';
+  try{new QRCode(container,{text:no,width:160,height:160,correctLevel:QRCode.CorrectLevel.M})}catch(e){container.textContent='QR生成エラー'}
+  if(urlDisplay)urlDisplay.textContent='No: '+no;
+  if(dlBtn)dlBtn.style.display='inline-block';
+}
+function downloadQR(){
+  const canvas=document.querySelector('#qrcode canvas');
+  if(!canvas)return;
+  const a=document.createElement('a');
+  a.href=canvas.toDataURL('image/png');
+  a.download='QR_No'+String(fields.no.value||'attendance')+'.png';
+  a.click();
+}
+
 function loadSelectedIntoForm(){
   if(!selectedRow){setStatus('先に表示したい No を選択してください。');return}
   fields.no.value=selectedRow[fullKeys.no]||'';
@@ -1093,6 +1113,7 @@ function loadSelectedIntoForm(){
   applyScheduleChecksFromRow(selectedRow);
   recalcDraft();
   els.deleteEntryBtn.disabled=false;
+  updateQRCode();
   setStatus(`No.${selectedRow[fullKeys.no]} を入力欄へ反映しました。保存すると同じNoを上書きします。`);
 }
 
@@ -2978,6 +2999,8 @@ rawRows=[dummy1,dummy2,dummy3,dummy4].map(r=>normalizeRowShape(r));
   setStatus('ダミーデータを4件読み込みました。Today Command / Exception Queueを確認してください。');
 }
 window.loadDummyData=loadDummyData;
+window.downloadQR=downloadQR;
+window.updateQRCode=updateQRCode;
 
 document.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('a[href="#topControlPanel"]').forEach(link=>{
