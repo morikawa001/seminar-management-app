@@ -593,9 +593,14 @@ label[for="templateFiles"] {
 }
 .schedule-card{
   display:grid;
-  grid-template-columns:1fr auto auto;
+  grid-template-columns:1fr auto;
   gap:12px;
   align-items:center;
+}
+.schedule-actions{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
 }
 .schedule-left{display:grid;gap:4px}
 .schedule-check{
@@ -613,6 +618,10 @@ label[for="templateFiles"] {
   min-height:auto;
   accent-color:var(--green);
   cursor:pointer;
+}
+.schedule-check input:disabled{
+  opacity:1;
+  cursor:default;
 }
 .schedule-meta{
   display:inline-flex;
