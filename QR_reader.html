@@ -3,212 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QRコード出席管理 - 研修会システム</title>
+    <title>QRファイル管理 - 研修会システム</title>
+    <link rel="stylesheet" href="css/theme-base.css">
+    <link rel="stylesheet" href="css/styles.css">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
-        /* ===== リセット ===== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { height: 100%; }
-
-        /* ===== ベース（モバイルファースト） ===== */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f0f2f5;
+            background: var(--bg);
+            color: var(--text);
             padding: 12px;
             padding: env(safe-area-inset-top, 12px) env(safe-area-inset-right, 12px) env(safe-area-inset-bottom, 12px) env(safe-area-inset-left, 12px);
-            color: #333;
             -webkit-text-size-adjust: 100%;
         }
-        h1 { font-size: 22px; text-align: center; margin: 8px 0 4px; }
+        h1 { font-size: 22px; text-align: center; margin: 8px 0 4px; color: var(--text-strong); }
         h2 { font-size: 18px; }
-        h3 { font-size: 16px; color: #333; }
-
-        /* ===== フォーム・入力 ===== */
-        input, button, select, textarea {
-            font-size: 16px; /* iOS自動ズーム防止 */
-            font-family: inherit;
-        }
+        h3 { font-size: 16px; color: var(--text-strong); }
+        input, button, select, textarea { font-size: 16px; font-family: inherit; }
         input[type="email"], input[type="password"] {
-            width: 100%;
-            padding: 14px 12px;
-            border: 1px solid #ccc;
+            width: 100%; padding: 14px 12px;
+            border: 1px solid var(--input-border, #ccc);
             border-radius: 10px;
-            background: #fff;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-
-        /* ===== ボタン（タップターゲット44px以上） ===== */
-        button {
-            display: block;
-            width: 100%;
-            padding: 14px 16px;
-            margin: 6px 0;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #fff;
-            background: #007bff;
-            cursor: pointer;
-            -webkit-appearance: none;
-            appearance: none;
-            touch-action: manipulation;
-            transition: opacity 0.15s;
-        }
-        button:active { opacity: 0.7; }
-        button:disabled { background: #aaa; opacity: 0.6; }
-        .btn-green { background: #28a745; }
-        .btn-red { background: #dc3545; }
-        .btn-outline { background: none; color: #dc3545; border: 2px solid #dc3545; }
-
-        /* インラインボタン（横並び用） */
-        .btn-row { display: flex; gap: 10px; }
-        .btn-row button { margin: 0; }
-
-        /* ===== セクションカード ===== */
-        .section {
-            background: #fff;
-            padding: 16px;
-            margin: 12px 0;
-            border-radius: 14px;
-            border: none;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-        }
-        .section h3 {
-            margin: 0 0 12px;
-            padding-bottom: 8px;
-            border-bottom: 3px solid #007bff;
-            font-size: 15px;
-        }
-
-        #user-info {
-            color: #28a745;
-            font-size: 14px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 8px;
+            background: var(--input-bg, #fff);
+            color: var(--text);
+            -webkit-appearance: none; appearance: none;
         }
         .hidden { display: none !important; }
 
-        /* ===== QRスキャナー ===== */
         #qr-reader {
-            width: 100%;
-            max-width: 100%;
-            margin: 0 auto;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #000;
+            width: 100%; max-width: 100%; margin: 0 auto;
+            border-radius: 12px; overflow: hidden; background: #000;
         }
         #qr-reader video { border-radius: 12px; }
         #qr-reader img[alt="Info icon"] { display: none; }
-        #qr-reader__scan_region {
-            min-height: 50vw;
-            max-height: 70vh;
-            background: #000;
-            border-radius: 12px;
-        }
+        #qr-reader__scan_region { min-height: 50vw; max-height: 70vh; background: #000; border-radius: 12px; }
         #qr-reader__dashboard_section { padding: 0 !important; }
         #qr-reader__dashboard_section_csr span { display: none !important; }
         #qr-reader__dashboard_section_csr button {
-            background: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            padding: 12px 20px;
-            font-size: 15px;
-            width: auto;
-            display: inline-block;
+            background: var(--primary, #007bff); color: #fff;
+            border: none; border-radius: 10px; padding: 12px 20px;
+            font-size: 15px; width: auto; display: inline-block;
         }
         #qr-reader__dashboard_section_swaplink { display: none !important; }
-
         .scanner-controls { margin-top: 12px; }
 
-        /* ===== 結果カード ===== */
         #result-card {
-            border: 3px solid #28a745;
-            border-radius: 12px;
-            padding: 16px;
-            background: #f6fff6;
+            border: 3px solid var(--green, #28a745);
+            border-radius: 12px; padding: 16px;
+            background: color-mix(in srgb, var(--green, #28a745) 8%, var(--surface, #fff));
         }
-        .result-field {
-            padding: 8px 0;
-            border-bottom: 1px solid #e0e0e0;
-        }
+        .result-field { padding: 8px 0; border-bottom: 1px solid var(--border, #e0e0e0); }
         .result-field:last-child { border-bottom: none; }
-        .result-label {
-            font-weight: bold;
-            color: #555;
-            font-size: 13px;
-            display: block;
-            margin-bottom: 2px;
-        }
-        .result-value {
-            font-size: 15px;
-            color: #222;
-            display: block;
-        }
+        .result-label { font-weight: bold; color: var(--muted, #555); font-size: 13px; display: block; margin-bottom: 2px; }
+        .result-value { font-size: 15px; color: var(--text-strong); display: block; }
 
-        /* ===== ステータスメッセージ ===== */
-        .status-msg {
-            padding: 12px 14px;
-            border-radius: 10px;
-            margin: 10px 0;
-            font-weight: bold;
-            font-size: 14px;
-            line-height: 1.4;
-        }
+        .status-msg { padding: 12px 14px; border-radius: 10px; margin: 10px 0; font-weight: bold; font-size: 14px; line-height: 1.4; }
         .status-ok { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .status-err { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .status-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
 
-        /* ===== 保存セクション ===== */
-        .save-section { margin-top: 16px; padding-top: 16px; border-top: 2px solid #e0e0e0; }
-        .save-date-display {
-            font-size: 20px;
-            text-align: center;
-            padding: 14px;
-            background: #e8f4fd;
-            border-radius: 10px;
-            margin: 12px 0;
-            font-weight: bold;
-        }
+        .save-section { margin-top: 16px; padding-top: 16px; border-top: 2px solid var(--border, #e0e0e0); }
 
-        /* ===== スキャン履歴 ===== */
         #scanned-list { list-style: none; padding: 0; }
         #scanned-list li {
-            background: #fff;
-            margin: 8px 0;
-            padding: 14px;
-            border-radius: 10px;
-            border: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
+            background: var(--surface, #fff); margin: 8px 0; padding: 14px;
+            border-radius: 10px; border: 1px solid var(--border, #eee);
+            display: flex; justify-content: space-between; align-items: center; gap: 10px;
         }
-        #scanned-list .scanned-title { font-weight: bold; font-size: 15px; }
-        #scanned-list .scanned-date { color: #888; font-size: 13px; margin-top: 3px; }
-        .badge-saved {
-            background: #28a745;
-            color: #fff;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            white-space: nowrap;
-        }
-        .badge-unsaved {
-            background: #fff3cd;
-            color: #856404;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            white-space: nowrap;
-        }
+        #scanned-list .scanned-title { font-weight: bold; font-size: 15px; color: var(--text-strong); }
+        #scanned-list .scanned-date { color: var(--muted, #888); font-size: 13px; margin-top: 3px; }
+        .badge-saved { background: var(--green, #28a745); color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap; }
+        .badge-unsaved { background: #fff3cd; color: #856404; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap; }
 
-        /* ===== iPad / タブレット（768px以上） ===== */
         @media (min-width: 768px) {
             body { max-width: 700px; margin: 0 auto; padding: 24px; }
             h1 { font-size: 26px; }
@@ -216,106 +83,119 @@
             .result-label { font-size: 14px; }
             .result-value { font-size: 16px; }
         }
-
-        /* ===== 横置きスマホ対策 ===== */
         @media (max-width: 767px) and (orientation: landscape) {
             #qr-reader__scan_region { min-height: 40vh; max-height: 60vh; }
-            .section { padding: 12px; margin: 8px 0; }
             h1 { font-size: 18px; margin: 4px 0; }
         }
-
-        /* ===== iPhone SE / 小画面 ===== */
-        @media (max-width: 374px) {
-            body { padding: 8px; }
-            .section { padding: 12px; }
-        }
+        @media (max-width: 374px) { body { padding: 8px; } }
     </style>
 </head>
 <body>
-    <!-- ========== アプリケーション層：ログイン画面 ========== -->
+    <script src="js/theme-toggle.js"></script>
+
+    <!-- ========== ログイン画面 ========== -->
     <div id="login-section">
-        <div class="section" style="margin-top:40px;">
-            <h1 style="margin-bottom:16px;">QRコード出席管理</h1>
-            <h2 style="margin-bottom:16px;">ログイン</h2>
-            <div style="margin-bottom:12px;">
-                <label style="display:block;font-size:13px;font-weight:bold;color:#555;margin-bottom:4px;">メールアドレス</label>
-                <input type="email" id="email" placeholder="メールアドレス" autocomplete="email">
+        <div class="panel" style="margin-top:40px;max-width:400px;margin-left:auto;margin-right:auto;">
+            <div class="panel-head" style="justify-content:center;">
+                <h1>QRファイル管理</h1>
             </div>
-            <div style="margin-bottom:16px;">
-                <label style="display:block;font-size:13px;font-weight:bold;color:#555;margin-bottom:4px;">パスワード</label>
-                <input type="password" id="password" placeholder="パスワード（6文字以上）" autocomplete="current-password">
+            <div style="padding:16px;">
+                <h2 style="margin-bottom:16px;">ログイン</h2>
+                <div style="margin-bottom:12px;">
+                    <label style="display:block;font-size:13px;font-weight:bold;color:var(--muted);margin-bottom:4px;">メールアドレス</label>
+                    <input type="email" id="email" placeholder="メールアドレス" autocomplete="email">
+                </div>
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:13px;font-weight:bold;color:var(--muted);margin-bottom:4px;">パスワード</label>
+                    <input type="password" id="password" placeholder="パスワード（6文字以上）" autocomplete="current-password">
+                </div>
+                <button onclick="window.login()" class="btn primary">ログイン</button>
+                <button onclick="window.register()" class="btn" style="background:var(--green);color:#fff;">新規登録</button>
             </div>
-            <button onclick="window.login()">ログイン</button>
-            <button onclick="window.register()" class="btn-green">新規登録</button>
         </div>
     </div>
 
-    <!-- ========== アプリケーション層：メイン画面 ========== -->
+    <!-- ========== メイン画面 ========== -->
     <div id="main-section" class="hidden">
         <!-- ヘッダー -->
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
-            <h1 style="margin:0;text-align:left;">QR出席管理</h1>
-            <button onclick="window.logout()" class="btn-outline" style="width:auto;padding:8px 16px;font-size:13px;">ログアウト</button>
-        </div>
-        <div id="user-info"></div>
-
-        <!-- QRリーダー -->
-        <div class="section">
-            <h3>📷 QRコード読み取り</h3>
-            <div id="qr-reader"></div>
-            <div class="btn-row scanner-controls">
-                <button id="btn-start-scan" onclick="appLayer.startScanner()" class="btn-green" style="flex:1;">スキャン開始</button>
-                <button id="btn-stop-scan" onclick="appLayer.stopScanner()" class="btn-red" style="flex:1;" disabled>スキャン停止</button>
-            </div>
-            <div style="margin-top:12px;padding-top:12px;border-top:2px solid #e0e0e0;">
-                <label style="display:block;font-size:13px;font-weight:bold;color:#555;margin-bottom:6px;">QRコード画像ファイルを読み込み</label>
-                <input type="file" id="qrFileInput" accept="image/*" style="width:100%;padding:10px 0;font-size:14px;">
-            </div>
-            <div style="margin-top:10px;padding-top:10px;border-top:2px solid #e0e0e0;">
-                <label style="display:block;font-size:13px;font-weight:bold;color:#555;margin-bottom:6px;">または起案行Noを手動入力</label>
-                <div style="display:flex;gap:8px;">
-                    <input type="text" id="manualNoInput" placeholder="Noを入力" style="flex:1;padding:12px;border:1px solid #ccc;border-radius:10px;font-size:16px;">
-                    <button onclick="appLayer.lookupByNo()" class="btn-green" style="width:auto;padding:12px 20px;white-space:nowrap;">検索</button>
+        <div class="panel" style="margin-bottom:4px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 14px;">
+                <h1 style="margin:0;text-align:left;font-size:20px;">QRファイル管理</h1>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <span id="user-info" style="font-size:13px;color:var(--green);font-weight:bold;"></span>
+                    <button onclick="window.logout()" class="btn small" style="background:var(--danger);color:#fff;width:auto;">ログアウト</button>
                 </div>
             </div>
-            <div id="scan-status" class="status-msg status-info hidden"></div>
+        </div>
+
+        <!-- QRリーダー -->
+        <div class="panel">
+            <div class="panel-head">
+                <h2>📷 QRコード読み取り</h2>
+            </div>
+            <div style="padding:14px;">
+                <div id="qr-reader"></div>
+                <div style="display:flex;gap:10px;margin-top:12px;">
+                    <button id="btn-start-scan" onclick="appLayer.startScanner()" class="btn primary" style="flex:1;">スキャン開始</button>
+                    <button id="btn-stop-scan" onclick="appLayer.stopScanner()" class="btn" style="flex:1;background:var(--danger);color:#fff;" disabled>スキャン停止</button>
+                </div>
+                <div style="margin-top:12px;padding-top:12px;border-top:2px solid var(--border);">
+                    <label style="display:block;font-size:13px;font-weight:bold;color:var(--muted);margin-bottom:6px;">QRコード画像ファイルを読み込み</label>
+                    <input type="file" id="qrFileInput" accept="image/*" style="width:100%;padding:10px 0;font-size:14px;color:var(--text);">
+                </div>
+                <div style="margin-top:10px;padding-top:10px;border-top:2px solid var(--border);">
+                    <label style="display:block;font-size:13px;font-weight:bold;color:var(--muted);margin-bottom:6px;">または起案行Noを手動入力</label>
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" id="manualNoInput" placeholder="Noを入力" style="flex:1;padding:12px;border:1px solid var(--input-border,#ccc);border-radius:10px;font-size:16px;background:var(--input-bg,#fff);color:var(--text);">
+                        <button onclick="appLayer.lookupByNo()" class="btn primary" style="width:auto;white-space:nowrap;">検索</button>
+                    </div>
+                </div>
+                <div id="scan-status" class="status-msg status-info hidden"></div>
+            </div>
         </div>
 
         <!-- 読み取り結果表示 -->
-        <div id="result-section" class="section hidden">
-            <h3>📋 読み取り結果</h3>
-            <div id="result-card">
-                <div id="result-fields"></div>
-                <div class="save-section">
-                    <p style="text-align:center;color:#666;font-size:14px;margin-bottom:8px;">
-                        QR出席保存ボタンで、各起案の実施日を記録します
-                    </p>
-                    <div style="display:flex;flex-direction:column;gap:8px;">
-                        <button id="btn-save-k1" onclick="appLayer.handleSaveK1()" class="btn-green" style="padding:14px;font-size:16px;">
-                            起案１ 保存
-                        </button>
-                        <button id="btn-save-k2" onclick="appLayer.handleSaveK2()" class="btn-green" style="padding:14px;font-size:16px;">
-                            起案２ 保存
-                        </button>
-                        <button id="btn-save-k3" onclick="appLayer.handleSaveK3()" class="btn-green" style="padding:14px;font-size:16px;">
-                            起案３ 保存
-                        </button>
+        <div id="result-section" class="panel hidden">
+            <div class="panel-head">
+                <h2>📋 読み取り結果</h2>
+            </div>
+            <div style="padding:14px;">
+                <div id="result-card">
+                    <div id="result-fields"></div>
+                    <div class="save-section">
+                        <p style="text-align:center;color:var(--muted);font-size:14px;margin-bottom:8px;">
+                            各起案の実施日を記録します（再クリックで解除）
+                        </p>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <button id="btn-save-k1" onclick="appLayer.handleSaveK1()" class="btn primary" style="padding:14px;font-size:16px;">
+                                起案１ 保存
+                            </button>
+                            <button id="btn-save-k2" onclick="appLayer.handleSaveK2()" class="btn primary" style="padding:14px;font-size:16px;">
+                                起案２ 保存
+                            </button>
+                            <button id="btn-save-k3" onclick="appLayer.handleSaveK3()" class="btn primary" style="padding:14px;font-size:16px;">
+                                起案３ 保存
+                            </button>
+                        </div>
+                        <div id="save-status" class="status-msg hidden" style="margin-top:10px;"></div>
                     </div>
-                    <div id="save-status" class="status-msg hidden" style="margin-top:10px;"></div>
                 </div>
             </div>
         </div>
 
         <!-- スキャン履歴 -->
-        <div class="section">
-            <h3>📜 スキャン履歴</h3>
-            <ul id="scanned-list"></ul>
-            <p id="history-empty" style="text-align:center;color:#999;padding:20px 0;font-size:14px;">
-                まだスキャン履歴がありません
-            </p>
+        <div class="panel">
+            <div class="panel-head">
+                <h2>📜 スキャン履歴</h2>
+            </div>
+            <div style="padding:14px;">
+                <ul id="scanned-list"></ul>
+                <p id="history-empty" style="text-align:center;color:var(--muted);padding:20px 0;font-size:14px;">
+                    まだスキャン履歴がありません
+                </p>
+            </div>
         </div>
 
-        <!-- 業務ロジック層制御（非表示） -->
         <div id="logic-layer-data" data-current-proposal="" data-current-doc-id=""></div>
     </div>
 
@@ -550,37 +430,47 @@
             updateSaveButtonState(btn, savedDate, label) {
                 if (savedDate) {
                     btn.textContent = label + " ✅ " + savedDate;
-                    btn.classList.add("saved");
-                    btn.style.background = "#6c757d";
+                    btn.classList.remove("primary");
+                    btn.style.background = "var(--muted)";
                 } else {
                     btn.textContent = label + " 保存";
-                    btn.classList.remove("saved");
+                    btn.classList.add("primary");
                     btn.style.background = "";
                 }
                 btn.disabled = false;
             }
 
-            // 汎用保存処理
+            // 汎用保存処理（トグル：既存は解除）
             async handleSaveK(field, btnId, dataField) {
                 const btn = document.getElementById(btnId);
                 const statusEl = document.getElementById("save-status");
+                const label = btnId === "btn-save-k1" ? "起案１" : btnId === "btn-save-k2" ? "起案２" : "起案３";
                 if (!this.currentDoc) {
                     this.showStatus("save-status", "保存するデータがありません", "status-err");
                     return;
                 }
                 try {
                     btn.disabled = true;
-                    btn.textContent = "保存中…";
-                    const dateStr = await this.qrService.recordSaveDate(field, this.currentDoc.id);
-                    this.currentDoc.data[dataField] = dateStr;
-                    this.updateSaveButtonState(btn, dateStr, btnId === "btn-save-k1" ? "起案１" : btnId === "btn-save-k2" ? "起案２" : "起案３");
-                    this.showStatus("save-status", `${btnId === "btn-save-k1" ? "起案１" : btnId === "btn-save-k2" ? "起案２" : "起案３"} 保存完了: ${dateStr}`, "status-ok");
-                    this.updateHistoryDate(dateStr);
+                    const currentlySaved = this.currentDoc.data[dataField];
+                    if (currentlySaved) {
+                        btn.textContent = "解除中…";
+                        const method = this.qrService.db['updateSaveDate' + field];
+                        if (method) await method.call(this.qrService.db, this.currentDoc.id, "");
+                        delete this.currentDoc.data[dataField];
+                        this.updateSaveButtonState(btn, null, label);
+                        this.showStatus("save-status", `${label} 保存を解除しました`, "status-info");
+                    } else {
+                        btn.textContent = "保存中…";
+                        const dateStr = await this.qrService.recordSaveDate(field, this.currentDoc.id);
+                        this.currentDoc.data[dataField] = dateStr;
+                        this.updateSaveButtonState(btn, dateStr, label);
+                        this.showStatus("save-status", `${label} 保存完了: ${dateStr}`, "status-ok");
+                    }
+                    this.updateHistoryDate();
                 } catch (err) {
-                    this.showStatus("save-status", "保存エラー: " + err.message, "status-err");
-                    btn.disabled = false;
-                    this.updateSaveButtonState(btn, this.currentDoc.data[dataField], btnId === "btn-save-k1" ? "起案１" : btnId === "btn-save-k2" ? "起案２" : "起案３");
+                    this.showStatus("save-status", "エラー: " + err.message, "status-err");
                 }
+                btn.disabled = false;
             }
 
             async handleSaveK1() {
@@ -609,13 +499,13 @@
                 this.renderHistory();
             }
 
-            updateHistoryDate(dateStr) {
+            updateHistoryDate() {
                 const proposal = this.currentDoc.data["起案行No"] ?? "";
                 const data = this.currentDoc.data;
                 const hasSaved = !!(data.qr_saved_k1 || data.qr_saved_k2 || data.qr_saved_k3);
                 const entry = this.scanHistory.find(h => h.proposalNo === proposal);
                 if (entry) {
-                    if (!entry.qrDate) entry.qrDate = dateStr;
+                    entry.qrDate = hasSaved ? "保存済" : "";
                     entry.saved = hasSaved;
                 }
                 this.renderHistory();
