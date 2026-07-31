@@ -1425,7 +1425,8 @@ function commitDraft(){
   if(typeof FirebaseApp !== 'undefined' && FirebaseApp.getCurrentUser()){
     var rawRow = rawRows[getRawRowIndexByNo(no)];
     if(rawRow){
-      FirebaseApp.saveToFirestore(rawRow, currentHeaders).then(function(){
+      FirebaseApp.saveToFirestore(rawRow, currentHeaders).then(function(res){
+        if(res&&res.id&&!rawRow.__docId)rawRow.__docId=res.id;
         setStatus(lastSaveMode==='update'
           ? 'No.'+no+' を上書き保存しました（CSV+DB）'
           : 'No.'+no+' を新規追加しました（CSV+DB）');
