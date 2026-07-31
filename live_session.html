@@ -594,12 +594,42 @@
     /* Login */
     #loginSection{position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;background:var(--bg);display:flex;align-items:center;justify-content:center}
     #loginSection .slbl::after{display:none}
+
+    /* ── SIBYL SYSTEM / 公安局 ブランディング ── */
+    .sb-dot{
+      display:inline-block;width:8px;height:8px;border-radius:50%;
+      background:var(--green);box-shadow:0 0 10px var(--green);
+      animation:sibyl-pulse 1.6s ease-in-out infinite;flex-shrink:0;
+    }
+    html.white .sb-dot{background:#0f6cbd;box-shadow:none}
+    @keyframes sibyl-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.75)}}
+    .sibyl-brand{
+      display:flex;flex-direction:column;align-items:center;gap:5px;
+      margin-bottom:16px;
+    }
+    .sibyl-brand .sb-title{
+      font-family:var(--orb);font-size:1.1rem;font-weight:700;
+      letter-spacing:.16em;color:var(--green);text-shadow:var(--glow);
+      display:flex;align-items:center;gap:9px;
+    }
+    html.white .sibyl-brand .sb-title{
+      font-family:var(--jp);color:#0f6cbd;text-shadow:none;letter-spacing:.04em;font-weight:700;
+    }
+    .sibyl-brand .sb-sub{
+      font-size:.62rem;letter-spacing:.22em;color:var(--textdim);
+      text-transform:uppercase;
+    }
+    html.white .sibyl-brand .sb-sub{font-family:var(--jp);color:#9a9a9a;letter-spacing:.06em}
   </style>
 </head>
 <body>
 <!-- Login Section -->
 <div id="loginSection" class="pnl" style="width:100%;max-width:380px;">
   <div class="pad">
+    <div class="sibyl-brand">
+      <div class="sb-title"><span class="sb-dot"></span>SIBYL SYSTEM</div>
+      <div class="sb-sub">Public Safety Bureau · 公安局</div>
+    </div>
     <div class="slbl" style="text-align:center;">▸ AUTHENTICATION</div>
     <div style="text-align:center;font-size:.78rem;color:var(--textdim);margin:8px 0 16px;">
       データベースに接続するにはログインしてください
@@ -623,7 +653,7 @@
 
     <!-- Clock -->
     <div class="pnl pad">
-      <div class="slbl">▸ SIBYL SYSTEM // LIVE SESSION 管制</div>
+      <div class="slbl"><span class="sb-dot" style="margin-right:6px;vertical-align:middle"></span>▸ SIBYL SYSTEM // LIVE SESSION 管制</div>
       <div class="clock-body">
         <div class="aw">
           <div class="cf" id="cf"></div>
