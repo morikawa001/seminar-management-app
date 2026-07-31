@@ -2323,7 +2323,7 @@ function buildTodayCommands(rows){
         if(!postTask29)pending.push('講師へお礼');
         if(!postTask33)pending.push('受講証交付');
         const postKey=!postTask29?'task29':!postTask33?'task33':!postTask28?'task28':'task25';
-        cmds.push({no,title,urgency:'high',csvKey:postKey,action:`事後処理が残っています: ${pending.join(' / ')}`,reason:`開催から${Math.abs(days)}日経過`,buttons:[{label:'Task Checklist',href:'#taskChecklistPanel',no},{label:'お礼メール',recipient:'speaker',purpose:'thanks',no}]});
+        cmds.push({no,title,urgency:'high',csvKey:postKey,action:`事後処理が残っています: ${pending.join(' / ')}`,reason:`開催から${Math.abs(days)}日経過`,buttons:[{label:'確認する',href:'#taskChecklistPanel',no},{label:'お礼メール',recipient:'speaker',purpose:'thanks',no}]});
       }
     }
 
