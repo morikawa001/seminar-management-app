@@ -961,7 +961,7 @@ function loadCsv(e){
   currentHeaders = ensureAdditionalHeaders(
     meta?.fields?.length ? meta.fields : [...DEFAULT_HEADERS]
   );
-  rawRows = Array.isArray(data) ? compactRawRows(data.map(function(r,i){var nr=normalizeRowShape(r);if(nr._order===undefined)nr._order=(Number(nr[fullKeys.no]||0)||(i+1))*1000;return nr})):[];
+  rawRows = Array.isArray(data) ? compactRawRows(dedupeRowsByNo(data.map(function(r,i){var nr=normalizeRowShape(r);if(nr._order===undefined)nr._order=(Number(nr[fullKeys.no]||0)||(i+1))*1000;return nr}))) : [];
       dataRows=buildDisplayRowsFromRaw(rawRows);
       selectedRow = null;
       els.recordSelect.value = '';
@@ -1040,10 +1040,28 @@ function normalizeRowShape(row){
   currentHeaders.forEach(h=>out[h]=trimmedRow[h]??row?.[h]??'');
   if(row.__docId)out.__docId=row.__docId;
   if(row._order!==undefined)out._order=row._order;
+  if(row.updatedAt!==undefined)out.updatedAt=row.updatedAt;
   return out
 }
 function isMeaningfulRow(row){return currentHeaders.some(h=>String(row?.[h]??'').trim()!=='')}
 function compactRawRows(rows){return rows.filter(r=>isMeaningfulRow(r))}
+function dedupeRowsByNo(rows){
+  const out=[];
+  const seen={};
+  rows.forEach(function(r){
+    const no=String(r?.[fullKeys.no]||'').trim();
+    if(!no||!seen[no]){seen[no]=r;out.push(r)}
+    else{
+      const curT=String(r.updatedAt||''),prevT=String(seen[no].updatedAt||'');
+      if(curT&&curT>prevT){
+        const idx=out.indexOf(seen[no]);
+        if(idx>=0)out[idx]=r;
+        seen[no]=r;
+      }
+    }
+  });
+  return out;
+}
 function buildDisplayRowsFromRaw(rows){
   return compactRawRows(rows)
     .filter(r=>/^\d+$/.test(String(r[fullKeys.no]||'').trim()))
@@ -2992,7 +3010,7 @@ function onFirebaseLogin(user){
   document.getElementById('loginMessage').style.display = 'none';
   currentHeaders = ensureAdditionalHeaders([...DEFAULT_HEADERS]);
   FirebaseApp.loadFromFirestore(currentHeaders, function(rows){
-    rawRows = rows.map(function(r,i){var nr=normalizeRowShape(r);if(nr._order===undefined)nr._order=(Number(nr[fullKeys.no]||0)||(i+1))*1000;return nr;});
+    rawRows = dedupeRowsByNo(rows).map(function(r,i){var nr=normalizeRowShape(r);if(nr._order===undefined)nr._order=(Number(nr[fullKeys.no]||0)||(i+1))*1000;return nr;});
     dataRows = buildDisplayRowsFromRaw(rawRows);
     renderRecordOptions();
     renderTable();

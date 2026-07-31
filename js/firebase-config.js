@@ -76,6 +76,7 @@
           (headers || []).forEach(function(h){ row[h] = data[h] || ''; });
           row.__docId = doc.id;
           row._order = data._order;
+          row.updatedAt = data.updatedAt || '';
           rows.push(row);
         });
         if(callback) callback(rows);
