@@ -5,65 +5,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>データ処理システム - Applicant Management Panel</title>
+    <title>▌ SIBYL SYSTEM // DATA PROCESSING 管制 ▌</title>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        /* ── CSS変数（Training Dashboard と完全統一） ── */
+        /* ── CSS変数（SIBYL SYSTEM ブルーテーマに統一） ── */
         :root,[data-theme="dark"]{
-          --bg:#040807;
-          --bg2:#07100d;
-          --panel:#091310;
-          --panel2:#0d1915;
-          --panel3:#10201a;
-          --line:#163328;
-          --line2:#24543f;
-          --line3:#3a8162;
-          --text:#b8ffd3;
-          --text-strong:#d8ffe7;
-          --muted:#75c79a;
-          --faint:#458161;
-          --green:#5bff9c;
-          --green2:#35ff86;
-          --green3:#a9ffca;
-          --cyan:#74e9d6;
-          --warn:#ffe680;
-          --danger:#ff8fb1;
-          --success:#72ffb3;
-          --shadow:0 18px 40px rgba(0,0,0,.34);
-          --glow:0 0 0 1px rgba(91,255,156,.08),0 0 24px rgba(53,255,134,.06);
+          --bg:#030509;
+          --bg2:#050a13;
+          --panel:#081120;
+          --panel2:#0b1526;
+          --panel3:#0f1e38;
+          --line:#142a4a;
+          --line2:#1f3f6e;
+          --line3:#2f5f9e;
+          --text:#a9c8ff;
+          --text-strong:#e2eeff;
+          --muted:#7ba3dd;
+          --faint:#405f94;
+          --green:#38b6ff;
+          --green2:#1f9dff;
+          --green3:#9fdcff;
+          --cyan:#5ce1ff;
+          --warn:#ffd166;
+          --danger:#ff5c7a;
+          --success:#35e0b2;
+          --shadow:0 18px 40px rgba(0,0,0,.42);
+          --glow:0 0 0 1px rgba(56,182,255,.08),0 0 24px rgba(31,157,255,.07);
           --radius:14px;
           --radius-sm:10px;
-          --page-grid-line:rgba(91,255,156,.03);
-          --page-glow-a:rgba(53,255,134,.06);
-          --page-glow-b:rgba(116,233,214,.035);
-          --input-bg:rgba(2,8,6,.88);
-          --button-bg:rgba(6,14,11,.95);
-          --button-primary-bg:rgba(8,26,16,.98);
+          --page-grid-line:rgba(56,182,255,.04);
+          --page-glow-a:rgba(31,157,255,.08);
+          --page-glow-b:rgba(92,225,255,.045);
+          --input-bg:rgba(2,5,12,.88);
+          --button-bg:rgba(5,10,20,.95);
+          --button-primary-bg:rgba(10,26,52,.98);
           --progress-grad:linear-gradient(90deg,var(--green2),var(--green),var(--cyan));
           --scanline-opacity:.07;
           --border-width:1px;
         }
         [data-theme="light"]{
           --bg:#ffffff;
-          --bg2:#f7f6f3;
+          --bg2:#f2f7fc;
           --panel:#ffffff;
-          --panel2:#fbfaf8;
-          --panel3:#f3f2ef;
-          --line:#e8e5df;
-          --line2:#d9d5ce;
-          --line3:#c9c4bc;
-          --text:#37352f;
-          --text-strong:#2f2d28;
-          --muted:rgba(55,53,47,.7);
-          --faint:rgba(55,53,47,.48);
-          --green:#2eaadc;
-          --green2:#2eaadc;
+          --panel2:#f6fafd;
+          --panel3:#eaf1f9;
+          --line:#dbe6f2;
+          --line2:#c2d5e9;
+          --line3:#a6c3e0;
+          --text:#22344a;
+          --text-strong:#0f1c2b;
+          --muted:rgba(34,52,74,.72);
+          --faint:rgba(34,52,74,.5);
+          --green:#0f6cbd;
+          --green2:#0f6cbd;
           --green3:#1f6feb;
-          --cyan:#0f7b6c;
-          --warn:#b98900;
-          --danger:#d44c47;
+          --cyan:#0f7b8c;
+          --warn:#a67600;
+          --danger:#d0405a;
           --success:#0f7b6c;
-          --shadow:0 1px 2px rgba(15,23,42,.04),0 6px 18px rgba(15,23,42,.03);
+          --shadow:0 1px 2px rgba(15,28,43,.05),0 6px 18px rgba(15,28,43,.04);
           --glow:none;
           --radius:14px;
           --radius-sm:10px;
@@ -72,8 +72,8 @@
           --page-glow-b:rgba(0,0,0,0);
           --input-bg:#ffffff;
           --button-bg:#ffffff;
-          --button-primary-bg:#2f2d28;
-          --progress-grad:linear-gradient(90deg,#2eaadc,#2eaadc);
+          --button-primary-bg:#0f6cbd;
+          --progress-grad:linear-gradient(90deg,#0f6cbd,#0f6cbd);
           --scanline-opacity:0;
           --border-width:1px;
         }
@@ -108,7 +108,7 @@
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: linear-gradient(to bottom, transparent 50%, rgba(91,255,156,.015) 50%);
+            background: linear-gradient(to bottom, transparent 50%, rgba(56,182,255,.015) 50%);
             background-size: 100% 4px;
             z-index: 9999;
             pointer-events: none;
@@ -167,7 +167,7 @@
             font-family: 'Share Tech Mono', monospace;
             font-size: 1.3em;
             color: var(--green);
-            text-shadow: 0 0 12px rgba(91,255,156,.5);
+            text-shadow: 0 0 12px rgba(56,182,255,.5);
             letter-spacing: .18em;
             margin-bottom: 8px;
         }
@@ -175,6 +175,20 @@
             color: var(--green2);
             text-shadow: none;
         }
+
+        /* SIBYL SYSTEM パルスドット */
+        .sb-dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 10px var(--green);
+            animation: sibyl-pulse 1.6s ease-in-out infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        [data-theme="light"] .sb-dot { background: #0f6cbd; box-shadow: none; }
+        @keyframes sibyl-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.75)} }
 
         .subtitle {
             font-family: 'Share Tech Mono', monospace;
@@ -563,8 +577,8 @@
     <div class="container">
         <!-- ヘッダー -->
         <header class="hologram">
-            <h1>▌ Applicant Management Panel ▌</h1>
-            <div class="subtitle">DATA PROCESSING SYSTEM ver. 2.0</div>
+            <h1><span class="sb-dot"></span>▌ SIBYL SYSTEM // DATA PROCESSING 管制 ▌</h1>
+            <div class="subtitle">PUBLIC SAFETY BUREAU · 公安局 — DATA PROCESSING SYSTEM ver. 2.0</div>
         </header>
 
         <!-- システムステータス -->
@@ -701,12 +715,12 @@
         window.addEventListener('resize', initDrops);
 
         function drawMatrix(){
-            /* Training Dashboardのdark bg色に合わせてフェード */
-            ctx.fillStyle = 'rgba(4,8,7,0.06)';
+            /* SIBYL SYSTEM の bg 色に合わせてフェード */
+            ctx.fillStyle = 'rgba(3,5,9,0.06)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            /* --green (#5bff9c) に対応 */
-            ctx.fillStyle = '#5bff9c';
+            /* --green (#38b6ff) に対応 */
+            ctx.fillStyle = '#38b6ff';
             ctx.font = fontSize + 'px monospace';
 
             for(let i = 0; i < rainDrops.length; i++){
