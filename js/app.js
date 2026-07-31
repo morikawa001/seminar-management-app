@@ -1385,7 +1385,21 @@ function commitDraft(){
   stagedRow=buildRow();
   const no=String(stagedRow[fullKeys.no]||'').trim();
   const rawIndex=getRawRowIndexByNo(no);
-  if(rawIndex>=0){var nrUp=normalizeRowShape(stagedRow);if(nrUp._order===undefined||!rawRows[rawIndex]._order)nrUp._order=(Number(nrUp[fullKeys.no]||0)||rawRows.length)*1000+rawIndex;else nrUp._order=Number(rawRows[rawIndex]._order);rawRows[rawIndex]=nrUp;lastSaveMode='update'}
+  if(rawIndex>=0){
+    var oldRow=rawRows[rawIndex];
+    var nrUp=normalizeRowShape(stagedRow);
+    if(oldRow.__docId)nrUp.__docId=oldRow.__docId;
+    var FORM_KEYS={};
+    Object.keys(fullKeys).forEach(function(k){if(k!=='qrK1Saved'&&k!=='qrK2Saved'&&k!=='qrK3Saved')FORM_KEYS[fullKeys[k]]=1});
+    ['STATUS_K1','STATUS_HP','STATUS_K2','STATUS_K3'].forEach(function(k){FORM_KEYS[k]=1});
+    currentHeaders.forEach(function(h){
+      if(!FORM_KEYS[h]&&String(oldRow[h]??'').trim()!=='')nrUp[h]=oldRow[h];
+    });
+    if(nrUp._order===undefined&&oldRow._order!==undefined)nrUp._order=Number(oldRow._order);
+    else if(nrUp._order===undefined)nrUp._order=(Number(nrUp[fullKeys.no]||0)||rawRows.length)*1000+rawIndex;
+    rawRows[rawIndex]=nrUp;
+    lastSaveMode='update';
+  }
   else{var nrNew=normalizeRowShape(stagedRow);if(nrNew._order===undefined)nrNew._order=(rawRows.reduce(function(m,r){return Math.max(m,Number(r._order||0))},0)||0)+1000;rawRows=compactRawRows(rawRows);rawRows.push(nrNew);lastSaveMode='insert'}
   rawRows=compactRawRows(rawRows);
   dataRows=buildDisplayRowsFromRaw(rawRows);
