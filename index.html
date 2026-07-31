@@ -67,6 +67,13 @@
     <span class="v2-topbar-stat">Records <b id="sumAllTop">0</b></span>
     <span class="v2-topbar-stat">Year <b id="sumYearTop">0</b></span>
     <span class="v2-topbar-stat">Next <b id="sumNextTop">-</b></span>
+    <span class="v2-topbar-stat priority-stat" id="priorityStat" title="Priority Engine / クリックで Master Table へ" onclick="scrollToSection('masterTableSection')">
+      Priority <b id="priLevel" class="pri-lvl-val">-</b>
+      <span class="pri-div">/</span>
+      Next <b id="priNext">-</b>
+      <span class="pri-div">/</span>
+      Hot <b id="priHot">0</b>
+    </span>
     <span class="v2-topbar-stat">DB <b id="miniDbText" style="font-weight:400">空</b></span>
   </div>
   <div class="v2-topbar-actions">
@@ -1057,6 +1064,7 @@
           <th data-s="subject">対象</th>
           <th class="tc-site">会場</th>
           <th>進捗</th>
+          <th data-s="priority" onclick="toggleMasterPrioritySort()" title="優先度で並べ替え（クリック）">優先度</th>
           <th>起案1</th>
           <th>HP</th>
           <th>起案2</th>
@@ -1073,5 +1081,6 @@
 </div><!-- /appContainer -->
 
 <script src="js/app.js"></script>
+<script src="js/priority-engine.js"></script>
 </body>
 </html>

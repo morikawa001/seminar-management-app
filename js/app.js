@@ -1479,12 +1479,20 @@ function renderTable(){
   const tbody=els.tableList;
   const cnt=document.getElementById('masterCount');
   if(!currentHeaders.length||!dataRows.length){
-    tbody.innerHTML='<tr><td colspan="11" style="padding:2rem;text-align:center;color:var(--muted)">CSVを読み込むか、新規データベースを作成してください。</td></tr>';
+    tbody.innerHTML='<tr><td colspan="12" style="padding:2rem;text-align:center;color:var(--muted)">CSVを読み込むか、新規データベースを作成してください。</td></tr>';
     if(cnt)cnt.textContent='';
+    if(typeof PriorityEngine!=='undefined'&&PriorityEngine.decorateMasterTableWithPriority)PriorityEngine.decorateMasterTableWithPriority();
     return;
   }
   if(cnt)cnt.textContent=dataRows.length+'件';
-  tbody.innerHTML=dataRows.map(r=>{
+  const sortDir=(typeof PriorityEngine!=='undefined')?PriorityEngine.getMasterSortDir():0;
+  const priIndex=(typeof PriorityEngine!=='undefined')?PriorityEngine.buildPriorityIndex(dataRows):null;
+  const rowsForDisplay=sortDir!==0&&priIndex?[...dataRows].sort((a,b)=>{
+    const pa=priIndex.get(String(a[fullKeys.no]||'').trim())||{score:0};
+    const pb=priIndex.get(String(b[fullKeys.no]||'').trim())||{score:0};
+    return (pb.score-pa.score)*sortDir;
+  }):dataRows;
+  tbody.innerHTML=rowsForDisplay.map(r=>{
     const no=r[fullKeys.no]||'';
     const date=r[fullKeys.date]||'';
     const day=r[fullKeys.day]||'';
@@ -1498,6 +1506,10 @@ function renderTable(){
     const k3=r[fullKeys.k3]||'';
     const doneCount=[fullKeys.checkK1,fullKeys.checkHp,fullKeys.checkK2,fullKeys.checkK3].filter(k=>isCheckedValue(r[k])).length;
     const pct=Math.round(doneCount/4*100);
+    const pri=priIndex?priIndex.get(String(no).trim()):null;
+    const priBadge=pri?`<span class="pri-badge pri-${pri.level.toLowerCase()}" title="${esc(pri.reasons.map(x=>x.text).join(' / '))}"><span class="pri-lvl">${pri.level}</span><span class="pri-score">${pri.score}</span></span>`:'';
+    const moveBtns=sortDir===0?`<button class="btn small" style="min-height:26px;padding:0 6px;font-size:.65rem;border-color:var(--primary);color:var(--primary)" onclick="moveRow('${esc(no)}',-1);event.stopPropagation()" title="上に移動">▲</button>
+        <button class="btn small" style="min-height:26px;padding:0 6px;font-size:.65rem;border-color:var(--primary);color:var(--primary)" onclick="moveRow('${esc(no)}',1);event.stopPropagation()" title="下に移動">▼</button>`:'';
     const subjBadge=subject==='研究者'?'<span class="badge bb">研究者</span>'
       :subject==='倫理審査委員会委員'?'<span class="badge be">倫理委員</span>'
       :'<span class="badge bo">研究支援者</span>';
@@ -1508,17 +1520,18 @@ function renderTable(){
       <td>${subjBadge}</td>
       <td class="tc-site" style="color:var(--muted);font-size:.68rem">${esc(site)||'—'}</td>
       <td><div class="pw"><div class="pb"><div class="pf ${pct===100?'full':''}" style="width:${pct}%"></div></div><span class="pp">${pct}%</span></div></td>
+      <td>${priBadge}</td>
       <td>${k1?`<div class="dtg">📋${esc(k1)}</div>`:''}</td>
       <td>${hp?`<div class="dtg">🌐${esc(hp)}</div>`:''}</td>
       <td>${k2?`<div class="dtg">📄${esc(k2)}</div>`:''}</td>
       <td>${k3?`<div class="dtg">🏅${esc(k3)}</div>`:''}</td>
       <td style="white-space:nowrap">
-        <button class="btn small" style="min-height:26px;padding:0 6px;font-size:.65rem;border-color:var(--primary);color:var(--primary)" onclick="moveRow('${esc(no)}',-1);event.stopPropagation()" title="上に移動">▲</button>
-        <button class="btn small" style="min-height:26px;padding:0 6px;font-size:.65rem;border-color:var(--primary);color:var(--primary)" onclick="moveRow('${esc(no)}',1);event.stopPropagation()" title="下に移動">▼</button>
+        ${moveBtns}
         <button class="btn small" style="min-height:26px;padding:0 8px;font-size:.65rem;border-color:var(--danger);color:var(--danger)" onclick="deleteRecord('${esc(no)}');event.stopPropagation()">削除</button>
       </td>
     </tr>`;
   }).join('');
+  if(typeof PriorityEngine!=='undefined'&&PriorityEngine.decorateMasterTableWithPriority)PriorityEngine.decorateMasterTableWithPriority();
 }
 
 function deleteRecord(no){
@@ -1782,6 +1795,7 @@ const yearCount = dataRows.filter(r => {
   updateAnnualGauge(done, total, yearCount, soon, draftCount);
   // mailRecordSelect を常に同期
   renderMailRecordOptions();
+  if(typeof PriorityEngine!=='undefined'&&PriorityEngine.renderPrioritySummary)PriorityEngine.renderPrioritySummary();
 }
 
 function renderConfirm(warns){
@@ -2358,7 +2372,15 @@ function renderTodayCommand(){
     return;
   }
 
-  el.innerHTML=cmds.map((cmd,idx)=>{
+  const priIndex=(typeof PriorityEngine!=='undefined')?PriorityEngine.buildPriorityIndex(dataRows):null;
+  const order={critical:0,high:1,normal:2,info:3};
+  const decorated=cmds.map(cmd=>{
+    const pri=priIndex?priIndex.get(String(cmd.no||'').trim()):null;
+    return Object.assign({},cmd,{pri:pri||{score:0,level:'STABLE',reasons:[]}});
+  }).sort((a,b)=>b.pri.score-a.pri.score||order[a.urgency]-order[b.urgency]||Number(a.no)-Number(b.no));
+  const top3=decorated.slice(0,3);
+
+  el.innerHTML=top3.map((cmd,idx)=>{
     const urgClass={
       critical:'critical',
       high:'high',
@@ -2407,6 +2429,7 @@ function renderTodayCommand(){
           </div>
         </div>
         <div class="tc-action"><i class="tc-action-icon">▴</i>${esc(cmd.action || '')}</div>
+        <div class="tc-pri"><span class="pri-pill pri-${cmd.pri.level.toLowerCase()}">${cmd.pri.level}</span><span class="pri-score">${cmd.pri.score}</span><span class="tc-pri-reasons">${esc((cmd.pri.reasons||[]).slice(0,4).map(x=>x.text).join(' / '))}</span></div>
         <div class="tc-reason">${esc(cmd.reason || '')}</div>
         <div class="tc-btns">${btns}</div>
       </div>
