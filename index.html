@@ -10,8 +10,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>臨床研究研修会 ダッシュボード / dual-theme control ui v2026-06-05c</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%230d2818'/%3E%3Ctext x='8' y='12' font-size='10' text-anchor='middle' fill='%2362e69a'%3E%E2%97%8F%3C/text%3E%3C/svg%3E">
+<title>SIBYL SYSTEM / 研修会管理コンソール — 公安局統合管制</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23081430'/%3E%3Ctext x='8' y='12' font-size='10' text-anchor='middle' fill='%2338b6ff'%3ES%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/theme-base.css">
 <link rel="stylesheet" href="css/styles.css">
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
@@ -32,11 +32,11 @@
 
 <!-- ── Login Screen ── -->
 <div id="loginSection" style="position:relative;z-index:10;">
-  <div class="v2-topbar"></div>
+  <div class="v2-topbar"><div class="v2-topbar-title">SIBYL SYSTEM <span>v4.21</span></div></div>
   <div class="login-overlay">
     <div class="login-card">
-      <div class="login-header">研修会管理システム</div>
-      <p class="login-desc">ログインしてデータベースにアクセス</p>
+      <div class="login-header">SIBYL SYSTEM <span class="sibyl-sub">Public Safety Bureau · 公安局</span></div>
+      <p class="login-desc">管制端末への認証を実行してください / SIBYL SYSTEM データベースに接続</p>
       <div class="login-field">
         <label>メールアドレス</label>
         <input type="email" id="loginEmail" placeholder="example@email.com">
@@ -62,7 +62,7 @@
 
 <!-- ── v2 TOPBAR ── -->
 <header class="v2-topbar">
-  <div class="v2-topbar-title">DASHBOARD <span>v2</span></div>
+  <div class="v2-topbar-title">SIBYL SYSTEM <span>v4.21</span></div>
   <div class="v2-topbar-stats">
     <span class="v2-topbar-stat">Records <b id="sumAllTop">0</b></span>
     <span class="v2-topbar-stat">Year <b id="sumYearTop">0</b></span>
@@ -94,7 +94,7 @@
 <!-- ── v2 SIDEBAR + MAIN ── -->
 <div class="v2-layout">
   <nav class="v2-sidebar">
-    <div class="v2-sidebar-lbl">Navigation</div>
+    <div class="v2-sidebar-lbl">SIBYL SYSTEM · ナビゲーション</div>
     <button class="v2-sidebar-btn active" data-section="topControlPanel" onclick="scrollToSection('topControlPanel')"><i>◉</i><span>ダッシュボード</span></button>
     <button class="v2-sidebar-btn" data-section="todayCommandSection" onclick="scrollToSection('todayCommandSection')"><i>▶</i><span>今日のアクション</span></button>
     <button class="v2-sidebar-btn" data-section="exceptionQueueSection" onclick="scrollToSection('exceptionQueueSection')"><i>!</i><span>例外確認</span></button>
@@ -119,14 +119,15 @@
   <div class="wrap">
 
     <section class="hero-panel wide" id="topControlPanel" style="scroll-margin-top:56px">
-    <div class="corner-label">Dual Theme Control UI</div>
+    <div class="corner-label">SIBYL SYSTEM // 公安局</div>
       <div class="hero-head">
         <div class="id-block top-hero-copy">
-          <div class="kicker">Clinical Research Training Control</div>
-          <h1>▌ Clinical Research Training Dashboard ▌</h1>
+          <div class="kicker">Public Safety Bureau · Operations Division</div>
+          <h1>▌ SIBYL SYSTEM — 研修会計画管制コンソール ▌</h1>
           <p class="project-line">20XX年_臨床研究研修会計画_project_2501</p>
-          <p class="hero-desc">It serves as an operation platform that centrally manages training session planning, and the light theme provides a bright, Notion-like business UI that is easy to read.</p>
-          <p class="hero-desc jp">オペレーション_プラットフォームとして研修会開催計画を一元管理することができる / ライトテーマは Notion 風の明るく読みやすい業務UIとなっている</p>
+          <p class="hero-desc">基幹システム「SIBYL SYSTEM」の管制下で研修会開催計画を一元管理する統合オペレーション・プラットフォーム / ライトテーマは明るく読みやすい業務UIを維持。</p>
+          <p class="hero-desc jp">公安局・統合運用端末として研修会開催計画を一元管理 / ライトテーマは Notion 風の明るく読みやすい業務UIを維持している</p>
+          <p class="sibyl-status"><i></i> SIBYL SYSTEM ONLINE <span class="sibyl-code">// SECURE CHANNEL · CODING TERMINAL LINKED</span></p>
         </div>
         <div class="hero-stats" style="display:none">
           <div class="stat-box"><span>Records</span><b id="sumAllTop">0</b></div>

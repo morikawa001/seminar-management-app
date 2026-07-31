@@ -190,7 +190,7 @@ input[readonly],textarea[readonly]{
   font-weight:400;
   letter-spacing:.18em;
   color:var(--green);
-  text-shadow:0 0 12px rgba(0,200,83,.5),var(--hero-title-shadow);
+  text-shadow:0 0 12px rgba(56,182,255,.55),var(--hero-title-shadow);
 }
 [data-theme="light"] .id-block h1{
   color:var(--green);
@@ -530,10 +530,10 @@ label[for="templateFiles"] {
   color:var(--text-strong);
   border:1px solid var(--line2);
 }
-.status.s2{background:#eef7f3;color:var(--success);border:1px solid #d7eee5}
-.status.s3{background:#eef5fb;color:var(--green);border:1px solid #d7e8f7}
-.status.s1{background:#fff8e7;color:var(--warn);border:1px solid #f2e3b4}
-.status.s4{background:#fff0ef;color:var(--danger);border:1px solid #f4d9d7}
+.status.s2{background:#e9f7f2;color:var(--success);border:1px solid #d2ede3}
+.status.s3{background:#eaf4fd;color:var(--green);border:1px solid #d6e7f8}
+.status.s1{background:#fdf7e4;color:var(--warn);border:1px solid #f3e4b2}
+.status.s4{background:#fdeeee;color:var(--danger);border:1px solid #f5d6db}
 [data-theme="dark"] .status.s2{background:rgba(114,255,179,.08);color:var(--success);border:1px solid rgba(114,255,179,.16)}
 [data-theme="dark"] .status.s3{background:rgba(116,233,214,.08);color:var(--cyan);border:1px solid rgba(116,233,214,.15)}
 [data-theme="dark"] .status.s1{background:rgba(255,230,128,.08);color:var(--warn);border:1px solid rgba(255,230,128,.16)}
@@ -870,13 +870,13 @@ label[for="templateFiles"] {
   opacity:1;
 }
 [data-theme="light"] .btn.small.manual-btn{
-  color:#1a7f5a;
-  border-color:rgba(26,127,90,.28);
-  background:rgba(26,127,90,.04);
+  color:#0f6cbd;
+  border-color:rgba(15,108,189,.28);
+  background:rgba(15,108,189,.04);
 }
 [data-theme="light"] .btn.small.manual-btn:hover{
-  background:rgba(26,127,90,.09);
-  border-color:rgba(26,127,90,.42);
+  background:rgba(15,108,189,.09);
+  border-color:rgba(15,108,189,.42);
 }
 /* ── Nixie Clock Panel ── */
 .nixie-panel{
@@ -895,7 +895,7 @@ label[for="templateFiles"] {
   content:'';
   position:absolute;
   inset:0;
-  background:radial-gradient(ellipse at 50% 0%, rgba(255,140,0,.06) 0%, transparent 70%);
+  background:radial-gradient(ellipse at 50% 0%, rgba(0,170,255,.08) 0%, transparent 70%);
   pointer-events:none;
 }
 .nixie-date-row{
@@ -907,40 +907,40 @@ label[for="templateFiles"] {
 }
 .nixie-digit{
   font-family:'Share Tech Mono', 'Courier New', monospace;
-  background:linear-gradient(180deg,#1a0e00 0%,#120900 100%);
-  color:#ff8c00;
-  border:1px solid #3a2000;
+  background:linear-gradient(180deg,#001224 0%,#000b16 100%);
+  color:#00a6ff;
+  border:1px solid #0a3a66;
   border-radius:5px;
   padding:2px 7px;
   font-size:1.05rem;
   letter-spacing:.05em;
   box-shadow:
-    0 0 6px rgba(255,120,0,.55),
-    0 0 14px rgba(255,80,0,.25),
+    0 0 6px rgba(0,150,255,.55),
+    0 0 14px rgba(0,110,255,.28),
     inset 0 1px 3px rgba(0,0,0,.7);
   text-shadow:
-    0 0 6px #ff8c00,
-    0 0 14px rgba(255,140,0,.7);
+    0 0 6px #00a6ff,
+    0 0 14px rgba(0,166,255,.7);
   transition:color .1s;
   user-select:none;
 }
 [data-theme="light"] .nixie-digit{
-  background:linear-gradient(180deg,#1a0e00 0%,#0d0600 100%);
-  color:#ffa030;
-  border-color:#4a2800;
+  background:linear-gradient(180deg,#001224 0%,#000a14 100%);
+  color:#19aaff;
+  border-color:#0f4a80;
   box-shadow:
-    0 0 8px rgba(255,140,0,.7),
-    0 0 18px rgba(255,100,0,.35),
+    0 0 8px rgba(0,150,255,.7),
+    0 0 18px rgba(0,120,255,.35),
     inset 0 1px 3px rgba(0,0,0,.8);
   text-shadow:
-    0 0 8px #ff9000,
-    0 0 18px rgba(255,160,0,.8);
+    0 0 8px #00aaff,
+    0 0 18px rgba(0,170,255,.8);
 }
 .nixie-sep{
   font-family:'Share Tech Mono', monospace;
-  color:rgba(255,140,0,.5);
+  color:rgba(0,166,255,.5);
   font-size:1.0rem;
-  text-shadow:0 0 6px rgba(255,120,0,.4);
+  text-shadow:0 0 6px rgba(0,150,255,.4);
   line-height:1;
   padding-bottom:2px;
 }
@@ -951,41 +951,41 @@ label[for="templateFiles"] {
 }
 .nixie-time-digit{
   font-family:'Share Tech Mono', 'Courier New', monospace;
-  background:linear-gradient(180deg,#0e1800 0%,#080e00 100%);
-  color:#39ff14;
-  border:1px solid #1a3000;
+  background:linear-gradient(180deg,#00202e 0%,#00121c 100%);
+  color:#00e5ff;
+  border:1px solid #0a4a5e;
   border-radius:5px;
   padding:4px 10px;
   font-size:1.7rem;
   letter-spacing:.08em;
   box-shadow:
-    0 0 8px rgba(57,255,20,.5),
-    0 0 20px rgba(57,255,20,.2),
+    0 0 8px rgba(0,229,255,.5),
+    0 0 20px rgba(0,200,255,.22),
     inset 0 1px 4px rgba(0,0,0,.8);
   text-shadow:
-    0 0 8px #39ff14,
-    0 0 20px rgba(57,255,20,.6);
+    0 0 8px #00e5ff,
+    0 0 20px rgba(0,229,255,.6);
   min-width:2.2ch;
   text-align:center;
   user-select:none;
 }
 [data-theme="light"] .nixie-time-digit{
-  background:linear-gradient(180deg,#0a1200 0%,#060b00 100%);
-  color:#50ff20;
-  border-color:#224400;
+  background:linear-gradient(180deg,#00222f 0%,#00141d 100%);
+  color:#19e0ff;
+  border-color:#0d5b70;
   box-shadow:
-    0 0 10px rgba(80,255,32,.6),
-    0 0 24px rgba(80,255,32,.25),
+    0 0 10px rgba(0,229,255,.6),
+    0 0 24px rgba(0,210,255,.28),
     inset 0 1px 4px rgba(0,0,0,.85);
   text-shadow:
-    0 0 10px #50ff20,
-    0 0 24px rgba(80,255,32,.7);
+    0 0 10px #00e8ff,
+    0 0 24px rgba(0,235,255,.7);
 }
 .nixie-colon{
   font-family:'Share Tech Mono', monospace;
-  color:rgba(57,255,20,.6);
+  color:rgba(0,229,255,.6);
   font-size:1.7rem;
-  text-shadow:0 0 8px rgba(57,255,20,.5);
+  text-shadow:0 0 8px rgba(0,229,255,.5);
   line-height:1;
   margin-bottom:2px;
   animation:nixie-blink 1s step-end infinite;
@@ -997,11 +997,11 @@ label[for="templateFiles"] {
 .nixie-day-badge{
   font-family:'Share Tech Mono', monospace;
   font-size:.78rem;
-  color:rgba(255,140,0,.75);
+  color:rgba(0,166,255,.75);
   letter-spacing:.12em;
   text-transform:uppercase;
-  text-shadow:0 0 6px rgba(255,120,0,.4);
-  border-top:1px solid rgba(255,140,0,.18);
+  text-shadow:0 0 6px rgba(0,150,255,.4);
+  border-top:1px solid rgba(0,166,255,.18);
   padding-top:6px;
   width:100%;
   text-align:center;
@@ -1661,3 +1661,49 @@ html{scroll-behavior:smooth}
 .tc-pri{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .tc-pri-reasons{font-size:.75rem;color:var(--muted);line-height:1.5}
 .tc-card.done .tc-pri{display:none}
+
+/* ════ SIBYL SYSTEM / 公安局 Psycho-Pass モチーフ装飾 ════ */
+.sibyl-status{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Share Tech Mono','Courier New',monospace;
+  font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--cyan);
+  margin-top:4px;
+}
+.sibyl-status i{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 10px var(--cyan);
+  animation:sibyl-pulse 1.6s ease-in-out infinite;
+  flex-shrink:0;
+}
+.sibyl-status .sibyl-code{color:var(--faint);letter-spacing:.1em}
+@keyframes sibyl-pulse{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.3;transform:scale(.75)}
+}
+.v2-topbar{position:relative}
+.v2-topbar::before{
+  content:'';
+  position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--green),transparent);
+  opacity:.55;pointer-events:none;
+}
+.v2-topbar-title::before{
+  content:'';width:7px;height:7px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 10px var(--green);
+  animation:sibyl-pulse 1.6s ease-in-out infinite;
+  flex-shrink:0;
+}
+.panel,.hero-panel,.login-card{
+  border-top:1px solid color-mix(in srgb, var(--green) 28%, var(--line));
+}
+.login-header{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.login-header .sibyl-sub{
+  font-family:inherit;font-size:.72rem;font-weight:700;
+  letter-spacing:.22em;color:var(--muted);
+  text-transform:uppercase;
+}

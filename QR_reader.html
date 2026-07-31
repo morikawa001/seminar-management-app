@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QRファイル管理 - 研修会システム</title>
+    <title>QRファイル管理 — SIBYL SYSTEM / 公安局統合管制</title>
     <link rel="stylesheet" href="css/theme-base.css">
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
@@ -50,14 +50,14 @@
         .scanner-controls { margin-top: 12px; }
 
         #result-card {
-            border: 3px solid #2ecc71;
+            border: 3px solid #38b6ff;
             border-radius: 12px; padding: 16px;
-            background: #0d2818;
+            background: #081120;
         }
-        .result-field { padding: 8px 0; border-bottom: 1px solid #1a4a2a; }
+        .result-field { padding: 8px 0; border-bottom: 1px solid #1f3f6e; }
         .result-field:last-child { border-bottom: none; }
-        .result-label { font-weight: bold; color: #82e0aa; font-size: 13px; display: block; margin-bottom: 2px; }
-        .result-value { font-size: 15px; color: #d5f5e3; display: block; }
+        .result-label { font-weight: bold; color: #7ba3dd; font-size: 13px; display: block; margin-bottom: 2px; }
+        .result-value { font-size: 15px; color: #d7e7ff; display: block; }
 
         .status-msg { padding: 12px 14px; border-radius: 10px; margin: 10px 0; font-weight: bold; font-size: 14px; line-height: 1.4; }
         .status-ok { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
@@ -68,14 +68,14 @@
 
         #scanned-list { list-style: none; padding: 0; }
         #scanned-list li {
-            background: #0d2818; margin: 8px 0; padding: 14px;
-            border-radius: 10px; border: 1px solid #1a4a2a;
+            background: #081120; margin: 8px 0; padding: 14px;
+            border-radius: 10px; border: 1px solid #1f3f6e;
             display: flex; justify-content: space-between; align-items: center; gap: 10px;
         }
-        #scanned-list .scanned-title { font-weight: bold; font-size: 15px; color: #d5f5e3; }
-        #scanned-list .scanned-date { color: #82e0aa; font-size: 13px; margin-top: 3px; }
-        .badge-saved { background: #2ecc71; color: #0d2818; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap; }
-        .badge-unsaved { background: #1a4a2a; color: #82e0aa; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap; }
+        #scanned-list .scanned-title { font-weight: bold; font-size: 15px; color: #d7e7ff; }
+        #scanned-list .scanned-date { color: #7ba3dd; font-size: 13px; margin-top: 3px; }
+        .badge-saved { background: #38b6ff; color: #081120; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap; }
+        .badge-unsaved { background: #1f3f6e; color: #7ba3dd; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap; }
 
         @media (min-width: 768px) {
             body { max-width: 700px; margin: 0 auto; padding: 24px; }
@@ -98,7 +98,7 @@
     <div id="login-section">
         <div class="panel" style="margin-top:40px;max-width:400px;margin-left:auto;margin-right:auto;">
             <div class="panel-head" style="justify-content:center;">
-                <h1>QRファイル管理</h1>
+                <h1>SIBYL SYSTEM <span style="font-size:14px;color:var(--muted);letter-spacing:.2em;font-weight:400;">· QRファイル管理</span></h1>
             </div>
             <div style="padding:16px;">
                 <h2 style="margin-bottom:16px;">ログイン</h2>
@@ -121,7 +121,7 @@
         <!-- ヘッダー -->
         <div class="panel" style="margin-bottom:4px;">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 14px;">
-                <h1 style="margin:0;text-align:left;font-size:20px;">QRファイル管理</h1>
+                <h1 style="margin:0;text-align:left;font-size:20px;">SIBYL SYSTEM · QRファイル管理</h1>
                 <div style="display:flex;gap:8px;align-items:center;">
                     <span id="user-info" style="font-size:13px;color:var(--green);font-weight:bold;"></span>
                     <button onclick="window.logout()" class="btn small" style="background:var(--danger);color:#fff;width:auto;">ログアウト</button>

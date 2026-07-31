@@ -2028,8 +2028,8 @@ window.addEventListener('load', function(){
   const SPEED_MIN = 0.20;
   const SPEED_MAX = 0.60;
   const COLORS = [
-    'rgba(30,200,100,',
-    'rgba(0,180,220,',
+    'rgba(40,170,255,',
+    'rgba(0,200,235,',
     'rgba(180,100,255,',
     'rgba(255,140,0,',
   ];
@@ -2080,7 +2080,7 @@ window.addEventListener('load', function(){
 
   function drawGrid(){
     var GS=40;
-    ctx.strokeStyle='rgba(0,180,100,0.05)';
+    ctx.strokeStyle='rgba(40,150,255,0.05)';
     ctx.lineWidth=0.5;
     for(var x=0;x<canvas.width;x+=GS){
       ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();
@@ -2089,7 +2089,7 @@ window.addEventListener('load', function(){
       ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();
     }
     var nodes=getNodes();
-    ctx.fillStyle='rgba(0,220,120,0.14)';
+    ctx.fillStyle='rgba(40,170,255,0.14)';
     for(var i=0;i<nodes.length;i++){
       ctx.beginPath();ctx.arc(nodes[i].x,nodes[i].y,1.4,0,Math.PI*2);ctx.fill();
     }

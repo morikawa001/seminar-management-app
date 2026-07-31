@@ -149,3 +149,13 @@ QR_reader.html                # QRコード出席管理（別ページ、Firebas
 - ✅ **新規追加直後の `__docId` 未記録バグを修正**: `saveToFirestore()` の `.add()` で発行されたドキュメントIDを行に記録し、以降の編集で `.set()` により上書き更新されるように修正（新規追加→編集の繰り返しで重複ドキュメントが増える問題を解消）
 - ✅ **読み込み時の重複Noを最新更新日で解決**: `loadFromFirestore()` で `updatedAt` を取得し、`dedupeRowsByNo()` で同一Noの重複行は `updatedAt` が最新のドキュメントを優先。過去のバグで蓄積した重複ドキュメントがリロード時に旧データを表示する問題を解消
 - ✅ ファビコン（`favicon.ico` 404）対策としてインラインSVGファビコンを追加
+
+### 2026-07-31: Psycho-Pass モチーフ「SIBYL SYSTEM / 公安局」デザイン改修（機能変更なし）
+- ✅ `theme-base.css` をブラック×ブルー基調の公安局カラーに刷新（`--green` 等の変数名は維持、値のみ変更。JS/HTMLの参照は無変更）
+- ✅ `styles.css` のハードコード色をブルー系へ（heroタイトル光・Nixie時計をブルー/シアンのグローに・statusピル・manual-btn のライトテーマ色）
+- ✅ `matrix-rain.js` / `app.js` の背景コードレイン・グリッド・ノードをブルーサイバー色に変更
+- ✅ `index.html` に SIBYL SYSTEM ブランディング追加（トップバー・ログイン画面・hero見出し・corner-label・サイドバーラベル・ファビコンを青に）
+- ✅ トップバータイトル・hero に SIBYL SYSTEM パルスドット（`sibyl-status` / `@keyframes sibyl-pulse`）を追加
+- ✅ `QR_reader.html` のインライン配色（結果カード・履歴リスト・バッジ）をブルー基調に変更＋見出しに SIBYL SYSTEM 追加
+- ✅ `live_session.html` の BLACK/WHITE 両テーマをブルー基調に刷新（グリーン系 `rgba(0,200,83,*)`・`#39ff14`・`#2e7d52` 等をブルーへ置換）＋見出し・タイトルを SIBYL SYSTEM 表記に
+- ⚠️ 対象はメインアプリ（`index.html` / `QR_reader.html` / `live_session.html` / `css` / `js`）。外部公開用の独立ページ（`seminar.html` / `attend.html` / `license.html` / `operator_manual.html` / `participant_management_panel.html` / `SilenceCutPro.html`）は未変更
