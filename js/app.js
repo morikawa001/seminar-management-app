@@ -2381,6 +2381,9 @@ function renderTodayCommand(){
     const hintText = isDone ? '▼ 展開' : '';
 
     const btns=(cmd.buttons||[]).map(b=>{
+      if(b.label==='確認する'&&b.no){
+        return `<a class="tc-btn" href="#taskChecklistPanel" onclick="loadRowAndOpenTaskChecklist('${esc(b.no)}');return false;">${esc(b.label)}</a>`;
+      }
       if(b.href){
         const secId = b.href.replace('#','');
         return `<a class="tc-btn" href="${esc(b.href)}" onclick="scrollToSection('${secId}');${b.no ? `selectRecordByNo('${esc(b.no)}');` : ''}return false;">${esc(b.label)}</a>`;
@@ -2480,7 +2483,7 @@ function renderExceptionQueue(){
     return `<div class="eq-item sev-${ex.sev}">
       <div><span class="eq-tag ${tagClass}">${tagLabel}</span><div class="eq-no" style="margin-top:4px">No.${esc(ex.no)}</div></div>
       <div class="eq-item-body"><strong>${esc(ex.label)}</strong><p>${esc(ex.title)} ─ ${esc(ex.detail)}</p></div>
-      <div><a class="btn small" href="#entryConsoleSection" onclick="scrollToSection('entryConsoleSection');selectRecordByNo('${esc(ex.no)}');return false;">確認する</a></div>
+      <div><a class="btn small" href="#taskChecklistPanel" onclick="loadRowAndOpenTaskChecklist('${esc(ex.no)}');return false;">確認する</a></div>
     </div>`;
   }).join('');
 }
@@ -2776,6 +2779,13 @@ function selectRecordByNo(no){
   if(row){ selectedRow=row; }
 }
 window.selectRecordByNo=selectRecordByNo;
+
+function loadRowAndOpenTaskChecklist(no){
+  if(typeof selectRecordByNo==='function') selectRecordByNo(no);
+  if(typeof loadSelectedIntoForm==='function') loadSelectedIntoForm();
+  scrollToSection('taskChecklistPanel');
+}
+window.loadRowAndOpenTaskChecklist=loadRowAndOpenTaskChecklist;
 
 function generateMailTemplate(){
   const no=document.getElementById('mailRecordSelect').value;
