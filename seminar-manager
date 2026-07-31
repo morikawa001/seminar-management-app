@@ -1,0 +1,858 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>臨床研究研修会 管理システム</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="light"]{
+  --bg:#f7f6f2;--surface:#f9f8f5;--surface2:#fbfbf9;--offset:#f3f0ec;--dynamic:#e6e4df;
+  --divider:#dcd9d5;--border:#d4d1ca;
+  --text:#28251d;--muted:#7a7974;--faint:#bab9b4;
+  --primary:#01696f;--primary-h:#0c4e54;--primary-hi:#cedcd8;
+  --success:#437a22;--success-hi:#d4dfcc;
+  --warn:#964219;--warn-hi:#ddcfc6;
+  --error:#a12c7b;--error-hi:#e0ced7;
+  --gold:#d19900;--gold-hi:#e9e0c6;
+  --blue:#006494;--blue-hi:#c6d8e4;
+  --r-sm:.375rem;--r-md:.5rem;--r-lg:.75rem;--r-xl:1rem;--r-full:9999px;
+  --sh-sm:0 1px 2px oklch(0.2 0.01 80/.06);
+  --sh-md:0 4px 12px oklch(0.2 0.01 80/.08);
+  --sh-lg:0 12px 32px oklch(0.2 0.01 80/.12);
+  --tr:180ms cubic-bezier(0.16,1,0.3,1);
+  --xs:clamp(.75rem,.7rem + .25vw,.875rem);
+  --sm:clamp(.875rem,.8rem + .35vw,1rem);
+  --base:clamp(1rem,.95rem + .25vw,1.125rem);
+  --lg:clamp(1.125rem,1rem + .75vw,1.5rem);
+}
+[data-theme="dark"]{
+  --bg:#171614;--surface:#1c1b19;--surface2:#201f1d;--offset:#1d1c1a;--dynamic:#2d2c2a;
+  --divider:#262523;--border:#393836;
+  --text:#cdccca;--muted:#797876;--faint:#5a5957;
+  --primary:#4f98a3;--primary-h:#227f8b;--primary-hi:#313b3b;
+  --success:#6daa45;--success-hi:#3a4435;
+  --warn:#bb653b;--warn-hi:#564942;
+  --error:#d163a7;--error-hi:#4c3d46;
+  --gold:#e8af34;--gold-hi:#4d4332;
+  --blue:#5591c7;--blue-hi:#3a4550;
+  --sh-sm:0 1px 2px oklch(0 0 0/.2);
+  --sh-md:0 4px 12px oklch(0 0 0/.3);
+  --sh-lg:0 12px 32px oklch(0 0 0/.4);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{min-height:100dvh;font-family:'Satoshi',sans-serif;font-size:var(--sm);color:var(--text);background:var(--bg);transition:background var(--tr),color var(--tr)}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit}
+table{border-collapse:collapse;width:100%}
+input,select{font:inherit;color:inherit}
+
+header{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:var(--sh-sm)}
+.hi{max-width:1400px;margin:0 auto;padding:0 1.5rem;height:56px;display:flex;align-items:center;gap:1rem}
+.logo{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:var(--base);color:var(--primary)}
+.hact{margin-left:auto;display:flex;align-items:center;gap:.5rem}
+.btn{display:inline-flex;align-items:center;gap:.375rem;padding:.4rem .875rem;border-radius:var(--r-md);font-size:var(--xs);font-weight:500;transition:background var(--tr),color var(--tr),border-color var(--tr);white-space:nowrap;border:1px solid transparent}
+.btn-p{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-p:hover{background:var(--primary-h)}
+.btn-g{color:var(--muted);border-color:var(--border)}
+.btn-g:hover{background:var(--offset);color:var(--text)}
+.ibt{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:var(--r-md);color:var(--muted);transition:background var(--tr),color var(--tr)}
+.ibt:hover{background:var(--offset);color:var(--text)}
+
+.tabs{background:var(--surface);border-bottom:1px solid var(--border)}
+.tabs-in{max-width:1400px;margin:0 auto;padding:0 1.5rem;display:flex}
+.tab{padding:.625rem 1rem;font-size:var(--xs);font-weight:500;color:var(--muted);border-bottom:2px solid transparent;transition:color var(--tr),border-color var(--tr);cursor:pointer}
+.tab:hover{color:var(--text)}
+.tab.act{color:var(--primary);border-bottom-color:var(--primary)}
+
+.main{max-width:1400px;margin:0 auto;padding:1.5rem}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.75rem;margin-bottom:1.5rem}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1rem;box-shadow:var(--sh-sm)}
+.sl{font-size:var(--xs);color:var(--muted);margin-bottom:.25rem}
+.sv{font-size:var(--lg);font-weight:700;font-variant-numeric:tabular-nums}
+.sv.tc{color:var(--primary)}.sv.gc{color:var(--success)}.sv.oc{color:var(--gold)}.sv.bc{color:var(--blue)}
+
+.fb{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;align-items:center}
+.fi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:.4rem .75rem;font-size:var(--xs);outline:none;width:220px;transition:border-color var(--tr)}
+.fi:focus{border-color:var(--primary)}
+.fs{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:.4rem .625rem;font-size:var(--xs);outline:none;cursor:pointer}
+
+.tw{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-sm)}
+.ts{overflow-x:auto}
+.dt{min-width:860px}
+.dt thead th{background:var(--offset);padding:.5rem .75rem;font-size:var(--xs);font-weight:600;color:var(--muted);text-align:left;white-space:nowrap;border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+.dt thead th:hover{color:var(--text)}
+.dt thead th.srt{color:var(--primary)}
+.dt tbody tr{border-bottom:1px solid var(--divider);cursor:pointer;transition:background var(--tr)}
+.dt tbody tr:hover{background:var(--offset)}
+.dt tbody tr:last-child{border-bottom:none}
+.dt tbody td{padding:.5rem .75rem;font-size:var(--xs);vertical-align:middle}
+.tc2{font-weight:500;max-width:260px}
+.tt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+.badge{display:inline-flex;align-items:center;padding:.15rem .5rem;border-radius:var(--r-full);font-size:.68rem;font-weight:600;white-space:nowrap}
+.bd{background:var(--success-hi);color:var(--success)}
+.bw{background:var(--gold-hi);color:var(--gold)}
+.bt{background:var(--dynamic);color:var(--muted)}
+.bb{background:var(--blue-hi);color:var(--blue)}
+.bo{background:var(--warn-hi);color:var(--warn)}
+
+.pw{display:flex;align-items:center;gap:.375rem;min-width:80px}
+.pb{flex:1;height:4px;background:var(--dynamic);border-radius:var(--r-full);overflow:hidden}
+.pf{height:100%;border-radius:var(--r-full);transition:width .4s;background:var(--primary)}
+.pf.full{background:var(--success)}
+.pp{font-size:.68rem;color:var(--muted);font-variant-numeric:tabular-nums;width:28px;text-align:right}
+
+.dots{display:flex;flex-wrap:wrap;gap:2px;max-width:110px}
+.dot{width:7px;height:7px;border-radius:50%}
+.dot.on{background:var(--success)}
+.dot.off{background:var(--dynamic)}
+
+.dtg{display:inline-flex;align-items:center;gap:.25rem;padding:.1rem .45rem;background:var(--offset);border-radius:var(--r-full);font-size:.67rem;color:var(--muted)}
+
+/* Panel */
+.ov{position:fixed;inset:0;background:oklch(0.15 0.01 80/.5);z-index:200;display:none;align-items:flex-start;justify-content:flex-end}
+.ov.open{display:flex}
+.pn{width:min(540px,100vw);height:100dvh;background:var(--surface);border-left:1px solid var(--border);overflow-y:auto;box-shadow:var(--sh-lg);animation:sli .2s ease}
+@keyframes sli{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.ph{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 1.25rem;display:flex;align-items:center;gap:.75rem;z-index:1}
+.ph h2{font-size:var(--base);font-weight:600;flex:1}
+.pb2{padding:1.25rem}
+.ps{margin-bottom:1.5rem}
+.ps h3{font-size:var(--xs);font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.625rem;padding-bottom:.375rem;border-bottom:1px solid var(--divider)}
+.ig{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.ii label{font-size:var(--xs);color:var(--muted);display:block;margin-bottom:.125rem}
+.ii span{font-size:var(--xs);font-weight:500}
+.cl{display:grid;gap:.2rem}
+.ci{display:flex;align-items:center;gap:.5rem;padding:.35rem .5rem;border-radius:var(--r-md);transition:background var(--tr)}
+.ci:hover{background:var(--offset)}
+.ci input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:var(--primary);flex-shrink:0}
+.ci label{font-size:var(--xs);cursor:pointer;flex:1;line-height:1.4}
+.ci.ck label{color:var(--muted);text-decoration:line-through}
+
+/* Gantt */
+.gw{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-sm)}
+.gc2{padding:.75rem 1rem;display:flex;gap:.5rem;align-items:center;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.gsc{overflow-x:auto}
+.gg{min-width:780px}
+.ghd{display:flex;background:var(--offset);border-bottom:1px solid var(--border)}
+.glc{width:200px;flex-shrink:0;padding:.5rem .75rem;font-size:var(--xs);font-weight:600;color:var(--muted)}
+.gms{flex:1;display:flex}
+.gm{flex:1;padding:.5rem .25rem;font-size:.65rem;font-weight:600;color:var(--muted);text-align:center;border-left:1px solid var(--divider)}
+.gr{display:flex;align-items:center;border-bottom:1px solid var(--divider);min-height:38px;transition:background var(--tr)}
+.gr:hover{background:var(--offset)}
+.gr:last-child{border-bottom:none}
+.grl{width:200px;flex-shrink:0;padding:.35rem .75rem;font-size:var(--xs)}
+.grn{color:var(--muted);margin-right:.2rem}
+.grt{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.gtl{flex:1;position:relative;height:38px}
+.gbg{position:absolute;inset:0;display:flex;pointer-events:none}
+.gbgm{flex:1;border-left:1px solid var(--divider)}
+.gbgm:nth-child(even){background:oklch(from var(--offset) l c h/.5)}
+.gbar{position:absolute;top:7px;bottom:7px;border-radius:var(--r-sm);cursor:pointer;transition:opacity var(--tr);z-index:1;min-width:8px}
+.gbar:hover{opacity:.8;z-index:2}
+.gbar.k1{background:var(--blue)}
+.gbar.hp{background:var(--gold)}
+.gbar.k2{background:var(--primary)}
+.gbar.k3{background:var(--success)}
+.gbar.ev{background:var(--error)}
+.gbar.dn{opacity:.3}
+.gtoday{position:absolute;top:0;bottom:0;width:2px;background:var(--error);opacity:.7;pointer-events:none;z-index:5}
+.gtoday::after{content:'今日';position:absolute;top:2px;left:3px;font-size:.58rem;color:var(--error);white-space:nowrap;font-weight:700}
+.gleg{display:flex;gap:.75rem;flex-wrap:wrap;padding:.625rem 1rem;border-top:1px solid var(--divider)}
+.gli{display:flex;align-items:center;gap:.3rem;font-size:.68rem;color:var(--muted)}
+.gld{width:10px;height:10px;border-radius:2px}
+.gtt{position:fixed;background:var(--text);color:var(--bg);padding:.35rem .6rem;border-radius:var(--r-md);font-size:.68rem;pointer-events:none;z-index:300;white-space:nowrap;box-shadow:var(--sh-md);display:none}
+
+/* Upload */
+.ua{border:2px dashed var(--border);border-radius:var(--r-xl);padding:3rem 2rem;text-align:center;cursor:pointer;transition:border-color var(--tr),background var(--tr);margin-bottom:1.5rem}
+.ua:hover,.ua.drag{border-color:var(--primary);background:var(--primary-hi)}
+.ui{margin:0 auto .75rem;width:48px;height:48px;color:var(--faint)}
+.ut{font-size:var(--base);font-weight:500;margin-bottom:.25rem}
+.us{font-size:var(--xs);color:var(--muted)}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--text);color:var(--bg);padding:.625rem 1rem;border-radius:var(--r-lg);font-size:var(--xs);box-shadow:var(--sh-lg);z-index:400;animation:tin .2s ease;pointer-events:none}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:768px){
+  .main{padding:1rem}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .fi{width:100%}
+  .grl,.glc{width:140px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="hi">
+    <div class="logo">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-label="logo">
+        <rect x="2" y="2" width="22" height="22" rx="4" stroke="currentColor" stroke-width="1.8"/>
+        <rect x="2" y="8.5" width="22" height="1.8" fill="currentColor" opacity=".25"/>
+        <rect x="7.5" y="2" width="1.8" height="6.5" rx=".9" fill="currentColor"/>
+        <rect x="16.7" y="2" width="1.8" height="6.5" rx=".9" fill="currentColor"/>
+        <rect x="6" y="13" width="5" height="1.6" rx=".8" fill="currentColor" opacity=".6"/>
+        <rect x="6" y="17" width="3.5" height="1.6" rx=".8" fill="currentColor" opacity=".4"/>
+        <rect x="14" y="13" width="7" height="1.6" rx=".8" fill="currentColor" opacity=".6"/>
+        <rect x="14" y="17" width="5" height="1.6" rx=".8" fill="currentColor" opacity=".4"/>
+      </svg>
+      研修会管理システム
+    </div>
+    <div class="hact">
+      <button class="btn btn-g" id="exportBtn" style="font-size:var(--xs)">📥 CSV出力（Excel用）</button>
+      <button class="ibt" data-theme-toggle aria-label="テーマ切替">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="tabs"><div class="tabs-in">
+  <button class="tab act" data-tab="list">📋 研修会一覧</button>
+  <button class="tab" data-tab="gantt">📅 ガントチャート</button>
+  <button class="tab" data-tab="import">📂 CSVインポート</button>
+</div></div>
+
+<div class="main">
+  <div id="vlist">
+    <div class="stats" id="statsRow"></div>
+    <div class="fb">
+      <input class="fi" id="srch" placeholder="🔍 テーマ・講師名で検索…" type="text">
+      <select class="fs" id="fsubj"><option value="">全対象</option><option>研究者</option><option>研究支援者</option><option>倫理審査委員会委員</option></select>
+      <select class="fs" id="fstat"><option value="">全ステータス</option><option value="done">完了</option><option value="wip">進行中</option><option value="todo">未着手</option></select>
+      <select class="fs" id="fmon"><option value="">全月</option></select>
+      <span id="cnt" class="badge bb" style="margin-left:auto"></span>
+    </div>
+    <div class="tw"><div class="ts">
+      <table class="dt" id="tbl">
+        <thead><tr>
+          <th data-s="no">No <span class="si">↕</span></th>
+          <th data-s="date">開催日 <span class="si">↕</span></th>
+          <th>テーマ</th>
+          <th data-s="subject">対象 <span class="si">↕</span></th>
+          <th>会場</th>
+          <th>進捗</th>
+          <th>起案1</th>
+          <th>HP</th>
+          <th>起案2</th>
+          <th>起案3</th>
+          <th>チェック</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div></div>
+  </div>
+
+  <div id="vgantt" style="display:none">
+    <div class="gw">
+      <div class="gc2">
+        <strong style="font-size:var(--xs)">📅 ガントチャート</strong>
+        <select class="fs" id="gfy"><option value="all">全期間</option><option value="2026">2026年</option><option value="2027">2027年</option></select>
+        <select class="fs" id="gfs"><option value="">全対象</option><option>研究者</option><option>研究支援者</option><option>倫理審査委員会委員</option></select>
+      </div>
+      <div class="gsc"><div class="gg" id="ganttGrid"></div></div>
+      <div class="gleg">
+        <div class="gli"><div class="gld" style="background:var(--blue)"></div>起案1</div>
+        <div class="gli"><div class="gld" style="background:var(--gold)"></div>HP案内</div>
+        <div class="gli"><div class="gld" style="background:var(--primary)"></div>起案2</div>
+        <div class="gli"><div class="gld" style="background:var(--success)"></div>起案3</div>
+        <div class="gli"><div class="gld" style="background:var(--error)"></div>研修会当日</div>
+        <div class="gli"><div class="gld" style="background:var(--dynamic);border:1px solid var(--border)"></div>完了済（淡色）</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="vimport" style="display:none">
+    <div class="ua" id="ua">
+      <div class="ui"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+      <div class="ut">CSVファイルをドロップ または クリックして選択</div>
+      <div class="us">AppSheet形式のCSVファイル（UTF-8 / Shift-JIS両対応）</div>
+      <input type="file" id="fi2" accept=".csv" style="display:none">
+    </div>
+    <div id="impRes" style="display:none">
+      <div class="tw"><div style="padding:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+        <span id="impInfo" style="font-size:var(--xs);font-weight:600"></span>
+        <button class="btn btn-p" id="applyBtn">✅ このデータを適用する</button>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Panel -->
+<div class="ov" id="ov">
+  <div class="pn">
+    <div class="ph"><h2 id="ptitle">詳細</h2><button class="ibt" id="cpanel" aria-label="閉じる"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="pb2" id="pbody"></div>
+  </div>
+</div>
+<div class="gtt" id="gtt"></div>
+
+<script>
+// ===================== CSV PARSER =====================
+function parseCSV(raw) {
+  // 改行を含むセル（ダブルクォート内）を正しく処理
+  const rows = [];
+  let cur = '', inQ = false, cells = [];
+  for (let i = 0; i < raw.length; i++) {
+    const c = raw[i];
+    if (c === '"') {
+      if (inQ && raw[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (c === ',' && !inQ) {
+      cells.push(cur); cur = '';
+    } else if ((c === '\n' || c === '\r') && !inQ) {
+      if (c === '\r' && raw[i+1] === '\n') i++;
+      cells.push(cur); cur = '';
+      if (cells.some(x => x !== '')) rows.push(cells);
+      cells = [];
+    } else {
+      cur += c;
+    }
+  }
+  if (cur || cells.length) { cells.push(cur); if (cells.some(x=>x!=='')) rows.push(cells); }
+  return rows;
+}
+
+function csvToObjects(raw) {
+  const rows = parseCSV(raw);
+  if (rows.length < 2) return [];
+  // ヘッダー行（改行含む場合は空白で結合して正規化）
+  const headers = rows[0].map(h => h.replace(/[\r\n]+/g,' ').trim());
+  return rows.slice(1).map(r => {
+    const o = {};
+    headers.forEach((h, i) => o[h] = (r[i] || '').trim());
+    return o;
+  }).filter(o => o['起案行No'] && o['起案行No'] !== '');
+}
+
+function rowToSeminar(r) {
+  return {
+    no:    r['起案行No'] || '',
+    year:  r['年度_YEAR_1'] || '',
+    date:  r['開催日_DATE_1'] || '',
+    day:   r['曜日 _DAY'] || '',
+    start: r['研修会開始_START_1'] || '',
+    end:   r['研修会終了_END_1'] || '',
+    title: r['テーマ(標題)_TITLE'] || '',
+    speaker: r['担当講師_SPEAKER'] || '',
+    cohost:  r['共催_COHOST_1'] || '',
+    subject: r['対象_SUBJECT_1'] || '',
+    kian1:   r['起案1開催DATE_KIAN_1'] || '',
+    hp:      r['HP案内開始チラシ配布'] || '',
+    kian2:   r['起案2資料_DATE_KIAN_2'] || '',
+    kian3:   r['起案3受講証修了証_DATE_KIAN_3'] || '',
+    site:    r['講演場所_SITE'] || '',
+    zoom_id: r['Zoom_ID_WEBINER_ID'] || '',
+    zoom_pw: r['Zoom_パスコード_PASSCODE'] || '',
+    hp_url:  r['HP_URL_url_1'] || '',
+    status_k1: r['STATUS_K1'] || '',
+    status_hp: r['STATUS_HP'] || '',
+    status_k2: r['STATUS_K2'] || '',
+    status_k3: r['STATUS_K3'] || '',
+    // チェック項目
+    c_create:    r['研修会演題と目的案を作成_CHECK'] || '0',
+    c_mail_lec:  r['講師にメールで確認_CHECK'] || '0',
+    c_hp_branch: r['HPブランチ作成依頼_CHECK'] || '0',
+    c_wp:        r['WordPress設定予約投稿_CHECK'] || '0',
+    c_k1:        r['起案1_開催_CHECK'] || '0',
+    c_hp_set:    r['HP公開設定依頼_CHECK'] || '0',
+    c_lec_req:   r['講師依頼状兼業依頼提出CHECK'] || '0',
+    c_hp_open:   r['HP公開受付開始_CHECK'] || '0',
+    c_hp_mail:   r['HP公開開始案内メール_CHECK'] || '0',
+    c_echart:    r['電子カルテ掲示板掲載確認_CHECK'] || '0',
+    c_flyer1:    r['院内チラシ1回目配布_CHECK'] || '0',
+    c_flyer2:    r['院内チラシ2回目配布_CHECK'] || '0',
+    c_remind_lec:r['講師リマインドメール_CHECK'] || '0',
+    c_slide:     r['講師スライド入手_CHECK'] || '0',
+    c_cohost:    r['共催企画人材班協力要請_CHECK'] || '0',
+    c_prelist:   r['事前受付終了Webリスト書出し_CHECK'] || '0',
+    c_k2:        r['起案2_資料_CHECK'] || '0',
+    c_addmat:    r['追加資料有無確認_CHECK'] || '0',
+    c_matshare:  r['企画人材班配布資料共有_CHECK'] || '0',
+    c_bousai:    r['防災センター報告_CHECK'] || '0',
+    c_remind1:   r['講師受講者リマインド1_CHECK'] || '0',
+    c_dayprep:   r['研修会当日準備_CHECK'] || '0',
+    c_remind2:   r['講師受講者リマインド2_CHECK'] || '0',
+    c_pc:        r['PCシステム更新確認_CHECK'] || '0',
+    c_event:     r['研修会本番_CHECK'] || '0',
+    c_zoom_dl:   r['Zoomレポートダウンロード_CHECK'] || '0',
+    c_venue:     r['会場参加者データ企画人材班_CHECK'] || '0',
+    c_list:      r['出席者受講者リスト入力_CHECK'] || '0',
+    c_k3:        r['起案3_受講証_CHECK'] || '0',
+    c_thanks:    r['講師へお礼連絡_CHECK'] || '0',
+    c_report:    r['受講者数内訳報告_CHECK'] || '0',
+    c_fee:       r['謝金支払い_CHECK'] || '0',
+    c_fee_mail:  r['謝金講師メール_CHECK'] || '0',
+    c_cert:      r['受講証修了証メール交付_CHECK'] || '0',
+  };
+}
+
+// ===================== CHECKS LIST =====================
+const CHECKS = [
+  {k:'c_create',   l:'研修会演題と目的案を作成'},
+  {k:'c_mail_lec', l:'講師にメールで確認'},
+  {k:'c_hp_branch',l:'HPブランチ作成依頼'},
+  {k:'c_wp',       l:'WordPress設定予約投稿'},
+  {k:'c_k1',       l:'起案1（開催）提出'},
+  {k:'c_hp_set',   l:'HP公開設定依頼'},
+  {k:'c_lec_req',  l:'講師依頼状兼業依頼提出'},
+  {k:'c_hp_open',  l:'HP公開受付開始'},
+  {k:'c_hp_mail',  l:'HP公開開始案内メール'},
+  {k:'c_echart',   l:'電子カルテ掲示板掲載確認'},
+  {k:'c_flyer1',   l:'院内チラシ1回目配布'},
+  {k:'c_flyer2',   l:'院内チラシ2回目配布'},
+  {k:'c_remind_lec',l:'講師リマインドメール'},
+  {k:'c_slide',    l:'講師スライド入手'},
+  {k:'c_cohost',   l:'共催企画人材班協力要請'},
+  {k:'c_prelist',  l:'事前受付終了Webリスト書出し'},
+  {k:'c_k2',       l:'起案2（資料）提出'},
+  {k:'c_addmat',   l:'追加資料有無確認'},
+  {k:'c_matshare', l:'企画人材班配布資料共有'},
+  {k:'c_bousai',   l:'防災センター報告'},
+  {k:'c_remind1',  l:'講師受講者リマインド1'},
+  {k:'c_dayprep',  l:'研修会当日準備'},
+  {k:'c_remind2',  l:'講師受講者リマインド2'},
+  {k:'c_pc',       l:'PCシステム更新確認'},
+  {k:'c_event',    l:'研修会本番'},
+  {k:'c_zoom_dl',  l:'Zoomレポートダウンロード'},
+  {k:'c_venue',    l:'会場参加者データ企画人材班'},
+  {k:'c_list',     l:'出席者受講者リスト入力'},
+  {k:'c_k3',       l:'起案3（受講証）提出'},
+  {k:'c_thanks',   l:'講師へお礼連絡'},
+  {k:'c_report',   l:'受講者数内訳報告'},
+  {k:'c_fee',      l:'謝金支払い'},
+  {k:'c_fee_mail', l:'謝金講師メール'},
+  {k:'c_cert',     l:'受講証修了証メール交付'},
+];
+
+function isChecked(v) { return v === '1' || v === 1 || v === true; }
+function getProgress(s) {
+  const vals = CHECKS.map(c => isChecked(s[c.k]) ? 1 : 0);
+  return Math.round(vals.reduce((a,b)=>a+b,0) / vals.length * 100);
+}
+function getStatus(s) {
+  const p = getProgress(s);
+  return p === 100 ? 'done' : p === 0 ? 'todo' : 'wip';
+}
+
+// ===================== STATE =====================
+let seminars = [];
+let sortCol = 'no', sortDir = 1;
+let panelNo = null;
+let importBuf = null;
+
+// ===================== RENDER STATS =====================
+function renderStats() {
+  const n = seminars.length;
+  const done = seminars.filter(s=>getStatus(s)==='done').length;
+  const wip = seminars.filter(s=>getStatus(s)==='wip').length;
+  const todo = n - done - wip;
+  const avgP = n ? Math.round(seminars.reduce((a,s)=>a+getProgress(s),0)/n) : 0;
+  document.getElementById('statsRow').innerHTML = `
+    <div class="sc"><div class="sl">総研修会数</div><div class="sv tc">${n}</div></div>
+    <div class="sc"><div class="sl">✅ 完了</div><div class="sv gc">${done}</div></div>
+    <div class="sc"><div class="sl">◐ 進行中</div><div class="sv oc">${wip}</div></div>
+    <div class="sc"><div class="sl">○ 未着手</div><div class="sv" style="color:var(--muted)">${todo}</div></div>
+    <div class="sc"><div class="sl">平均進捗</div><div class="sv bc">${avgP}%</div></div>
+    <div class="sc"><div class="sl">完了率</div><div class="sv bc">${n?Math.round(done/n*100):0}%</div></div>
+  `;
+}
+
+// ===================== MONTH FILTER BUILD =====================
+function buildMonthFilter() {
+  const seen = new Set();
+  seminars.forEach(s => {
+    const m = s.date.match(/^(\d+)月/);
+    if (m) seen.add(m[0]);
+  });
+  const sel = document.getElementById('fmon');
+  sel.innerHTML = '<option value="">全月</option>';
+  [...seen].sort((a,b)=>parseInt(a)-parseInt(b)).forEach(m=>{
+    const o = document.createElement('option');
+    o.value = m; o.textContent = m; sel.appendChild(o);
+  });
+}
+
+// ===================== RENDER TABLE =====================
+function getFiltered() {
+  const q = document.getElementById('srch').value.toLowerCase();
+  const subj = document.getElementById('fsubj').value;
+  const stat = document.getElementById('fstat').value;
+  const mon = document.getElementById('fmon').value;
+  return seminars.filter(s => {
+    if (q && !s.title.toLowerCase().includes(q) && !s.speaker.toLowerCase().includes(q)) return false;
+    if (subj && s.subject !== subj) return false;
+    if (stat) {
+      const st = getStatus(s);
+      if (stat !== st) return false;
+    }
+    if (mon && !s.date.startsWith(mon)) return false;
+    return true;
+  }).sort((a, b) => {
+    let av = a[sortCol], bv = b[sortCol];
+    if (sortCol === 'no') { av = +av; bv = +bv; }
+    return av > bv ? sortDir : av < bv ? -sortDir : 0;
+  });
+}
+
+function renderTable() {
+  const rows = getFiltered();
+  document.getElementById('cnt').textContent = rows.length + '件';
+  const tbody = document.getElementById('tbody');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="11" style="padding:2rem;text-align:center;color:var(--muted)">該当なし</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(s => {
+    const p = getProgress(s);
+    const st = getStatus(s);
+    const dots = CHECKS.map(c=>`<div class="dot ${isChecked(s[c.k])?'on':'off'}" title="${c.l}"></div>`).join('');
+    const subjBadge = s.subject === '研究者'
+      ? '<span class="badge bb">研究者</span>'
+      : s.subject === '倫理審査委員会委員'
+      ? '<span class="badge" style="background:var(--error-hi);color:var(--error)">倫理委員</span>'
+      : '<span class="badge bo">研究支援者</span>';
+    return `<tr data-no="${s.no}">
+      <td style="color:var(--muted);font-weight:600">${s.no}</td>
+      <td style="white-space:nowrap;font-weight:500">${s.date}（${s.day}）</td>
+      <td class="tc2"><div class="tt">${s.title}</div></td>
+      <td>${subjBadge}</td>
+      <td style="color:var(--muted);white-space:nowrap;font-size:.68rem">${s.site||'—'}</td>
+      <td><div class="pw"><div class="pb"><div class="pf ${p===100?'full':''}" style="width:${p}%"></div></div><span class="pp">${p}%</span></div></td>
+      <td>${s.kian1?`<div class="dtg">📋${s.kian1}</div>`:''}</td>
+      <td>${s.hp?`<div class="dtg">🌐${s.hp}</div>`:''}</td>
+      <td>${s.kian2?`<div class="dtg">📄${s.kian2}</div>`:''}</td>
+      <td>${s.kian3?`<div class="dtg">🏅${s.kian3}</div>`:''}</td>
+      <td><div class="dots">${dots}</div></td>
+    </tr>`;
+  }).join('');
+  tbody.querySelectorAll('tr[data-no]').forEach(tr => {
+    tr.addEventListener('click', () => openPanel(tr.dataset.no));
+  });
+}
+
+// ===================== PANEL =====================
+function openPanel(no) {
+  const s = seminars.find(x => x.no === no);
+  if (!s) return;
+  panelNo = no;
+  document.getElementById('ptitle').textContent = `No.${s.no} — ${s.date}`;
+  const p = getProgress(s);
+  document.getElementById('pbody').innerHTML = `
+    <div class="ps">
+      <h3>基本情報</h3>
+      <div style="font-size:var(--base);font-weight:600;margin-bottom:.375rem;line-height:1.4">${s.title}</div>
+      <div style="font-size:var(--xs);color:var(--muted);margin-bottom:.75rem">${s.speaker}</div>
+      <div class="ig">
+        <div class="ii"><label>開催日</label><span>${s.year} ${s.date}（${s.day}）</span></div>
+        <div class="ii"><label>時間</label><span>${s.start}〜${s.end}</span></div>
+        <div class="ii"><label>対象</label><span>${s.subject}</span></div>
+        <div class="ii"><label>会場</label><span>${s.site||'—'}</span></div>
+        <div class="ii"><label>共催</label><span>${s.cohost||'—'}</span></div>
+        ${s.zoom_id?`<div class="ii"><label>Zoom ID</label><span>${s.zoom_id}</span></div>`:''}
+        ${s.zoom_pw?`<div class="ii"><label>パスコード</label><span>${s.zoom_pw}</span></div>`:''}
+      </div>
+      ${s.hp_url?`<div style="margin-top:.75rem"><a href="${s.hp_url}" target="_blank" rel="noopener" class="btn btn-g" style="font-size:var(--xs)">🔗 HP確認</a></div>`:''}
+    </div>
+    <div class="ps">
+      <h3>マイルストーン</h3>
+      <div class="ig">
+        <div class="ii"><label>📋 起案1（開催）</label><span>${s.kian1||'—'}</span></div>
+        <div class="ii"><label>🌐 HP案内・チラシ</label><span>${s.hp||'—'}</span></div>
+        <div class="ii"><label>📄 起案2（資料）</label><span>${s.kian2||'—'}</span></div>
+        <div class="ii"><label>🏅 起案3（受講証）</label><span>${s.kian3||'—'}</span></div>
+      </div>
+    </div>
+    <div class="ps">
+      <h3>チェックリスト <span style="font-weight:400;color:var(--muted)" id="pct">${p}%</span></h3>
+      <div class="pw" style="margin-bottom:.75rem">
+        <div class="pb" style="height:6px"><div class="pf ${p===100?'full':''}" id="ppbar" style="width:${p}%"></div></div>
+        <span class="pp" id="pppct">${p}%</span>
+      </div>
+      <div class="cl" id="pcl">
+        ${CHECKS.map(c => {
+          const ck = isChecked(s[c.k]);
+          return `<div class="ci ${ck?'ck':''}">
+            <input type="checkbox" id="c_${c.k}" data-key="${c.k}" ${ck?'checked':''}>
+            <label for="c_${c.k}">${c.l}</label>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+  document.querySelectorAll('#pcl input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', e => {
+      const key = e.target.dataset.key;
+      const idx = seminars.findIndex(x => x.no === panelNo);
+      if (idx >= 0) {
+        seminars[idx][key] = e.target.checked ? '1' : '0';
+        e.target.closest('.ci').classList.toggle('ck', e.target.checked);
+        const np = getProgress(seminars[idx]);
+        document.getElementById('ppbar').style.width = np + '%';
+        document.getElementById('ppbar').className = 'pf' + (np===100?' full':'');
+        document.getElementById('pppct').textContent = np + '%';
+        document.getElementById('pct').textContent = np + '%';
+        renderStats();
+        renderTable();
+      }
+    });
+  });
+  document.getElementById('ov').classList.add('open');
+}
+
+// ===================== GANTT =====================
+const MONTHS = [
+  {l:'4月',y:2026,m:4},{l:'5月',y:2026,m:5},{l:'6月',y:2026,m:6},
+  {l:'7月',y:2026,m:7},{l:'8月',y:2026,m:8},{l:'9月',y:2026,m:9},
+  {l:'10月',y:2026,m:10},{l:'11月',y:2026,m:11},{l:'12月',y:2026,m:12},
+  {l:'1月',y:2027,m:1},{l:'2月',y:2027,m:2},{l:'3月',y:2027,m:3},
+];
+
+function parseJpDate(str) {
+  if (!str) return null;
+  const m = str.match(/(\d+)月(\d+)日/);
+  if (!m) return null;
+  const mo = +m[1], d = +m[2];
+  const y = mo <= 3 ? 2027 : 2026;
+  return new Date(y, mo-1, d);
+}
+
+function renderGantt() {
+  const gfy = document.getElementById('gfy').value;
+  const gfs = document.getElementById('gfs').value;
+  let rows = seminars.filter(s => {
+    if (gfs && s.subject !== gfs) return false;
+    if (gfy !== 'all') {
+      const d = parseJpDate(s.date);
+      if (d && d.getFullYear() !== +gfy) return false;
+    }
+    return true;
+  });
+
+  const start = new Date(2026, 3, 1);
+  const end = new Date(2027, 2, 31);
+  const total = (end - start) / 86400000;
+
+  function pct(d) {
+    if (!d) return null;
+    const days = (d - start) / 86400000;
+    return Math.max(0, Math.min(100, days / total * 100));
+  }
+
+  const today = new Date();
+  const todayP = pct(today);
+  const todayLine = todayP >= 0 && todayP <= 100
+    ? `<div class="gtoday" style="left:${todayP}%"></div>` : '';
+
+  const monthHdr = MONTHS.map(m => `<div class="gm">${m.l}</div>`).join('');
+  const bgMonths = MONTHS.map(() => `<div class="gbgm"></div>`).join('');
+
+  const BARS = [
+    {key:'kian1',cls:'k1',lbl:'起案1',stKey:'status_k1'},
+    {key:'hp',   cls:'hp',lbl:'HP案内',stKey:'status_hp'},
+    {key:'kian2',cls:'k2',lbl:'起案2',stKey:'status_k2'},
+    {key:'kian3',cls:'k3',lbl:'起案3',stKey:'status_k3'},
+    {key:'date', cls:'ev',lbl:'当日', stKey:'_ev'},
+  ];
+
+  const ganttRows = rows.map(s => {
+    const bars = BARS.map(b => {
+      const d = parseJpDate(b.key === 'date' ? s.date : s[b.key]);
+      if (!d) return '';
+      const p = pct(d);
+      if (p === null) return '';
+      const done = b.stKey === '_ev'
+        ? isChecked(s.c_event)
+        : (s[b.stKey] === 'DONE' || s[b.stKey] === 'done');
+      return `<div class="gbar ${b.cls} ${done?'dn':''}"
+        style="left:calc(${p}% - 5px);width:10px"
+        data-tip="${b.lbl}: ${b.key==='date'?s.date:s[b.key]||'—'}"
+        onmouseenter="showTip(event,this)" onmouseleave="hideTip()"></div>`;
+    }).join('');
+    return `<div class="gr">
+      <div class="grl"><span class="grn">${s.no}.</span><span class="grt">${s.title}</span></div>
+      <div class="gtl">
+        <div class="gbg">${bgMonths}</div>
+        ${todayLine}
+        ${bars}
+      </div>
+    </div>`;
+  }).join('') || `<div style="padding:2rem;text-align:center;color:var(--muted)">表示するデータがありません</div>`;
+
+  document.getElementById('ganttGrid').innerHTML = `
+    <div class="ghd"><div class="glc">研修会</div><div class="gms">${monthHdr}</div></div>
+    ${ganttRows}
+  `;
+}
+
+function showTip(e, el) {
+  const t = document.getElementById('gtt');
+  t.textContent = el.dataset.tip;
+  t.style.display = 'block';
+  t.style.left = (e.clientX + 12) + 'px';
+  t.style.top = (e.clientY - 8) + 'px';
+}
+function hideTip() { document.getElementById('gtt').style.display = 'none'; }
+document.addEventListener('mousemove', e => {
+  const t = document.getElementById('gtt');
+  if (t.style.display !== 'none') {
+    t.style.left = (e.clientX + 12) + 'px';
+    t.style.top = (e.clientY - 8) + 'px';
+  }
+});
+
+// ===================== FILE LOAD =====================
+function loadCSV(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const text = e.target.result;
+      const objects = csvToObjects(text);
+      if (!objects.length) { toast('❌ データが見つかりません（列名を確認してください）'); return; }
+      importBuf = objects.map(rowToSeminar);
+      document.getElementById('impInfo').textContent = `✅ ${importBuf.length}件の研修会を読み込みました`;
+      document.getElementById('impRes').style.display = 'block';
+      toast(`📋 ${importBuf.length}件を読み込みました`);
+    } catch(err) {
+      console.error(err);
+      toast('❌ CSV読み込みエラー: ' + err.message);
+    }
+  };
+  reader.onerror = () => {
+    // UTF-8失敗時はShift-JISで再試行
+    const r2 = new FileReader();
+    r2.onload = e2 => {
+      try {
+        const objects = csvToObjects(e2.target.result);
+        importBuf = objects.map(rowToSeminar);
+        document.getElementById('impInfo').textContent = `✅ ${importBuf.length}件（Shift-JIS）`;
+        document.getElementById('impRes').style.display = 'block';
+      } catch(e) { toast('❌ 読み込み失敗'); }
+    };
+    r2.readAsText(file, 'Shift-JIS');
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+// ===================== EXPORT =====================
+function exportCSV() {
+  const headers = ['No','開催日','曜日','開始','終了','テーマ','講師','対象','会場','進捗%','起案1','HP','起案2','起案3','ステータス'];
+  const data = seminars.map(s => [
+    s.no, s.date, s.day, s.start, s.end, s.title, s.speaker, s.subject, s.site,
+    getProgress(s), s.kian1, s.hp, s.kian2, s.kian3,
+    getStatus(s)==='done'?'完了':getStatus(s)==='wip'?'進行中':'未着手'
+  ]);
+  const csv = '\uFEFF' + [headers, ...data].map(r =>
+    r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')
+  ).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = `研修会管理_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('📥 CSVをダウンロードしました');
+}
+
+// ===================== TOAST =====================
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2800);
+}
+
+// ===================== DARK MODE =====================
+(function(){
+  const btn = document.querySelector('[data-theme-toggle]');
+  const root = document.documentElement;
+  let d = matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+  root.setAttribute('data-theme', d);
+  function icon() {
+    btn.innerHTML = d === 'dark'
+      ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+      : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  }
+  icon();
+  btn.addEventListener('click', () => { d = d==='dark'?'light':'dark'; root.setAttribute('data-theme',d); icon(); });
+})();
+
+// ===================== TABS =====================
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('act'));
+    tab.classList.add('act');
+    const id = tab.dataset.tab;
+    document.getElementById('vlist').style.display   = id==='list'   ? '' : 'none';
+    document.getElementById('vgantt').style.display  = id==='gantt'  ? '' : 'none';
+    document.getElementById('vimport').style.display = id==='import' ? '' : 'none';
+    if (id === 'gantt') renderGantt();
+  });
+});
+
+// ===================== SORT =====================
+document.querySelectorAll('.dt th[data-s]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.s;
+    if (sortCol === col) sortDir *= -1; else { sortCol = col; sortDir = 1; }
+    document.querySelectorAll('.dt th[data-s]').forEach(t => {
+      t.classList.remove('srt');
+      t.querySelector('.si').textContent = '↕';
+    });
+    th.classList.add('srt');
+    th.querySelector('.si').textContent = sortDir === 1 ? '↑' : '↓';
+    renderTable();
+  });
+});
+
+// ===================== FILTERS =====================
+['srch','fsubj','fstat','fmon'].forEach(id => {
+  document.getElementById(id).addEventListener('input', renderTable);
+  document.getElementById(id).addEventListener('change', renderTable);
+});
+['gfy','gfs'].forEach(id => {
+  document.getElementById(id).addEventListener('change', renderGantt);
+});
+
+// ===================== PANEL CLOSE =====================
+document.getElementById('cpanel').addEventListener('click', () => document.getElementById('ov').classList.remove('open'));
+document.getElementById('ov').addEventListener('click', e => { if (e.target === document.getElementById('ov')) document.getElementById('ov').classList.remove('open'); });
+
+// ===================== FILE UPLOAD =====================
+const ua = document.getElementById('ua');
+const fi2 = document.getElementById('fi2');
+ua.addEventListener('click', () => fi2.click());
+fi2.addEventListener('change', e => loadCSV(e.target.files[0]));
+ua.addEventListener('dragover', e => { e.preventDefault(); ua.classList.add('drag'); });
+ua.addEventListener('dragleave', () => ua.classList.remove('drag'));
+ua.addEventListener('drop', e => { e.preventDefault(); ua.classList.remove('drag'); loadCSV(e.dataTransfer.files[0]); });
+document.getElementById('applyBtn').addEventListener('click', () => {
+  if (importBuf) {
+    seminars = importBuf;
+    buildMonthFilter();
+    renderStats();
+    renderTable();
+    toast(`✅ ${seminars.length}件を適用しました`);
+    document.querySelector('[data-tab="list"]').click();
+  }
+});
+
+// ===================== EXPORT BTN =====================
+document.getElementById('exportBtn').addEventListener('click', exportCSV);
+
+// ===================== INIT — 空の状態で起動、CSVインポートを促す =====================
+function init() {
+  // データなしで起動 → インポートタブを案内
+  renderStats();
+  buildMonthFilter();
+  renderTable();
+  // インポートタブにガイドメッセージ
+  document.getElementById('tbody').innerHTML = `
+    <tr><td colspan="11" style="padding:2rem;text-align:center;color:var(--muted)">
+      「📂 CSVインポート」タブからAppSheetのCSVファイルを読み込んでください
+    </td></tr>`;
+}
+init();
+</script>
+</body>
+</html>

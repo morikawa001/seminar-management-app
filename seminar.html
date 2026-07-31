@@ -1,0 +1,1447 @@
+
+
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>臨床研究研修会 ダッシュボード — 操作マニュアル</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+JP:wght@300;400;500;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ART DIRECTION: 攻殻機動隊 × マトリックス × 東亜重工
+   Palette: Deep void black / Phosphor green / Cyan tactical
+   Typography: Share Tech Mono (display) + Noto Sans JP (body)
+   Density: Tactical dense — data-forward, military precision
+   ============================================================ */
+
+:root {
+  /* Type Scale */
+  --text-xs:   clamp(0.75rem,  0.7rem  + 0.25vw, 0.875rem);
+  --text-sm:   clamp(0.875rem, 0.8rem  + 0.35vw, 1rem);
+  --text-base: clamp(1rem,     0.95rem + 0.25vw, 1.125rem);
+  --text-lg:   clamp(1.125rem, 1rem    + 0.75vw, 1.5rem);
+  --text-xl:   clamp(1.5rem,   1.2rem  + 1.25vw, 2.25rem);
+  --text-2xl:  clamp(2rem,     1.2rem  + 2.5vw,  3.5rem);
+
+  /* 4px Spacing */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-8:  2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Radius */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.5rem;
+
+  /* Transitions */
+  --transition-interactive: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Font Families */
+  --font-display: 'Rajdhani', 'Share Tech Mono', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-body: 'Noto Sans JP', sans-serif;
+}
+
+/* ── DARK (Default) ── */
+[data-theme="dark"] {
+  --color-void:         #000000;
+  --color-bg:           #000000;
+  --color-surface:      #0c0f12;
+  --color-surface-2:    #111418;
+  --color-surface-offset: #161b20;
+  --color-surface-dynamic: #1c2228;
+  --color-divider:      #1e252d;
+  --color-border:       #243040;
+
+  --color-text:         #b2dfb8;
+  --color-text-muted:   #5a9a62;
+  --color-text-faint:   #1e4024;
+  --color-text-inverse: #050608;
+
+  /* Phosphor Green — Matrix terminal */
+  --color-green:        #00c853;
+  --color-green-dim:    #00e676;
+  --color-green-faint:  #0a2010;
+  --color-green-glow:   rgba(0, 200, 83, 0.18);
+
+  /* Green primary — グリーン系に統一 */
+  --color-primary:      #00c853;
+  --color-primary-dim:  #00e676;
+  --color-primary-faint: #0a2010;
+  --color-primary-glow: rgba(0, 200, 83, 0.14);
+  --color-primary-hover: #69f0ae;
+
+  /* Warning — Toha Heavy Industry alert */
+  --color-warning:      #ff8c00;
+  --color-warning-dim:  #cc5500;
+  --color-warning-faint: #2a1500;
+
+  --color-error:        #ff2244;
+  --color-error-faint:  #2a0009;
+
+  --color-success:      #00ff41;
+
+  /* Shadows */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.5);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.6);
+  --shadow-lg:  0 12px 40px rgba(0,0,0,0.7);
+  --shadow-cyan: 0 0 12px rgba(0,200,83,0.2), 0 0 40px rgba(0,200,83,0.08);
+  --shadow-green: 0 0 12px rgba(0,255,65,0.2), 0 0 40px rgba(0,255,65,0.08);
+}
+
+/* ── LIGHT ── */
+[data-theme="light"] {
+  --color-void:         #f0f4f6;
+  --color-bg:           #f4f7f9;
+  --color-surface:      #ffffff;
+  --color-surface-2:    #f8fafb;
+  --color-surface-offset: #eef2f5;
+  --color-surface-dynamic: #e5eaee;
+  --color-divider:      #d8e0e6;
+  --color-border:       #c8d4dc;
+
+  --color-text:         #1a2530;
+  --color-text-muted:   #4a6070;
+  --color-text-faint:   #8a9eaa;
+  --color-text-inverse: #f4f7f9;
+
+  --color-green:        #007a20;
+  --color-green-dim:    #005a18;
+  --color-green-faint:  #e0f5e8;
+  --color-green-glow:   rgba(0,122,32,0.1);
+
+  --color-primary:      #006d80;
+  --color-primary-dim:  #004d5a;
+  --color-primary-faint: #e0f4f8;
+  --color-primary-glow: rgba(0,109,128,0.1);
+  --color-primary-hover: #008a9e;
+
+  --color-warning:      #b85e00;
+  --color-warning-dim:  #8a4400;
+  --color-warning-faint: #fff3e0;
+
+  --color-error:        #c00020;
+  --color-error-faint:  #ffe0e6;
+
+  --color-success:      #007a20;
+
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.1);
+  --shadow-lg:  0 12px 40px rgba(0,0,0,0.14);
+  --shadow-cyan: 0 0 12px rgba(0,109,128,0.15);
+  --shadow-green: 0 0 12px rgba(0,122,32,0.15);
+}
+
+/* ── BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100dvh;
+  background: #000000;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay — 流れる文字無し・純黒背景のため非表示 */
+body::before {
+  display: none;
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+[data-theme="light"] body::before { display: none; opacity: 0; }
+
+img, picture, video, canvas, svg { display: block; max-width: 100%; }
+ul[role="list"], ol[role="list"] { list-style: none; }
+input, button, textarea, select { font: inherit; color: inherit; }
+h1, h2, h3, h4, h5, h6 { text-wrap: balance; line-height: 1.15; }
+p, li { text-wrap: pretty; }
+button { cursor: pointer; background: none; border: none; }
+table { border-collapse: collapse; width: 100%; }
+
+::selection {
+  background: var(--color-primary-glow);
+  color: var(--color-primary);
+}
+
+:focus-visible {
+  outline: 1px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-primary-dim); }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app-wrapper {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100dvh;
+}
+
+/* ── TOP HEADER ── */
+.app-header {
+  grid-column: 1 / -1;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 var(--space-6);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+[data-theme="dark"] .app-header {
+  box-shadow: 0 1px 0 var(--color-border), var(--shadow-cyan);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.logo-mark {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.logo-sub {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  letter-spacing: 0.08em;
+  margin-top: -2px;
+}
+
+.header-sep {
+  width: 1px;
+  height: 28px;
+  background: var(--color-border);
+  margin: 0 var(--space-2);
+}
+
+.header-breadcrumb {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+  flex: 1;
+}
+
+.header-breadcrumb span {
+  color: var(--color-primary);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-left: auto;
+}
+
+/* Status indicator */
+.sys-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-green-dim);
+  letter-spacing: 0.06em;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-green);
+  box-shadow: 0 0 6px var(--color-green);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Theme toggle */
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  transition: all var(--transition-interactive);
+  background: transparent;
+}
+
+.theme-toggle:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: var(--color-primary-faint);
+}
+
+/* ── SIDEBAR NAV ── */
+.app-sidebar {
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  padding: var(--space-6) 0;
+  position: sticky;
+  top: 56px;
+  height: calc(100dvh - 56px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-section-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: var(--space-3) var(--space-5) var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.sidebar-section-label:first-child { margin-top: 0; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-5);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: all var(--transition-interactive);
+  position: relative;
+  border-left: 2px solid transparent;
+}
+
+.nav-item::before {
+  content: attr(data-index);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+  width: 1.5em;
+  flex-shrink: 0;
+}
+
+.nav-item:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-faint);
+  border-left-color: var(--color-primary);
+}
+
+.nav-item.active {
+  color: var(--color-primary);
+  background: var(--color-primary-faint);
+  border-left-color: var(--color-primary);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-divider);
+}
+
+.version-tag {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+  letter-spacing: 0.06em;
+}
+
+/* ── MAIN CONTENT ── */
+.app-main {
+  padding: var(--space-8) var(--space-10);
+  max-width: 900px;
+}
+
+/* ============================================================
+   WIKI CONTENT STYLES
+   ============================================================ */
+
+/* Page header */
+.wiki-page-header {
+  margin-bottom: var(--space-10);
+  padding-bottom: var(--space-8);
+  border-bottom: 1px solid var(--color-divider);
+  position: relative;
+}
+
+.wiki-page-header::before {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 80px;
+  height: 1px;
+  background: var(--color-primary);
+  box-shadow: var(--shadow-cyan);
+}
+
+.wiki-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-primary);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.wiki-eyebrow::before {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: var(--color-primary);
+}
+
+.wiki-page-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+}
+
+[data-theme="dark"] .wiki-page-title {
+  text-shadow: 0 0 30px rgba(0,200,83,0.2);
+}
+
+.wiki-lead {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  max-width: 70ch;
+  line-height: 1.75;
+}
+
+/* Header meta row */
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  margin-top: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.meta-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+  letter-spacing: 0.06em;
+}
+
+.meta-chip svg { flex-shrink: 0; }
+
+/* Section blocks */
+.wiki-section {
+  margin-bottom: var(--space-12);
+  scroll-margin-top: calc(56px + var(--space-6));
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.section-number {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-primary);
+  background: var(--color-primary-faint);
+  border: 1px solid var(--color-primary);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+[data-theme="dark"] .section-number {
+  box-shadow: 0 0 8px rgba(0,200,83,0.12);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-text);
+}
+
+/* Body text */
+.wiki-p {
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  line-height: 1.8;
+  max-width: 72ch;
+  margin-bottom: var(--space-4);
+}
+
+.wiki-p:last-child { margin-bottom: 0; }
+
+/* Highlighted / callout */
+.callout {
+  background: var(--color-surface-offset);
+  border: 1px solid var(--color-border);
+  border-left: 2px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+[data-theme="dark"] .callout {
+  box-shadow: inset 0 0 20px rgba(0,200,83,0.03);
+}
+
+.callout p {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.75;
+  max-width: 72ch;
+}
+
+/* ── TABLES ── */
+.wiki-table-wrap {
+  overflow-x: auto;
+  margin-bottom: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+[data-theme="dark"] .wiki-table-wrap {
+  box-shadow: var(--shadow-md);
+}
+
+.wiki-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.wiki-table thead tr {
+  background: var(--color-surface-offset);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.wiki-table thead th {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.wiki-table tbody tr {
+  border-bottom: 1px solid var(--color-divider);
+  transition: background var(--transition-interactive);
+}
+
+.wiki-table tbody tr:last-child { border-bottom: none; }
+
+.wiki-table tbody tr:hover {
+  background: var(--color-surface-offset);
+}
+
+.wiki-table tbody td,
+.wiki-table tbody th {
+  padding: var(--space-3) var(--space-4);
+  vertical-align: top;
+  line-height: 1.6;
+}
+
+.wiki-table tbody th {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  width: 1%;
+}
+
+.wiki-table tbody td {
+  color: var(--color-text-muted);
+}
+
+.wiki-table td strong {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+  font-size: var(--text-base);
+}
+
+/* Area name tag */
+.area-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-primary);
+  background: var(--color-primary-faint);
+  border: 1px solid rgba(0,200,83,0.2);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+[data-theme="light"] .area-tag {
+  border-color: rgba(0,109,128,0.2);
+}
+
+/* ── ORDERED LIST ── */
+.wiki-ol {
+  counter-reset: step;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.wiki-ol li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: var(--space-3);
+  align-items: flex-start;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.wiki-ol li::before {
+  content: counter(step, decimal-leading-zero);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-primary);
+  background: var(--color-primary-faint);
+  border: 1px solid rgba(0,200,83,0.2);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  letter-spacing: 0;
+}
+
+[data-theme="light"] .wiki-ol li::before {
+  border-color: rgba(0,109,128,0.2);
+}
+
+/* ── UNORDERED LIST ── */
+.wiki-ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.wiki-ul li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.wiki-ul li::before {
+  content: '▸';
+  color: var(--color-green);
+  flex-shrink: 0;
+  margin-top: 2px;
+  font-size: 0.7em;
+}
+
+/* Warning list */
+.warn-ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  background: var(--color-surface-offset);
+  border: 1px solid var(--color-border);
+  border-left: 2px solid var(--color-warning);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+}
+
+.warn-ul li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.warn-ul li::before {
+  content: '⚠';
+  color: var(--color-warning);
+  flex-shrink: 0;
+  font-size: 0.85em;
+  margin-top: 2px;
+}
+
+/* Auto-calc grid */
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.calc-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  transition: all var(--transition-interactive);
+}
+
+[data-theme="dark"] .calc-card {
+  box-shadow: var(--shadow-sm);
+}
+
+.calc-card:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-offset);
+}
+
+.calc-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-1);
+}
+
+.calc-value {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-primary);
+  letter-spacing: 0.03em;
+}
+
+.calc-desc {
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+  margin-top: var(--space-1);
+  line-height: 1.5;
+}
+
+/* Validation check list */
+.check-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  letter-spacing: 0.03em;
+}
+
+.check-item::before {
+  content: '✗';
+  color: var(--color-error);
+  font-size: 0.8em;
+  flex-shrink: 0;
+}
+
+/* Entry fields grid */
+.field-category {
+  margin-bottom: var(--space-4);
+}
+
+.category-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-primary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.field-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.field-tag {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  background: var(--color-surface-offset);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 3px var(--space-3);
+  letter-spacing: 0.04em;
+  transition: all var(--transition-interactive);
+}
+
+.field-tag:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {
+  .app-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .app-sidebar {
+    display: none;
+  }
+
+  .app-main {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .wiki-table-wrap {
+    font-size: var(--text-xs);
+  }
+
+  .calc-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .check-list {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Corner accent decorations (東亜重工 style) */
+.corner-accent {
+  position: relative;
+}
+
+.corner-accent::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-top: 1px solid var(--color-primary);
+  border-right: 1px solid var(--color-primary);
+  opacity: 0.4;
+}
+
+.corner-accent::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  border-bottom: 1px solid var(--color-primary);
+  border-left: 1px solid var(--color-primary);
+  opacity: 0.4;
+}
+
+/* Inline code */
+code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  color: var(--color-primary);
+  background: var(--color-primary-faint);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0,200,83,0.15);
+}
+
+[data-theme="light"] code {
+  border-color: rgba(0,109,128,0.15);
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+.skip-link:focus {
+  left: var(--space-4);
+  top: var(--space-4);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  z-index: 10000;
+}
+</style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">コンテンツへスキップ</a>
+
+<div class="app-wrapper">
+
+  <!-- ── TOP HEADER ── -->
+  <header class="app-header">
+    <div class="header-logo">
+      <!-- SVG Logo: 東亜重工スタイルのマーク -->
+      <svg class="logo-mark" viewBox="0 0 32 32" fill="none" aria-label="THI-WEB MANUAL" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0.5" y="0.5" width="31" height="31" rx="1.5" stroke="currentColor" stroke-opacity="0.3"/>
+        <polygon points="16,4 28,28 4,28" fill="none" stroke="var(--color-primary)" stroke-width="1.2"/>
+        <line x1="10" y1="22" x2="22" y2="22" stroke="var(--color-green)" stroke-width="1"/>
+        <circle cx="16" cy="16" r="3" fill="var(--color-primary)" opacity="0.6"/>
+        <circle cx="16" cy="16" r="1.5" fill="var(--color-primary)"/>
+        <line x1="16" y1="4" x2="16" y2="8" stroke="var(--color-primary)" stroke-width="0.8" opacity="0.5"/>
+        <line x1="16" y1="24" x2="16" y2="28" stroke="var(--color-primary)" stroke-width="0.8" opacity="0.5"/>
+      </svg>
+      <span>
+        <span class="logo-text">THI-WEB</span>
+        <span class="logo-sub">CLINICAL RESEARCH SYSTEM</span>
+      </span>
+    </div>
+
+    <div class="header-sep"></div>
+    <div class="header-breadcrumb">
+      取扱説明 / <span>臨床研究研修会 ダッシュボード</span>
+    </div>
+
+    <div class="header-actions">
+      <div class="sys-status">
+        <span class="status-dot"></span>
+        <span>SYS.ONLINE</span>
+      </div>
+      <button class="theme-toggle" data-theme-toggle aria-label="テーマ切替">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="app-sidebar" aria-label="目次">
+    <span class="sidebar-section-label">MANUAL INDEX</span>
+    <a href="#overview"   class="nav-item active"  data-index="01">概要</a>
+    <a href="#screen"     class="nav-item"          data-index="02">画面構成</a>
+    <a href="#basic-flow" class="nav-item"          data-index="03">基本操作</a>
+    <a href="#csv-db"     class="nav-item"          data-index="04">CSV読込・DB作成</a>
+    <a href="#entry"      class="nav-item"          data-index="05">入力項目</a>
+    <a href="#auto-calc"  class="nav-item"          data-index="06">自動計算</a>
+    <a href="#save-check" class="nav-item"          data-index="07">保存・確認画面</a>
+    <a href="#export"     class="nav-item"          data-index="08">CSV出力</a>
+    <a href="#template"   class="nav-item"          data-index="09">テンプレート差し込み</a>
+    <a href="#theme"      class="nav-item"          data-index="10">テーマ切替</a>
+    <a href="#notes"      class="nav-item"          data-index="11">注意事項</a>
+    <div class="sidebar-footer">
+      <div class="version-tag">
+        DOC-REV 1.0.0<br>
+        CLASSIFICATION: INTERNAL
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="app-main" id="main-content">
+
+    <!-- Page Header -->
+    <header class="wiki-page-header corner-accent">
+      <p class="wiki-eyebrow">取扱説明書 — OPERATOR MANUAL</p>
+      <h1 class="wiki-page-title">臨床研究研修会 ダッシュボード</h1>
+      <p class="wiki-lead">
+        臨床研究研修会のマスターCSV管理、開催情報入力、日程自動計算、保存前確認、
+        更新CSV出力、テンプレート一括差し込みを行うためのWebアプリです。
+      </p>
+      <div class="header-meta">
+        <span class="meta-chip">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          ブラウザベース単一ページアプリ
+        </span>
+        <span class="meta-chip">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+          docx / pptx / xlsx 対応
+        </span>
+        <span class="meta-chip">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          日程自動計算エンジン搭載
+        </span>
+      </div>
+    </header>
+
+    <!-- 1. 概要 -->
+    <section id="overview" class="wiki-section">
+      <div class="section-header">
+        <span class="section-number">01</span>
+        <h2 class="section-title">概要</h2>
+      </div>
+      <div class="callout">
+        <p>
+          本アプリは、臨床研究研修会の開催管理を1つの画面で行うための業務支援ツールです。
+          マスターCSVの読込、新規データ作成、既存Noの更新、開催関連日付の自動算出、確認画面での検証、
+          更新CSVのダウンロード、および <code>docx</code> / <code>pptx</code> / <code>xlsx</code> テンプレートへの一括差し込みに対応しています。
+        </p>
+      </div>
+      <div class="wiki-table-wrap">
+        <table class="wiki-table">
+          <tbody>
+            <tr>
+              <th>アプリ名</th>
+              <td>臨床研究研修会 ダッシュボード</td>
+            </tr>
+            <tr>
+              <th>主用途</th>
+              <td>研修会マスターの登録・更新・確認・出力</td>
+            </tr>
+            <tr>
+              <th>対応入力</th>
+              <td>マスターCSV、フォーム入力、テンプレートファイル</td>
+            </tr>
+            <tr>
+              <th>対応出力</th>
+              <td>更新CSV、差し込み済み <code>docx</code> / <code>pptx</code> / <code>xlsx</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. 画面構成 -->
+    <section id="screen" class="wiki-section">
+      <div class="section-header">
+        <span class="section-number">02</span>
+        <h2 class="section-title">画面構成</h2>
+      </div>
+      <p class="wiki-p">
+        画面は、操作系、進捗確認、入力フォーム、スケジュール表示、保存確認、出力結果、差し込み処理の各エリアで構成されています。
+      </p>
+      <div class="wiki-table-wrap">
+        <table class="wiki-table">
+          <thead>
+            <tr>
+              <th>エリア名</th>
+              <th>役割</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="area-tag">Quick Operation</span></td>
+              <td>テーマ切替、マスターCSV読込、新規DB作成、確認画面への移動、No選択を行います。</td>
+            </tr>
+            <tr>
+              <td><span class="area-tag">Annual Plan Parameter</span></td>
+              <td>年度件数、開催済み件数、直近30日件数、追加予定件数をリング表示します。</td>
+            </tr>
+            <tr>
+              <td><span class="area-tag">Deadline Alert</span></td>
+              <td>7日以内に期限が迫るタスクを優先表示します。</td>
+            </tr>
+            <tr>
+              <td><span class="area-tag">Entry Console</span></td>
+              <td>研修会の基本情報、Zoom情報、説明文などを入力・編集します。</td>
+            </tr>
+            <tr>
+              <td><span class="area-tag">Computed Schedule</span></td>
+              <td>自動計算された起案日、HP公開日、締切日、実施済みチェックを表示します。</td>
+            </tr>
+            <tr>
+              <td><span class="area-tag">Master Table</span></td>
+              <td>現在保持しているマスター行一覧を確認します。</td>
+            </tr>
+            <tr>
+              <td><span class="area-tag">Commit Check</span></td>
+              <td>保存前の差分や注意事項を確認します。</td>
+            </tr>
+            <tr>
+              <td><span class="area-tag">Export Result</span></td>
+              <td>更新CSVの出力状態を表示します。</td>
+            </tr>
+            <tr>
+              <td><span class="area-tag">Template Injection</span></td>
+              <td><code>docx</code> / <code>pptx</code> / <code>xlsx</code> テンプレートへの一括差し込みを実行します。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. 基本操作 -->
+    <section id="basic-flow" class="wiki-section">
+      <div class="section-header">
+        <span class="section-number">03</span>
+        <h2 class="section-title">基本操作</h2>
+      </div>
+      <ol class="wiki-ol">
+        <li>「csv選択」からマスターCSVを読み込むか、「新規DB作成」で空のデータベースを作成します。</li>
+        <li>既存データを編集する場合は、No選択欄から対象Noを選び、「選択Noを反映」を押します。</li>
+        <li>必要項目を <code>Entry Console</code> で入力または修正します。</li>
+        <li>右側の <code>Computed Schedule</code> で自動計算内容とチェック状態を確認します。</li>
+        <li>「確認画面へ進む」または保存操作を行い、<code>Commit Check</code> で内容を確認します。</li>
+        <li>問題がなければ保存し、「更新CSVをダウンロード」から最新CSVを取得します。</li>
+        <li>必要に応じてテンプレート差し込みを行い、資料ファイルをまとめて出力します。</li>
+      </ol>
+    </section>
+
+    <!-- 4. CSV読込・DB作成 -->
+    <section id="csv-db" class="wiki-section">
+      <div class="section-header">
+        <span class="section-number">04</span>
+        <h2 class="section-title">CSV読込と新規DB作成</h2>
+      </div>
+      <p class="wiki-p">
+        マスターCSVは「csv選択」ボタンから読み込みます。ファイル選択欄はブラウザ標準の
+        「選択されていません」表示を使わない構成に変更されており、選択後は専用表示欄にファイル名が反映されます。
+      </p>
+      <p class="wiki-p">
+        CSVを読み込むと、No順にデータが整理され、一覧表示、統計表示、期限アラート、差し込み対象Noが更新されます。
+        新規DB作成では既定ヘッダーを持つ空のマスターが生成され、1件目から登録を始められます。
+      </p>
+    </section>
+
+    <!-- 5. 入力項目 -->
+    <section id="entry" class="wiki-section">
+      <div class="section-header">
+        <span class="section-number">05</span>
+        <h2 class="section-title">入力項目</h2>
+      </div>
+      <p class="wiki-p">
+        <code>Entry Console</code> では以下の各分類に属する項目を入力・編集します。
+      </p>
+
+      <div class="field-category">
+        <p class="category-name">基本情報</p>
+        <div class="field-tags">
+          <span class="field-tag">No</span>
+          <span class="field-tag">年度</span>
+          <span class="field-tag">開催日</span>
+          <span class="field-tag">タイトル</span>
+          <span class="field-tag">講師名</span>
+          <span class="field-tag">氏名</span>
+          <span class="field-tag">謝金</span>
+        </div>
+      </div>
+
+      <div class="field-category">
+        <p class="category-name">時刻情報</p>
+        <div class="field-tags">
+          <span class="field-tag">講義開始</span>
+          <span class="field-tag">研修会開始</span>
+          <span class="field-tag">終了</span>
+          <span class="field-tag">事前打合せ</span>
+          <span class="field-tag">質疑応答締切</span>
+          <span class="field-tag">質疑応答時間</span>
+        </div>
+      </div>
+
+      <div class="field-category">
+        <p class="category-name">開催設定</p>
+        <div class="field-tags">
+          <span class="field-tag">対象</span>
+          <span class="field-tag">対象詳細</span>
+          <span class="field-tag">開催方法</span>
+          <span class="field-tag">共催</span>
+          <span class="field-tag">共催3</span>
+        </div>
+      </div>
+
+      <div class="field-category">
+        <p class="category-name">配信情報</p>
+        <div class="field-tags">
+          <span class="field-tag">Zoom ID</span>
+          <span class="field-tag">パスコード</span>
+          <span class="field-tag">Zoom URL</span>
+          <span class="field-tag">HP URL</span>
+        </div>
+      </div>
+
+      <div class="field-category">
+        <p class="category-name">説明文</p>
+        <div class="field-tags">
+          <span class="field-tag">目的</span>
+          <span class="field-tag">進行表導入</span>
+          <span class="field-tag">趣旨説明</span>
+          <span class="field-tag">講師紹介</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. 自動計算 -->
+    <section id="auto-calc" class="wiki-section">
+      <div class="section-header">
+        <span class="section-number">06</span>
+        <h2 class="section-title">自動計算</h2>
+      </div>
+      <p class="wiki-p">
+        開催日や時刻の入力内容に応じて、各種日付・時刻が自動算出されます。
+        対象区分や共催選択に応じて、関連する表示文言も自動補完されます。
+      </p>
+      <div class="calc-grid">
+        <div class="calc-card corner-accent">
+          <p class="calc-label">起案1</p>
+          <p class="calc-value">開催 −35日</p>
+          <p class="calc-desc">第一次起案の締切基準日</p>
+        </div>
+        <div class="calc-card corner-accent">
+          <p class="calc-label">HP公開</p>
+          <p class="calc-value">開催 −28日</p>
+          <p class="calc-desc">ウェブサイト公開開始日</p>
+        </div>
+        <div class="calc-card corner-accent">
+          <p class="calc-label">起案2</p>
+          <p class="calc-value">開催 −7日</p>
+          <p class="calc-desc">第二次起案の締切基準日</p>
+        </div>
+        <div class="calc-card corner-accent">
+          <p class="calc-label">起案3</p>
+          <p class="calc-value">翌営業日基準</p>
+          <p class="calc-desc">開催翌営業日から算出</p>
+        </div>
+        <div class="calc-card corner-accent">
+          <p class="calc-label">院外締切</p>
+          <p class="calc-value">開催 −8日</p>
+          <p class="calc-desc">院外向け受付締切日</p>
+        </div>
+        <div class="calc-card corner-accent">
+          <p class="calc-label">その他</p>
+          <p class="calc-value">自動反映</p>
+          <p class="calc-desc">資料締切・メール用日付・入室時刻・所要時間</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. 保存・確認画面 -->
+    <section id="save-check" class="wiki-section">
+      <div class="section-header">
+        <span class="section-number">07</span>
+        <h2 class="section-title">保存と確認画面</h2>
+      </div>
+      <p class="wiki-p">
+        保存時は、入力中のNoを基準に、既存Noがある場合は上書き、ない場合は新規追加として処理されます。
+        同一Noが複数行として増えることはなく、マスター上では1つのNoにつき1行のみ保持されます。
+      </p>
+      <p class="wiki-p">
+        <code>Commit Check</code> では、保存予定件数、要確認件数、状態（新規追加／上書き）、および以下の入力不足・形式不正が表示されます。
+      </p>
+      <div class="check-list">
+        <span class="check-item">No 未入力</span>
+        <span class="check-item">開催日 未入力</span>
+        <span class="check-item">タイトル 未入力</span>
+        <span class="check-item">講師名 未入力</span>
+        <span class="check-item">開始・終了時刻 未入力</span>
+        <span class="check-item">終了 ≤ 開始</span>
+        <span class="check-item">URL 形式不正</span>
+        <span class="check-item">謝金が数値でない</span>
+      </div>
+    </section>
+
+    <!-- 8. CSV出力 -->
+    <section id="export" class="wiki-section">
+      <div class="section-header">
+        <span class="section-number">08</span>
+        <h2 class="section-title">CSV出力</h2>
+      </div>
+      <p class="wiki-p">
+        保存後は「更新CSVをダウンロード」から最新状態のCSVを取得できます。
+        出力ファイル名は、開催日とタイトルをもとに作成される運用です。
+      </p>
+      <p class="wiki-p">
+        CSVには、基本項目に加えて、<code>起案1</code> / <code>HP</code> / <code>起案2</code> / <code>起案3</code> のチェック状態も含めて保存されます。
+      </p>
+    </section>
+
+    <!-- 9. テンプレート差し込み -->
+    <section id="template" class="wiki-section">
+      <div class="section-header">
+        <span class="section-number">09</span>
+        <h2 class="section-title">テンプレート差し込み</h2>
+      </div>
+      <p class="wiki-p">
+        <code>Template Injection</code> では、<code>docx</code> / <code>pptx</code> / <code>xlsx</code> を複数まとめて読み込み、選択Noのデータで一括差し込みできます。
+        テンプレート未選択時は待機表示となり、対象Noとテンプレートが揃うと一括出力が可能になります。
+      </p>
+      <p class="wiki-p">
+        差し込みキーはCSVヘッダー名のほか、以下の別名キーにも対応します。
+        出力ファイル名はNoとタイトルを含む形で生成されます。
+      </p>
+      <div class="field-tags" style="margin-bottom: var(--space-6);">
+        <span class="field-tag">DATE_1</span>
+        <span class="field-tag">DATE_2</span>
+        <span class="field-tag">TITLE</span>
+        <span class="field-tag">SPEAKER</span>
+        <span class="field-tag">NO</span>
+        <span class="field-tag">PASSCODE</span>
+        <span class="field-tag">ZOOM_URL</span>
+        <span class="field-tag">WEBINER_ID</span>
+      </div>
+    </section>
+
+    <!-- 10. テーマ切替 -->
+    <section id="theme" class="wiki-section">
+      <div class="section-header">
+        <span class="section-number">10</span>
+        <h2 class="section-title">テーマ切替</h2>
+      </div>
+      <p class="wiki-p">
+        「表示テーマ切替」ボタンで、ダークテーマとライトテーマを切り替えられます。
+        ダークテーマはグリーン端末調、ライトテーマは Notion 風の明るい業務UIとして設計されています。
+      </p>
+    </section>
+
+    <!-- 11. 注意事項 -->
+    <section id="notes" class="wiki-section">
+      <div class="section-header">
+        <span class="section-number">11</span>
+        <h2 class="section-title">注意事項</h2>
+      </div>
+      <ul class="warn-ul">
+        <li>CSV更新後は、必ず最新の更新CSVをダウンロードして保管してください。</li>
+        <li>同じNoで保存すると既存行の上書き更新になります。</li>
+        <li>テンプレート差し込みは <code>docx</code> / <code>pptx</code> / <code>xlsx</code> に対応しています。</li>
+        <li>URL項目は <code>http</code> または <code>https</code> 形式で入力してください。</li>
+        <li>開催日や時刻を変更したときは、自動計算欄と確認画面を必ず確認してください。</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// Theme toggle
+(function(){
+  const t = document.querySelector('[data-theme-toggle]');
+  const r = document.documentElement;
+  let d = r.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  r.setAttribute('data-theme', d);
+  function updateIcon() {
+    if (!t) return;
+    t.innerHTML = d === 'dark'
+      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    t.setAttribute('aria-label', d === 'dark' ? 'ライトモードへ切替' : 'ダークモードへ切替');
+  }
+  updateIcon();
+  if (t) {
+    t.addEventListener('click', () => {
+      d = d === 'dark' ? 'light' : 'dark';
+      r.setAttribute('data-theme', d);
+      updateIcon();
+    });
+  }
+})();
+
+// Active nav item on scroll
+(function(){
+  const sections = document.querySelectorAll('.wiki-section[id]');
+  const navItems = document.querySelectorAll('.nav-item');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navItems.forEach(item => item.classList.remove('active'));
+        const active = document.querySelector('.nav-item[href="#' + entry.target.id + '"]');
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-56px 0px -60% 0px', threshold: 0 });
+  sections.forEach(s => observer.observe(s));
+})();
+</script>
+</body>
+</html>

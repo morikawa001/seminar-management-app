@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>受講者データ処理システム</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {--bg:#080f0a;--panel:#0b150d;--panel2:#0f1d10;--panel3:#142016;--line:#1a3320;--line2:#1f3d26;--green:#00c853;--green2:#00e676;--green-dim:#2e7d32;--green-dark:#1b5e20;--text:#b2dfb8;--text-strong:#e8f5e9;--text-dim:#4a7a52;--accent:#69f0ae;--warn:#ffab40;--error:#ef5350;--radius:6px;--font-mono:'Share Tech Mono', monospace;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:14px;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;min-height:100vh;overflow-x:hidden;position:relative;}
+#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.18;}
+.app-wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:16px;}
+.app-header{text-align:center;padding:18px 0 10px;border-bottom:1px solid var(--line2);margin-bottom:18px;}
+.app-header h1{font-family:var(--font-mono);font-size:1.3em;color:var(--green);letter-spacing:.18em;text-shadow:0 0 12px rgba(0,200,83,.5);}
+.app-header .sub{font-size:.78em;color:var(--text-dim);letter-spacing:.12em;font-family:var(--font-mono);margin-top:4px;}
+.panel{background:var(--panel);border:1px solid var(--line2);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;}
+.panel-title{font-family:var(--font-mono);font-size:.78em;color:var(--green);letter-spacing:.16em;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:12px;text-shadow:0 0 8px rgba(0,200,83,.4);}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr;}}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group label{font-size:.82em;color:var(--text-dim);letter-spacing:.06em;}
+input[type=text],input[type=time]{background:var(--panel2);border:1px solid var(--line2);border-radius:var(--radius);color:var(--text-strong);font-family:var(--font-mono);font-size:.95em;padding:8px 10px;width:100%;transition:border-color .2s,box-shadow .2s;}
+input:focus,select:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 2px rgba(0,200,83,.15);}
+select{background:var(--panel2);border:1px solid var(--line2);border-radius:var(--radius);color:var(--text-strong);font-family:'Noto Sans JP',sans-serif;font-size:.9em;padding:8px 10px;width:100%;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%2300c853'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+input[type=file]{display:none;}
+.file-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:640px){.file-row{grid-template-columns:1fr;}}
+.file-label{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:44px;padding:0 16px;background:var(--panel2);border:1px solid var(--green);border-radius:var(--radius);color:var(--green);font-family:var(--font-mono);font-size:.88em;font-weight:700;letter-spacing:.08em;cursor:pointer;transition:background .15s,box-shadow .15s;}
+.file-label:hover{background:var(--panel3);box-shadow:0 0 0 2px rgba(0,200,83,.25);}
+.file-name{margin-top:5px;font-size:.78em;color:var(--accent);font-family:var(--font-mono);word-break:break-all;min-height:1.3em;}
+.btn{min-height:44px;padding:0 18px;background:var(--panel2);border:1px solid var(--line2);border-radius:var(--radius);color:var(--text-strong);font-family:'Noto Sans JP',sans-serif;font-size:.88em;font-weight:700;letter-spacing:.06em;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s;width:100%;}
+.btn:hover{background:var(--panel3);border-color:var(--green);box-shadow:0 0 0 1px rgba(0,200,83,.2);}
+.btn:active{transform:translateY(1px);}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.btn-primary{background:var(--green-dark);border-color:var(--green);color:#fff;}
+.btn-primary:hover{background:var(--green-dim);border-color:var(--green2);}
+.btn-success{background:#1b4a20;border-color:var(--accent);color:var(--accent);}
+.btn-success:hover{background:#1f5a25;}
+.log-box{background:var(--panel2);border:1px solid var(--line);border-radius:var(--radius);height:180px;overflow-y:auto;padding:8px 10px;font-family:var(--font-mono);font-size:.78em;}
+.log-line{margin-bottom:2px;line-height:1.5;}
+.log-ok{color:var(--green);}
+.log-warn{color:var(--warn);}
+.log-err{color:var(--error);}
+.log-info{color:var(--text-dim);}
+.prog-wrap{margin:10px 0;}
+.prog-label{font-family:var(--font-mono);font-size:.76em;color:var(--text-dim);margin-bottom:4px;display:flex;justify-content:space-between;}
+.prog-bar-bg{background:var(--panel3);border-radius:3px;height:6px;overflow:hidden;}
+.prog-bar{height:6px;border-radius:3px;background:var(--green);width:0%;transition:width .4s ease;box-shadow:0 0 8px rgba(0,200,83,.5);}
+.steps{display:flex;flex-direction:column;gap:6px;}
+.step{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:.8em;color:var(--text-dim);}
+.step-num{width:20px;height:20px;border-radius:50%;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:.72em;flex-shrink:0;}
+.step.done .step-num{background:var(--green);border-color:var(--green);color:#000;}
+.step.done{color:var(--text);}
+.step.active .step-num{border-color:var(--green);color:var(--green);}
+.step.active{color:var(--text-strong);}
+.table-wrap{overflow:auto;margin-top:10px;max-height:460px;}
+table{border-collapse:collapse;width:100%;font-size:.78em;font-family:var(--font-mono);}
+th{background:var(--panel3);color:var(--green);border:1px solid var(--line2);padding:5px 8px;white-space:nowrap;text-align:left;position:sticky;top:0;}
+td{border:1px solid var(--line);padding:4px 8px;white-space:nowrap;color:var(--text);}
+tr:nth-child(even) td{background:rgba(255,255,255,.02);}
+td.ng{color:var(--error);}
+td.ok{color:var(--accent);}
+.summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0;}
+.summary-card{background:var(--panel2);border:1px solid var(--line2);border-radius:var(--radius);padding:8px 10px;text-align:center;}
+.summary-card .val{font-family:var(--font-mono);font-size:1.4em;color:var(--green2);}
+.summary-card .lbl{font-size:.72em;color:var(--text-dim);margin-top:2px;}
+@media(max-width:700px){.summary-grid{grid-template-columns:repeat(2,1fr);}}
+.note{font-size:.8em;color:var(--text-dim);margin-top:8px;line-height:1.6;}
+.kbd{display:inline-block;padding:1px 6px;border:1px solid var(--line2);border-radius:4px;background:var(--panel3);font-family:var(--font-mono);color:var(--accent);}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+<div class="app-wrap">
+<header class="app-header">
+  <h1>▌ Participant Management Panel ▌</h1>
+  <div class="sub">CLINICAL RESEARCH TRAINING — ATTENDANCE ANALYSIS SYSTEM v1.2</div>
+</header>
+
+<section class="panel">
+  <div class="panel-title">▸ CONFIG — 処理パラメータ設定</div>
+  <div class="grid-2" style="margin-bottom:12px;">
+    <div class="form-group"><label for="inputDay">DAY（研修会識別子）</label><input type="text" id="inputDay" placeholder="例: 260528"></div>
+    <div class="form-group"><label for="inputParticipation">PARTICIPATION（参加形態）</label><select id="inputParticipation"><option value="web">web</option><option value="hall">hall</option></select></div>
+    <div class="form-group"><label for="inputTarget">TARGET（対象区分）</label><select id="inputTarget"><option value="研究者">研究者</option><option value="研究支援者">研究支援者</option><option value="委員会">委員会</option></select></div>
+    <div class="form-group"></div>
+    <div class="form-group"><label for="inputStart">開始時刻</label><input type="time" id="inputStart" value="18:00"></div>
+    <div class="form-group"><label for="inputEnd">（質疑応答）終了時刻</label><input type="time" id="inputEnd" value="20:00"></div>
+  </div>
+  <div id="timeInfo" style="font-family:var(--font-mono);font-size:.8em;color:var(--accent);margin-bottom:12px;min-height:1.4em;"></div>
+
+  <div class="file-row">
+    <div>
+      <label class="file-label" for="fileInput"><span>📂</span><span id="fileLabelText">出席者レポートを選択</span></label>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+      <div class="file-name" id="fileName"></div>
+    </div>
+    <div>
+      <label class="file-label" for="surveyFileInput"><span>📝</span><span id="surveyLabelText">アンケート結果読み込み</span></label>
+      <input type="file" id="surveyFileInput" accept=".xlsx,.xls,.csv">
+      <div class="file-name" id="surveyFileName"></div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:12px;">
+    <div>
+      <button class="btn btn-primary" id="btnProcess" disabled>
+        ▶ 出席者データを処理
+      </button>
+    </div>
+    <div>
+      <button class="btn btn-success" id="btnMergeExport" disabled>
+        💾 アンケート結合CSVをダウンロード
+      </button>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top:8px;">
+    <div>
+      <button class="btn btn-success" id="btnProcessExport" disabled>
+        💾 処理済み出席者CSVをダウンロード
+      </button>
+    </div>
+    <div></div>
+  </div>
+
+  <div class="grid-2" style="margin-top:8px;">
+    <div>
+      <button class="btn btn-success" id="btnJobSummaryExport" disabled>
+        💾 認定者職種集計CSVをダウンロード
+      </button>
+    </div>
+    <div></div>
+  </div>
+
+  <div class="note">
+    処理順: <span class="kbd">1</span> 出席者レポート読込 →
+    <span class="kbd">2</span> 処理実行 →
+    <span class="kbd">3</span> アンケート結果読込 →
+    <span class="kbd">4</span> メール列で結合して氏名あり行のみ出力
+  </div>
+</section>
+
+<div class="grid-2">
+  <section class="panel">
+    <div class="panel-title">▸ PROCESS STEPS</div>
+    <div class="steps">
+      <div class="step" id="s1"><div class="step-num">1</div><div>ファイル解析・セクション分割</div></div>
+      <div class="step" id="s2"><div class="step-num">2</div><div>出席者データ抽出・列整理</div></div>
+      <div class="step" id="s3"><div class="step-num">3</div><div>姓名入れ替え・氏名生成</div></div>
+      <div class="step" id="s4"><div class="step-num">4</div><div>所属施設正規化</div></div>
+      <div class="step" id="s5"><div class="step-num">5</div><div>参加時刻・退出時刻・聴講時間算出</div></div>
+      <div class="step" id="s6"><div class="step-num">6</div><div>判定・列整列・CSV生成</div></div>
+      <div class="step" id="s7"><div class="step-num">7</div><div>アンケート結果をメール列で結合</div></div>
+    </div>
+    <div class="prog-wrap" style="margin-top:12px;">
+      <div class="prog-label"><span id="progLabel">READY</span><span id="progPct">0%</span></div>
+      <div class="prog-bar-bg"><div class="prog-bar" id="progBar"></div></div>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel-title">▸ PROCESS LOG</div>
+    <div class="log-box" id="logBox"></div>
+  </section>
+</div>
+
+<section class="panel" id="summaryPanel" style="display:none;">
+  <div class="panel-title">▸ RESULT SUMMARY</div>
+  <div class="summary-grid">
+    <div class="summary-card"><div class="val" id="sumTotal">—</div><div class="lbl">総受講者数</div></div>
+    <div class="summary-card"><div class="val" id="sumPass" style="color:var(--accent);">—</div><div class="lbl">認定（判定:1）</div></div>
+    <div class="summary-card"><div class="val" id="sumFail" style="color:var(--error);">—</div><div class="lbl">未達（判定:0）</div></div>
+    <div class="summary-card"><div class="val" id="sumSCC">—</div><div class="lbl">SCC受講者</div></div>
+    <div class="summary-card"><div class="val" id="sumMerged">—</div><div class="lbl">結合後出力件数</div></div>
+  </div>
+  <div style="font-family:var(--font-mono);font-size:.8em;color:var(--text-dim);margin-bottom:10px;">
+    研修会時間: <span id="sumSemTime" style="color:var(--green);">—</span>
+    　受講認定時間（3/4）: <span id="sumCertTime" style="color:var(--green);">—</span>
+  </div>
+</section>
+
+<section class="panel" id="previewPanel" style="display:none;">
+  <div class="panel-title">▸ DATA PREVIEW <span style="font-size:.8em;color:var(--text-dim);" id="previewCount"></span></div>
+  <div class="table-wrap" id="tableWrap"></div>
+</section>
+</div>
+
+<script>
+const SWAP_NAMES = new Set([
+  "稲本","伏木","田尻","戸倉","川井","釼持","坂東","児嶋","七部","三ツ矢","三上","三原","三吉","三好","三宅","三木","三浦","三輪",
+  "上原","上山","上村","上林","上田","上野","下平","下村","下田","並木","中","中上","中井","中原","中山","中尾","中島","中川","中村",
+  "中沢","中田","中神","中西","中谷","中野","中里","中林","中嶋","丸山","丹羽","久保","久保田","久村","乙部","九鬼","五十嵐","五味",
+  "井上","井下","井口","井原","井出","今井","今泉","今田","今西","今野","今村","伊佐治","伊東","伊藤","佐久間","佐々木","佐伯","佐藤",
+  "佐野","倉田","倉本","光岡","八木","兼子","内海","内田","内村","内山","内藤","冨田","出口","加納","加藤","勝又","勝田","北","北原",
+  "北島","北川","北村","北野","千田","千葉","半田","南","南雲","原","原口","原田","及川","古岩井","古川","古田","古谷","古賀","只野",
+  "吉原","吉井","吉川","吉本","吉村","吉沢","吉澤","吉田","名取","向井","和久井","和田","品川","唐澤","喜多","國府","園田","土井",
+  "土屋","土田","坂井","坂口","坂本","坂田","坪田","城戸","堀","堀内","堀口","堀川","堀江","堀田","堂崎","塩田","境","増井","増田",
+  "墨","外山","多田","大久保","大内","大倉","大和田","大城","大塚","大場","大宮","大山","大島","大川","大平","大庭","大木","大村",
+  "大森","大槻","大江","大沼","大沢","大津","大浦","大滝","大瀧","大田","大矢","大石","大竹","大西","大谷","大野","大橋","天野","太田",
+  "奈良","奥","奥山","奥村","奥田","奥野","妻木","安井","安原","安田","安藤","安部","宍戸","室井","宮下","宮内","宮原","宮城","宮崎",
+  "宮川","宮本","宮沢","宮田","富田","富永","寒川","寺本","寺田","小倉","小原","小口","小坂","小堀","小室","小宮","小山","小岩","小島",
+  "小嶋","小川","小幡","小早川","小暮","小杉","小松","小林","小柳","小柴","小森","小沼","小泉","小津","小沢","小澤","小田","小笠原",
+  "小谷","小野","小野塚","小野寺","小野田","小関","小高","尾崎","尾瀬","山下","山中","山内","山口","山岡","山岸","山崎","山川","山村",
+  "山根","山森","山瀬","山田","山縣","山本","山脇","岡","岡崎","岡田","岡村","岡本","岡部","岡野","岩下","岩井","岩佐","岩崎","岩本",
+  "岩瀬","岩田","岩谷","岩間","岸","岸川","岸本","岸田","峰岸","島","島守","島崎","島田","嶋田","川上","川下","川久保","川合","川原",
+  "川口","川崎","川島","川村","川本","川田","川端","川辺","川野","工藤","市原","市川","市村","布目","干川","平井","平塚","平山","平岡",
+  "平川","平松","平田","平野","廣岡","庄司","引地","弥富","当山","後藤","徳永","徳田","志村","志賀","手塚","手島","戸田","折田","押田",
+  "持田","指田","斎藤","新井","新垣","新庄","新田","新谷","日下","日高","日野","早坂","早川","明石","星","星野","春田","是永","時田",
+  "景山","曽我","有吉","有田","有馬","服部","望月","朝倉","木下","木原","木戸","木本","木村","木田","末永","本多","本村","本田","本間",
+  "杉","杉原","杉山","杉本","杉田","杉浦","村上","村井","村山","村木","村田","村瀬","東京","東山","松井","松原","松岡","松崎","松島",
+  "松尾","松山","松村","松林","松浦","松田","松野","松阪","松本","板倉","板垣","板橋","林","林田","枚田","柳","柳井","柳沢","柴崎","柴田",
+  "栗原","栗山","栗田","根岸","根本","桜井","梅沢","梅田","梅本","森","森下","森山","森川","森田","植木","植村","植田","楠","楠本","榊",
+  "榊原","榎本","横井","横山","横田","横澤","橋口","橋本","櫻井","武井","武元","武内","武山","武本","武田","武藤","武良","比嘉","毛利",
+  "水上","水元","水原","水品","水本","水谷","水野","氷室","永井","永松","永田","永野","永嶺","江口","江川","江崎","江藤","池上","池内",
+  "池口","池田","池谷","沖","沢田","河合","河原","河島","河村","河野","沼田","泊","法月","波多野","津田","浅井","浅原","浅川","浅沼",
+  "浅田","浅野","浜口","浜崎","浜田","浜野","浦田","浮田","海野","深井","深山","深沢","深田","清","清水","清田","清川","渋谷","渡部",
+  "渡辺","渡邊","渡邉","湯浅","溝口","滝沢","滝澤","澤田","瀬戸","片岡","片山","片桐","牟田","牧","牧本","牧野","猪狩","猪股","猪野",
+  "玉城","玉置","王","田中","田井","田井治","田代","田口","田島","田所","田村","田治","田渕","田畑","田端","田辺","甲斐","町田","畑中",
+  "畑山","畠山","白井","白石","白鳥","百瀬","的場","皆川","目黒","直井","相川","相原","相沢","相田","相良","相馬","真田","真鍋","矢崎",
+  "矢島","矢澤","矢田","矢部","矢野","矢﨑","石","石井","石原","石塚","石山","石崎","石川","石橋","石渡","石田","石黒","砂川","磯部",
+  "磯野","神谷","神保","神山","神田","祥雲","福井","福原","福山","福岡","福島","福本","福永","福田","秋元","秋山","秋本","秋田","秋吉",
+  "種村","秦","稲垣","稲田","稲葉","窪田","立花","竹下","竹中","竹内","竹原","竹村","竹本","竹田","竹山","笠井","笠原","笹川","笹木",
+  "筒井","篠原","篠崎","篠田","米山","米原","米田","粉川","糟谷","紀","納谷","細川","細谷","結城","緒方","織田","網野","綿貫","美濃部",
+  "羽田","翁長","臼井","舟橋","船橋","良知","色川","花井","花岡","花田","芳賀","芹沢","芹澤","若林","若松","茅野","荒井","荒川","荒木",
+  "荒牧","菅","菅原","菅沼","菅谷","菅野","菊地","菊池","萩原","落合","葛西","葦原","蒲生","蓮見","藤井","藤原","藤岡","藤川","藤本",
+  "藤村","藤森","藤沢","藤田","藤野","西","西原","西坂","西堀","西山","西岡","西川","西村","西本","西沢","西澤","西田","西畑","西方",
+  "西脇","西谷","西野","西潟","見城","角田","角野","言問","設楽","諏訪","谷","谷口","谷川","谷本","谷村","谷山","豊田","貞包","赤井",
+  "赤坂","赤城","赤堀","赤松","越智","足立","跡部","路傍","車","軍司","軒","近江谷","近藤","遠山","遠藤","那須","酒井","酒向","里見",
+  "重松","野口","野呂","野崎","野尻","野村","野池","野沢","野田","野中","野本","金子","金山","金成","金本","金森","金沢","金田",
+  "金谷","金城","金井","針生","鈴木","鈴村","鐘ヶ江","鍵山","鎌田","長井","長坂","長尾","長岡","長島","長崎","長瀬","長田","長谷",
+  "長谷川","長谷部","長沢","長浜","長野","門田","門馬","関","関口","関根","関谷","阪本","阿久津","阿部","陣内","陳","雨宮","青山",
+  "青木","青柳","面川","須賀","須崎","須田","須藤","飯島","飯塚","飯尾","飯山","飯沼","飯田","馬場","駒井","駿河","高井","高倉",
+  "高城","高尾","高山","高島","高崎","高木","高松","高橋","高梨","高江洲","高浜","高瀬","高田","高野","鬼塚","鬼頭","魚住","鮫島",
+  "鳥居","鳥海","鴇田","鵜飼","鹿島","鹿野","麻生","黒川","黒木","黒沢","黒澤","黒田","齋藤","龍崎","芝田","田原","前田","亀山","西潟",
+  "上坂","對馬","笹沼","岡和田","村松","富岡","熊木","樋口","浦嶋","幸田","小日向","本津","疋田","高場","齊藤","氏家","和佐","末棟",
+  "鳫","常峰","重山","中屋","柏木","大坪","石瀬","和久田","髙柳","山梨","澵井","賀川","塩野","廣瀬","押川","菊間","生山","西尾",
+  "金村","若山","白神","保坂","眞野","市野","久山","伊勢","中垣","堰端","青野","青島","榛葉","相賀","根上","權田","中塚","柳田","平岩",
+
+  // ここから新規追加（頻出姓を中心に約100件）
+  "中村","小林","加藤","吉田","山本","佐々木","山口","斉藤","清水","山崎",
+  "森田","石井","中島","中山","小野","原田","岡本","村田","菊地","杉山",
+  "増田","大野","宇野","高山","大山","星野","荒井","岩田","藤本","栗原",
+  "藤原","安田","長谷川","古屋","片岡","黒田","西田","山内","矢野","平田",
+  "永田","川村","藤井","広瀬","今田","中西","田口","宮本","土田","大西",
+  "本田","北川","杉本","和田","西村","菅原","石橋","金子","太田","堀内",
+  "長尾","高田","岩本","大塚","田辺","松下","本多","吉岡","森本","竹田",
+  "大橋","黒木","高木","丸山","松岡","高野","田村","宮城","竹中","石原",
+  "早川","田原","河野","中本","宮崎","大田","木下","木村","林","田中",
+  "松田","渡辺","鈴木","高橋","伊藤","式","熊谷","森岡","成岡","羽村","前川",
+
+  // ここから新規追加500件
+  "伊集院","伊地知","一色","一宮","一ノ瀬","一戸","一柳","一岡","一条","一ノ木",
+  "井筒","井伊","井桁","井手","井上田","井貝","井川","今中","今岡","今宮",
+  "今枝","今給黎","今関","今成","今北","今尾","今来","今泊","今浦","今沢",
+  "今子","今仲","今林","今里","今孝","今峰","今橋","今宗","今市","宇田",
+  "宇田川","宇田野","宇佐美","宇佐川","宇治","宇都宮","宇野沢","宇多","内木","内島",
+  "内橋","内本","内谷","内倉","内野","内堀","内尾","内紺","浮島","浮穴",
+  "浮ヶ谷","浮谷","浮和田","浮橋","浮上","浮下","浮本","梅林","梅岡","梅崎",
+  "梅野","梅木","梅川","梅村","梅下","梅根","梅山","柿沼","柿本","柿崎",
+  "柿内","柿島","柿木","柿田","柿野","柿原","柿谷","鹿児島","鹿沼","鹿谷",
+  "鹿嶋","鹿本","鹿浜","鹿内","鹿毛","鹿倉","鹿子","亀井","亀田","亀岡",
+  "亀谷","亀尾","亀村","亀川","亀嶋","亀原","唐沢","唐木","唐島","唐田",
+  "唐橋","唐津","唐谷","唐野","唐崎","唐渡","川畑","川畠","川嶋","川尻",
+  "川西","川添","川浪","川浜","川向","菊谷","菊野","菊本","菊川","菊沢",
+  "菊岡","菊崎","菊島","菊田","菊入","木嶋","木内","木崎","木城","木津",
+  "木塚","木谷","木野","木脇","木藤","木元","木暮","木幡","木坂","木俣",
+  "木場","木綿","木戸口","木付","木曽","草野","草刈","草川","草間","草田",
+  "草原","草谷","草壁","草柳","草地","熊田","熊倉","熊川","熊坂","熊沢",
+  "熊崎","熊本","熊野","熊村","久米","久留米","久留","久永","久原","久岡",
+  "久谷","久米島","久家","久木","栗生","栗谷","栗野","栗岡","栗崎","栗村",
+  "栗本","栗下","栗林","栗橋","黒岩","黒岡","黒柳","黒崎","黒須","黒瀬",
+  "黒谷","黒野","桑田","桑原","桑野","桑島","桑村","桑本","桑谷","桑崎",
+  "桑川","桑沢","小清水","小椋","小笠","小宮山","小田切","小田島","小嶌","小磯",
+  "小荷田","小比田","小比叡","小比賀","小妻","小竹","小豆島","向山","向野","向坂",
+  "向田","向原","向後","向井田","向谷","向坊","甲田","甲村","甲谷","甲野",
+  "甲川","甲崎","甲本","甲原","甲沢","甲橋","河田","河口","河谷","河崎",
+  "河本","河内","河西","河鍋","河添","河津","高岡","高岩","高宮","高木村",
+  "高木下","高栁","高比良","高橋野","高嶋","高丘","小針","小林田","小出","小平",
+  "小又","小野川","小野澤","小野山","小根","小橋","近山","近田","近本","近沢",
+  "近崎","近野","近原","近橋","近藤田","後藤田","後藤崎","後藤山","後藤野","後藤村",
+  "後藤本","後藤川","後藤沢","後藤原","後藤橋","五反田","五角","五郎","五明","五来",
+  "五木田","五十川","五十嵐田","五十崎","五嶋","斉木","斉川","斉野","斉谷","斉田",
+  "斉藤田","斉藤野","斉本","斉崎","斉橋","坂上","坂野","坂崎","坂牧","坂谷",
+  "坂根","坂部","坂脇","坂間","坂下","坂倉","坂元","坂林","坂森","坂枝",
+  "坂道","坂原","坂橋","坂尾","堺","堺田","堺山","堺川","堺野","堺谷",
+  "堺本","堺崎","堺村","堺沢","里内","里田","里山","里村","里川","里本",
+  "里崎","里谷","里野","里橋","椎名","椎野","椎木","椎崎","椎田","椎原",
+  "椎谷","椎山","椎川","椎本","下川","下坂","下島","下条","下谷","下野",
+  "下坪","下地","下岡","下曽根","下原","下畑","下前","下山","下橋","下松",
+  "下嶋","新谷","新野","新崎","新本","新川","新倉","新村","新原","新橋",
+  "新林","末廣","末広","末吉","末岡","末次","末松","末田","末野","末原",
+  "菅田","菅谷","菅野","菅本","菅崎","菅川","菅村","菅林","菅橋","菅山",
+  "須山","須賀田","須賀野","須賀本","須賀橋","須賀川","須賀村","須賀崎","須賀沢","須賀原",
+  "関野","関谷","関崎","関山","関原","関川","関村","関田","関本","関橋",
+  "高坂","高坪","高杉","高瀬","高平","高弘","高丸","高見","高安","高田野",
+  "竹岡","竹崎","竹谷","竹野","竹橋","竹村","竹原","竹沢","辰巳","辰野",
+  "辰田","辰本","辰崎","辰原","辰川","辰村","辰谷","辰橋","田尾","田川",
+  "田島","田畑","田邊","田邉","田巻","田和","田澤","田渕","俵","俵田",
+  "俵山","俵川","俵谷","俵本","俵崎","俵野","俵村","俵橋","寺岡","寺川",
+  "寺崎","寺西","寺沢","寺谷","寺野","寺橋","寺村","寺下","寺林","寺内",
+  "寺嶋","寺尾","寺原","寺本","寺山","寺前","戸川","戸島","戸谷","戸野",
+  "戸本","戸原","戸山","戸崎","戸橋","同田","同坂","同谷","同村","同原","君塚","三杉","井坂","井原","吉崎","髙橋","佐竹","前野",
+]);
+
+const CANONICAL = '静岡県立静岡がんセンター';
+let rawWorkbook=null,surveyWorkbook=null,processedData=[],mergedData=[],jobSummaryData=[];
+
+function log(msg,type='info'){const box=document.getElementById('logBox');const d=document.createElement('div');d.className=`log-line log-${type}`;d.textContent=`[${new Date().toLocaleTimeString('ja-JP')}] ${msg}`;box.appendChild(d);box.scrollTop=box.scrollHeight;}
+function setStep(n,state){document.getElementById(`s${n}`).className=`step ${state}`;}
+function setProgress(pct,label){document.getElementById('progBar').style.width=pct+'%';document.getElementById('progPct').textContent=pct+'%';document.getElementById('progLabel').textContent=label;}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function isBlankValue(v){return v===null||v===undefined||String(v).trim()==='';}
+function escapeHtml(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function excelSerialToDate(serial){if(typeof serial!=='number') return null; const msPerDay=86400000, epochMs=Date.UTC(1899,11,30); return new Date(epochMs+serial*msPerDay);}
+
+function excelSerialToDateTime(serial){
+  if(serial===null||serial===undefined) return '';
+  if(typeof serial==='string'){
+    const m=serial.match(/(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if(m) return `${m[1]}/${m[2].padStart(2,'0')}/${m[3].padStart(2,'0')} ${m[4].padStart(2,'0')}:${m[5].padStart(2,'0')}:${String(m[6]||'00').padStart(2,'0')}`;
+    return serial;
+  }
+  if(typeof serial!=='number') return '';
+  const d=excelSerialToDate(serial);
+  if(!d) return '';
+  return `${d.getUTCFullYear()}/${String(d.getUTCMonth()+1).padStart(2,'0')}/${String(d.getUTCDate()).padStart(2,'0')} ${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}:${String(d.getUTCSeconds()).padStart(2,'0')}`;
+}
+
+function hhmmssToSec(s){if(!s&&s!==0) return null; const m=String(s).match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/); if(!m) return null; return parseInt(m[1],10)*3600+parseInt(m[2],10)*60+parseInt(m[3]||'0',10);}
+function secToHHMMSS(sec){if(sec===null||sec===undefined||isNaN(sec)) return ''; const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=Math.abs(sec%60); return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+
+function toHHMMSS(v){
+  if(v===null||v===undefined||v==='') return '';
+  if(typeof v==='number'){
+    const frac=((v%1)+1)%1,totalSec=Math.round(frac*86400)%86400,h=Math.floor(totalSec/3600),m=Math.floor((totalSec%3600)/60),s=Math.floor(totalSec%60);
+    return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  }
+  const str=String(v).trim();
+  let mt=str.match(/(\d{1,2}):(\d{2}):(\d{2})/);
+  if(mt) return mt[1].padStart(2,'0')+':'+mt[2]+':'+mt[3];
+  mt=str.match(/(\d{1,2}):(\d{2})/);
+  if(mt) return mt[1].padStart(2,'0')+':'+mt[2]+':00';
+  const d=new Date(str);
+  if(!isNaN(d.getTime())){
+    return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
+  }
+  return '';
+}
+
+function normalizeMail(v){return String(v??'').trim().toLowerCase();}
+function calcTimeInfo(){const s=document.getElementById('inputStart').value,e=document.getElementById('inputEnd').value;if(!s||!e) return; const ss=hhmmssToSec(s), es=hhmmssToSec(e); if(ss===null||es===null) return; const semSec=es-ss, certSec=Math.floor(semSec*3/4), toMM=sec=>`${Math.floor(sec/60)}分${sec%60>0?sec%60+'秒':''}`; document.getElementById('timeInfo').textContent=`研修会時間: ${secToHHMMSS(semSec)} (${toMM(semSec)}) ／ 受講認定時間（3/4）: ${secToHHMMSS(certSec)} (${toMM(certSec)})`;}
+function resetSteps(){for(let i=1;i<=7;i++) setStep(i,''); setProgress(0,'READY');}
+function parseWorkbook(file,onDone){const reader=new FileReader(); reader.onload=e=>{try{const data=new Uint8Array(e.target.result); const wb=XLSX.read(data,{type:'array',cellDates:false,raw:true}); onDone(wb);}catch(err){log(`ファイル解析失敗: ${err.message}`,'err');}}; reader.readAsArrayBuffer(file);}
+function sheetToObjects(workbook){const ws=workbook.Sheets[workbook.SheetNames[0]]; return XLSX.utils.sheet_to_json(ws,{defval:'',raw:true});}
+function fillMissingFieldsByPreviousRow(rows){if(!rows||!rows.length) return rows; const TARGET_FIELDS=['登録時間','承認ステータス','ご所属施設','ご所属部署','職種：該当する職種にチェックを入れてください。','役割','本研修会をどのように知りましたか。']; let fillCount=0; for(let i=1;i<rows.length;i++){const prev=rows[i-1], curr=rows[i], prevMail=normalizeMail(prev['メール']), currMail=normalizeMail(curr['メール']); if(!prevMail||!currMail||prevMail!==currMail) continue; TARGET_FIELDS.forEach(col=>{if(isBlankValue(curr[col])&&!isBlankValue(prev[col])){curr[col]=prev[col];fillCount++;}});} log(`前行メール一致による空白補完: ${fillCount}件`,fillCount>0?'warn':'ok'); return rows;}
+function renderTable(data){if(!data||!data.length){document.getElementById('tableWrap').innerHTML='<div class="note">表示データがありません。</div>'; return;} const cols=Object.keys(data[0]); let html='<table><thead><tr>'; cols.forEach(c=>html+=`<th>${escapeHtml(c)}</th>`); html+='</tr></thead><tbody>'; data.forEach(row=>{html+='<tr>'; cols.forEach(c=>{const v=row[c]===null||row[c]===undefined?'':row[c]; let cls=''; if(c==='判定'||c==='交付の可否'){cls=(v===1||v==='1'||v==='○')?'ok':(v===0||v==='0'||v==='✕')?'ng':'';} html+=`<td class="${cls}">${escapeHtml(v)}</td>`;}); html+='</tr>';}); html+='</tbody></table>'; document.getElementById('tableWrap').innerHTML=html;}
+function exportCSVFromRows(rows,prefix){if(!rows.length){log('出力対象データがありません','err'); return;} const cols=Object.keys(rows[0]); const csvRows=[cols.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')]; rows.forEach(row=>{csvRows.push(cols.map(c=>`"${String(row[c]??'').replace(/"/g,'""')}"`).join(','));}); const csv='\uFEFF'+csvRows.join('\r\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; const day=document.getElementById('inputDay').value.trim()||'output'; a.download=`${prefix}_${day}.csv`; document.body.appendChild(a); a.click(); setTimeout(()=>{document.body.removeChild(a); URL.revokeObjectURL(url);},200); log(`CSVエクスポート完了: ${prefix}_${day}.csv`,'ok');}
+
+function normalizeText(v){
+  return String(v ?? '')
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/\u3000/g,' ')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function classifyJobFromShokushu(rawShokushu=''){
+  const text = normalizeText(rawShokushu);
+
+  if(!text) return 'その他';
+  if(/IRB|委員会/.test(text)) return 'IRB等委員＊';
+  if(/臨床研修医/.test(text) && /歯科/.test(text)) return '(うち歯科医師)臨床研修医';
+  if(/臨床研修医/.test(text)) return '臨床研修医';
+  if(/専攻医/.test(text) && /歯科/.test(text)) return '(うち歯科医師)専攻医';
+  if(/専攻医/.test(text)) return '専攻医';
+  if(/歯科医師/.test(text)) return '歯科医師';
+  if(/医師/.test(text)) return '医師';
+  if(/薬剤師/.test(text)) return '薬剤師';
+  if(/看護師/.test(text)) return '看護師';
+  if(/臨床検査技師/.test(text)) return '臨床検査技師';
+  return 'その他';
+}
+
+function buildJobSummaryData(){
+  if(!processedData.length){
+    log('先に出席者データを処理してください','err');
+    return [];
+  }
+
+  const passedRows = processedData.filter(row => String(row['判定']).trim() === '1');
+
+  const uniqueByMail = new Map();
+  for(const row of passedRows){
+    const mail = normalizeMail(row['メール']);
+    if(!mail) continue;
+    if(!uniqueByMail.has(mail)) uniqueByMail.set(mail, row);
+  }
+
+  const uniqueRows = Array.from(uniqueByMail.values()).map(row => ({
+    ...row,
+    summary_job: classifyJobFromShokushu(row['職種'])
+  }));
+
+  const categories = [
+    '小計',
+    '医師',
+    '歯科医師',
+    '専攻医',
+    '(うち歯科医師)専攻医',
+    '臨床研修医',
+    '(うち歯科医師)臨床研修医',
+    '薬剤師',
+    '看護師',
+    '臨床検査技師',
+    'その他',
+    'IRB等委員＊'
+  ];
+
+  const counts = {
+    scc: Object.fromEntries(categories.map(c => [c, 0])),
+    other: Object.fromEntries(categories.map(c => [c, 0]))
+  };
+
+  uniqueRows.forEach(row => {
+    const group = row['facility_group'] === 'scc' ? 'scc' : 'other';
+    const job = row['summary_job'];
+
+    if(job === 'IRB等委員＊'){
+      return;
+    }
+
+    counts[group]['小計']++;
+
+    if(counts[group][job] !== undefined){
+      counts[group][job]++;
+    }else{
+      counts[group]['その他']++;
+    }
+  });
+
+  jobSummaryData = categories.map(cat => ({
+    '区分': cat,
+    'scc': counts.scc[cat],
+    'other': counts.other[cat]
+  }));
+
+  log(`認定者抽出: ${passedRows.length}件`,'ok');
+  log(`メール重複削除後: ${uniqueRows.length}件`,'ok');
+  log('職種列ベースで集計完了（IRB等委員＊は集計対象外）','ok');
+  log(`集計CSV作成: ${jobSummaryData.length}行`,'ok');
+
+  return jobSummaryData;
+}
+
+async function startProcess(){
+  if(!rawWorkbook){log('出席者レポートを先に選択してください','err'); return;}
+  processedData=[]; mergedData=[]; jobSummaryData=[];
+  document.getElementById('btnMergeExport').disabled=true;
+  document.getElementById('btnProcessExport').disabled=true;
+  document.getElementById('btnJobSummaryExport').disabled=true;
+  document.getElementById('summaryPanel').style.display='none';
+  document.getElementById('previewPanel').style.display='none';
+  document.getElementById('logBox').innerHTML='';
+  resetSteps();
+
+  const day=document.getElementById('inputDay').value.trim()||'';
+  const part=document.getElementById('inputParticipation').value;
+  const target=document.getElementById('inputTarget').value;
+  const startStr=document.getElementById('inputStart').value;
+  const endStr=document.getElementById('inputEnd').value;
+  const startSec=hhmmssToSec(startStr);
+  const endSec=hhmmssToSec(endStr);
+  const semSec=endSec-startSec;
+  const certSec=Math.floor(semSec*3/4);
+
+  try{
+    setStep(1,'active'); setProgress(10,'STEP 1: ファイル解析'); await sleep(120);
+    const ws=rawWorkbook.Sheets[rawWorkbook.SheetNames[0]];
+    const rawRows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true});
+    log(`全行数: ${rawRows.length}`,'ok');
+
+    const REQUIRED_COLS=['名','姓','参加時間','退出時間'];
+    let attendeeHeaderIdx=-1,maxCols=0;
+    for(let i=0;i<rawRows.length;i++){
+      const row=rawRows[i]; if(!row) continue;
+      const rowVals=row.map(v=>v!==null&&v!==undefined?String(v):'');
+      const hasRequired=REQUIRED_COLS.every(c=>rowVals.includes(c));
+      if(hasRequired){
+        const colCount=row.filter(v=>v!==null&&v!==undefined).length;
+        if(colCount>maxCols){maxCols=colCount; attendeeHeaderIdx=i;}
+      }
+    }
+    if(attendeeHeaderIdx===-1) throw new Error('出席者ヘッダー行が見つかりません');
+    log(`出席者ヘッダー行: ${attendeeHeaderIdx+1}行目`,'ok');
+    setStep(1,'done');
+
+    setStep(2,'active'); setProgress(25,'STEP 2: データ抽出'); await sleep(120);
+    const headerRow=rawRows[attendeeHeaderIdx];
+    const colMap={};
+    headerRow.forEach((v,ci)=>{if(v!==null&&v!==undefined) colMap[ci]=ci===0?'_status':String(v);});
+    let dataRows=[];
+    for(let i=attendeeHeaderIdx+1;i<rawRows.length;i++){
+      const row=rawRows[i];
+      if(!row||row.every(v=>v===null||v===undefined||v==='')) continue;
+      const obj={};
+      Object.entries(colMap).forEach(([ci,name])=>{obj[name]=row[parseInt(ci,10)]!==undefined?row[parseInt(ci,10)]:null;});
+      dataRows.push(obj);
+    }
+    dataRows=dataRows.map(row=>({...row,'参加時間':toHHMMSS(row['参加時間']),'退出時間':toHHMMSS(row['退出時間'])}));
+    dataRows=fillMissingFieldsByPreviousRow(dataRows);
+    log(`有効出席者: ${dataRows.length}件`,'ok');
+    setStep(2,'done');
+
+    setStep(3,'active'); setProgress(45,'STEP 3: 姓名処理'); await sleep(120);
+    let swapCount=0;
+    dataRows=dataRows.map(row=>{
+      const r={...row};
+      let sei=String(r['姓']||'').trim();
+      let mei=String(r['名']||'').trim();
+      if(mei&&SWAP_NAMES.has(mei)){[r['姓'],r['名']]=[mei,sei]; sei=r['姓']; mei=r['名']; swapCount++;}
+      r['氏名']=[sei,mei].filter(Boolean).join(' ');
+      return r;
+    });
+    log(`姓名入れ替え: ${swapCount}件`,swapCount>0?'warn':'ok');
+    setStep(3,'done');
+
+    setStep(4,'active'); setProgress(60,'STEP 4: 所属施設正規化'); await sleep(120);
+let normCount=0;
+const affiliCol=dataRows[0]&&('ご所属施設' in dataRows[0])?'ご所属施設':'所属施設';
+
+dataRows = dataRows.map(row => {
+  const r = { ...row };
+  let v = String(r[affiliCol] || '').trim();
+
+  const normalized = v
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/\s+/g, '')
+    .toLowerCase();
+
+  const hasSCC = /\bscc\b/.test(normalized);
+  const hasShizugan = normalized.includes('静がん');
+  const hasShizuCancerCenterJa =
+    /静岡.*(?:がん|ガン|癌).*センター|静岡.*センター.*(?:がん|ガン|癌)|(?:がん|ガン|癌).*静岡.*センター|センター.*静岡.*(?:がん|ガン|癌)|(?:がん|ガン|癌).*センター.*静岡|センター.*(?:がん|ガン|癌).*静岡/.test(v);
+  const hasShizuCancerEn =
+    normalized.includes('shizuoka') && normalized.includes('cancer');
+
+  const shouldCanonicalize =
+    hasSCC || hasShizugan || hasShizuCancerCenterJa || hasShizuCancerEn;
+
+  if (shouldCanonicalize) {
+    if (v !== CANONICAL) normCount++;
+    v = CANONICAL;
+  }
+
+  r['所属施設'] = v;
+  return r;
+});
+
+    log(`所属施設正規化: ${normCount}件`,normCount>0?'warn':'ok');
+    setStep(4,'done');
+
+    setStep(5,'active'); setProgress(75,'STEP 5: 時刻・聴講時間計算'); await sleep(120);
+    dataRows=dataRows.map(row=>{
+      const r={...row};
+      const joinRaw=hhmmssToSec(r['参加時間']);
+      const exitRaw=hhmmssToSec(r['退出時間']);
+      if(joinRaw===null||exitRaw===null){
+        r['参加時刻']=r['参加時間']||'';
+        r['退出時刻']=r['退出時間']||'';
+        r['聴講時間']='';
+        r['判定']='';
+        return r;
+      }
+      const joinResult=joinRaw<startSec?startSec:joinRaw;
+      const exitResult=exitRaw>endSec?endSec:exitRaw;
+      const listenSec=Math.max(0,exitResult-joinResult);
+      r['参加時刻']=secToHHMMSS(joinResult);
+      r['退出時刻']=secToHHMMSS(exitResult);
+      r['聴講時間']=secToHHMMSS(listenSec);
+      r['判定']=listenSec>=certSec?1:0;
+      return r;
+    });
+
+    for(let i=0;i<dataRows.length-1;i++){
+      const curr=dataRows[i], next=dataRows[i+1];
+      const currMail=normalizeMail(curr['メール']);
+      const nextMail=normalizeMail(next['メール']);
+      if(!currMail||!nextMail||currMail!==nextMail) continue;
+      const currExit=hhmmssToSec(curr['退出時刻']);
+      const nextJoin=hhmmssToSec(next['参加時刻']);
+      if(currExit===null||nextJoin===null) continue;
+      if(nextJoin<currExit){
+        next['参加時刻']=secToHHMMSS(currExit);
+        const nextExit=hhmmssToSec(next['退出時刻']);
+        if(nextExit!==null){
+          const listenSec=Math.max(0,nextExit-currExit);
+          next['聴講時間']=secToHHMMSS(listenSec);
+          next['判定']=listenSec>=certSec?1:0;
+        }
+      }
+    }
+
+    const mailTotalMap={};
+    for(const row of dataRows){
+      const mail=normalizeMail(row['メール']);
+      if(!mail) continue;
+      mailTotalMap[mail]=(mailTotalMap[mail]||0)+(hhmmssToSec(row['聴講時間'])||0);
+    }
+    for(const row of dataRows){
+      const mail=normalizeMail(row['メール']);
+      if(!mail) continue;
+      row['判定']=(mailTotalMap[mail]||0)>=certSec?1:0;
+    }
+    log('聴講時間・判定算出完了','ok');
+    setStep(5,'done');
+
+    setStep(6,'active'); setProgress(90,'STEP 6: 列整列・CSV準備'); await sleep(120);
+    const actualKeys=dataRows.length?Object.keys(dataRows[0]):[];
+    const findCol=(...candidates)=>candidates.find(c=>actualKeys.includes(c))||candidates[0];
+    const deptCol=findCol('ご所属部署','所属部署');
+    const shokuCol=findCol('職種：該当する職種にチェックを入れてください。','職種');
+    const yakuCol=findCol('役割');
+    const mailCol=findCol('メール','email','Email');
+    const torokuCol=findCol('登録時間');
+    const approveCol=findCol('承認ステータス');
+    const telCol=findCol('電話番号');
+    const q1Col=findCol('質問とコメント');
+    const q2Col=findCol('本研修会をどのように知りましたか。');
+
+    let no=1;
+    processedData=dataRows.map(row=>({
+      '#':'',
+      day,
+      No:no++,
+      facility_group:row['所属施設']===CANONICAL?'scc':'other',
+      participation:part,
+      target,
+      '氏名':row['氏名']||'',
+      '所属施設':row['所属施設']||'',
+      '所属部署':String(row[deptCol]||'').replace(/\u3000/g,' ').trim(),
+      'メール':row[mailCol]||'',
+      '職種':String(row[shokuCol]||'').trim(),
+      '役割':row[yakuCol]||'',
+      '登録時間':excelSerialToDateTime(row[torokuCol]),
+      '承認ステータス':row[approveCol]||'',
+      '電話番号':row[telCol]||'',
+      '名':row['名']||'',
+      '姓':row['姓']||'',
+      '質問とコメント':row[q1Col]||'',
+      '本研修会をどのように知りましたか。':row[q2Col]||'',
+      '参加時刻':row['参加時刻']??'',
+      '退出時刻':row['退出時刻']??'',
+      '聴講時間':row['聴講時間']??'',
+      '判定':row['判定']??'',
+      '参加時間':row['参加時間']??'',
+      '退出時間':row['退出時間']??'',
+      'セッション時間（分）':row['セッション時間（分）']??''
+    }));
+
+    setStep(6,'done'); setProgress(100,'出席者処理完了');
+
+    const total=processedData.length;
+    const pass=processedData.filter(r=>Number(r['判定'])===1).length;
+    const scc=processedData.filter(r=>r['facility_group']==='scc').length;
+    document.getElementById('sumTotal').textContent=total;
+    document.getElementById('sumPass').textContent=pass;
+    document.getElementById('sumFail').textContent=total-pass;
+    document.getElementById('sumSCC').textContent=scc;
+    document.getElementById('sumMerged').textContent='—';
+    document.getElementById('btnProcessExport').disabled=processedData.length===0;
+    document.getElementById('sumSemTime').textContent=secToHHMMSS(semSec);
+    document.getElementById('sumCertTime').textContent=secToHHMMSS(certSec);
+    document.getElementById('summaryPanel').style.display='';
+    renderTable(processedData.slice(0,20));
+    document.getElementById('previewPanel').style.display='';
+    document.getElementById('previewCount').textContent=`（先頭20件 / 全${total}件）`;
+    log(`処理完了: ${processedData.length}件`,'ok');
+
+    buildJobSummaryData();
+    document.getElementById('btnJobSummaryExport').disabled=jobSummaryData.length===0;
+
+    if(surveyWorkbook) mergeSurveyData();
+  }catch(err){
+    log('処理中にエラーが発生しました: '+err.message,'err');
+  }
+}
+
+function mergeSurveyData(){
+  if(!processedData.length){log('先に出席者データを処理してください','err'); return;}
+  if(!surveyWorkbook){log('アンケート結果ファイルを選択してください','err'); return;}
+  try{
+    setStep(7,'active'); setProgress(100,'STEP 7: アンケート結合');
+    const surveyRows=sheetToObjects(surveyWorkbook);
+    if(!surveyRows.length) throw new Error('アンケート結果データが空です');
+
+    const surveyKeys=Object.keys(surveyRows[0]);
+    const surveyMailCol=surveyKeys.find(k=>k==='メール'||k.toLowerCase()==='email');
+    const surveyNameCol=surveyKeys.find(k=>k==='氏名');
+    if(!surveyMailCol) throw new Error('アンケート結果に「メール」列がありません');
+
+    const processedMap=new Map();
+    const totalListenMap=new Map();
+    processedData.forEach(row=>{
+      const mail=normalizeMail(row['メール']);
+      if(!mail) return;
+      if(!processedMap.has(mail)) processedMap.set(mail,row);
+      totalListenMap.set(mail,(totalListenMap.get(mail)||0)+(hhmmssToSec(row['聴講時間'])||0));
+    });
+
+    let matched=0, seq=1;
+    mergedData=surveyRows
+      .filter(row=>!isBlankValue(row['受講証']))
+      .map(row=>{
+        const surveyMail=normalizeMail(row[surveyMailCol]);
+        const base=processedMap.get(surveyMail)||{};
+        const totalSec=totalListenMap.get(surveyMail)||0;
+        const judge=String(base['判定']??'').trim();
+        const permit=judge==='1'||judge==='1.0'?'○':judge==='0'||judge==='0.0'?'✕':'';
+        const reason=permit==='✕'?'聴講時間不足':'';
+        if(processedMap.has(surveyMail)) matched++;
+
+        return {
+          '番号': seq++,
+          '受講証': row['受講証'] || '',
+          '氏名': !isBlankValue(base['氏名']) ? base['氏名'] : (row[surveyNameCol] || ''),
+          '所属施設': base['所属施設'] || '',
+          '所属部署': base['所属部署'] || '',
+          'メール': base['メール'] || row[surveyMailCol] || '',
+          '職種': base['職種'] || '',
+          '役割': base['役割'] || '',
+          '交付の可否': permit,
+          '交付不可の理由': reason,
+          '参加時刻': base['参加時刻'] || '',
+          '退出時刻': base['退出時刻'] || '',
+          '聴講時間': base['聴講時間'] || '',
+          '聴講時間合計': secToHHMMSS(totalSec)
+        };
+      });
+
+    setStep(7,'done');
+    document.getElementById('sumMerged').textContent=mergedData.length;
+    document.getElementById('btnMergeExport').disabled=mergedData.length===0;
+    renderTable(mergedData.slice(0,20));
+    document.getElementById('previewPanel').style.display='';
+    document.getElementById('previewCount').textContent=`（先頭20件 / 結合後${mergedData.length}件）`;
+    log(`アンケート結果読込: ${surveyRows.length}件`,'ok');
+    log(`氏名あり行に絞込: ${mergedData.length}件`,'ok');
+    log(`メール一致で結合: ${matched}件`,matched>0?'ok':'warn');
+    log('結合後出力列: 番号, 氏名, 所属施設, 所属部署, メール, 職種, 役割, 交付の可否, 交付不可の理由, 参加時刻, 退出時刻, 聴講時間, 聴講時間合計','info');
+  }catch(err){
+    log('アンケート結合でエラーが発生しました: '+err.message,'err');
+  }
+}
+
+document.getElementById('inputStart').addEventListener('change',calcTimeInfo);
+document.getElementById('inputEnd').addEventListener('change',calcTimeInfo);
+
+document.getElementById('fileInput').addEventListener('change',e=>{
+  const file=e.target.files?.[0];
+  if(!file) return;
+  document.getElementById('fileLabelText').textContent='選択済み';
+  document.getElementById('fileName').textContent='▶ '+file.name;
+  parseWorkbook(file,wb=>{
+    rawWorkbook=wb;
+    document.getElementById('btnProcess').disabled=false;
+    log(`出席者レポート読み込み完了: ${file.name}`,'ok');
+  });
+});
+
+document.getElementById('surveyFileInput').addEventListener('change',e=>{
+  const file=e.target.files?.[0];
+  if(!file) return;
+  document.getElementById('surveyLabelText').textContent='選択済み';
+  document.getElementById('surveyFileName').textContent='▶ '+file.name;
+  parseWorkbook(file,wb=>{
+    surveyWorkbook=wb;
+    log(`アンケート結果読み込み完了: ${file.name}`,'ok');
+    if(processedData.length) mergeSurveyData();
+  });
+});
+
+document.getElementById('btnProcess').addEventListener('click',startProcess);
+document.getElementById('btnProcessExport').addEventListener('click',()=>exportCSVFromRows(processedData,'受講者処理済み'));
+document.getElementById('btnMergeExport').addEventListener('click',()=>exportCSVFromRows(mergedData,'受講者_アンケート結合済み'));
+document.getElementById('btnJobSummaryExport').addEventListener('click',()=>{
+  const rows = buildJobSummaryData();
+  if(rows.length) exportCSVFromRows(rows,'認定者職種集計');
+});
+
+calcTimeInfo();
+resetSteps();
+
+(function(){
+  const canvas=document.getElementById('bgCanvas');
+  const ctx=canvas.getContext('2d');
+  const fontSize=14;
+  const chars='01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+  let drops=[];
+  function resize(){
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
+    const cols=Math.floor(canvas.width/fontSize);
+    drops=Array.from({length:cols},(_,i)=>drops[i]??Math.random()*-50);
+  }
+  window.addEventListener('resize',resize);
+  resize();
+  function drawMatrix(){
+    ctx.fillStyle='rgba(8,15,10,0.05)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.font=fontSize+'px "Share Tech Mono",monospace';
+    for(let i=0;i<drops.length;i++){
+      const c=chars[Math.floor(Math.random()*chars.length)];
+      ctx.fillStyle='rgba(0,200,83,0.85)';
+      ctx.fillText(c,i*fontSize,drops[i]*fontSize);
+      if(drops[i]*fontSize>canvas.height&&Math.random()>0.975) drops[i]=0;
+      drops[i]++;
+    }
+  }
+  setInterval(drawMatrix,80);
+})();
+</script>
+</body>
+</html>

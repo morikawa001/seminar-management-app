@@ -131,3 +131,12 @@ QR_reader.html                # QRコード出席管理（別ページ、Firebas
 - ✅ `toggleMasterView()` 関数でテーブル／ガントチャートを切り替え
 - ✅ `renderGanttChart()` を新規作成（月間グリッド＋マイルストーンドット、完了チェックは半透明で表示）
 - ✅ ガントチャート凡例：起案1（青）／HP公開（緑）／開催日（赤）／起案2（橙）／起案3（紫）
+
+### 2026-07-31: live_session.html のFirebase Firestore連携
+- ✅ Firebase compat SDK + firebase-config.js を読み込み
+- ✅ ログイン画面（`#loginSection`）を追加（`login()` / `register()` は既存の firebase-config.js を利用）
+- ✅ `onFirebaseLogin` で `FirebaseApp.loadFromFirestore()` からデータを読み込みセレクトボックスに反映
+- ✅ `onFirebaseLogout` でデータ・UI をクリア
+- ✅ ステータスバーにログアウトボタンを追加
+- ✅ ログイン済み再チェック対応（`index.html` と同じパターン）
+- ✅ CSV/XLSX アップロードも従来通り併用可能

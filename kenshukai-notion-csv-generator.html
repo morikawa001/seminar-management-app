@@ -1,0 +1,1176 @@
+
+
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>データ処理システム - Applicant Management Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ── CSS変数（Training Dashboard と完全統一） ── */
+        :root,[data-theme="dark"]{
+          --bg:#040807;
+          --bg2:#07100d;
+          --panel:#091310;
+          --panel2:#0d1915;
+          --panel3:#10201a;
+          --line:#163328;
+          --line2:#24543f;
+          --line3:#3a8162;
+          --text:#b8ffd3;
+          --text-strong:#d8ffe7;
+          --muted:#75c79a;
+          --faint:#458161;
+          --green:#5bff9c;
+          --green2:#35ff86;
+          --green3:#a9ffca;
+          --cyan:#74e9d6;
+          --warn:#ffe680;
+          --danger:#ff8fb1;
+          --success:#72ffb3;
+          --shadow:0 18px 40px rgba(0,0,0,.34);
+          --glow:0 0 0 1px rgba(91,255,156,.08),0 0 24px rgba(53,255,134,.06);
+          --radius:14px;
+          --radius-sm:10px;
+          --page-grid-line:rgba(91,255,156,.03);
+          --page-glow-a:rgba(53,255,134,.06);
+          --page-glow-b:rgba(116,233,214,.035);
+          --input-bg:rgba(2,8,6,.88);
+          --button-bg:rgba(6,14,11,.95);
+          --button-primary-bg:rgba(8,26,16,.98);
+          --progress-grad:linear-gradient(90deg,var(--green2),var(--green),var(--cyan));
+          --scanline-opacity:.07;
+          --border-width:1px;
+        }
+        [data-theme="light"]{
+          --bg:#ffffff;
+          --bg2:#f7f6f3;
+          --panel:#ffffff;
+          --panel2:#fbfaf8;
+          --panel3:#f3f2ef;
+          --line:#e8e5df;
+          --line2:#d9d5ce;
+          --line3:#c9c4bc;
+          --text:#37352f;
+          --text-strong:#2f2d28;
+          --muted:rgba(55,53,47,.7);
+          --faint:rgba(55,53,47,.48);
+          --green:#2eaadc;
+          --green2:#2eaadc;
+          --green3:#1f6feb;
+          --cyan:#0f7b6c;
+          --warn:#b98900;
+          --danger:#d44c47;
+          --success:#0f7b6c;
+          --shadow:0 1px 2px rgba(15,23,42,.04),0 6px 18px rgba(15,23,42,.03);
+          --glow:none;
+          --radius:14px;
+          --radius-sm:10px;
+          --page-grid-line:rgba(0,0,0,0);
+          --page-glow-a:rgba(0,0,0,0);
+          --page-glow-b:rgba(0,0,0,0);
+          --input-bg:#ffffff;
+          --button-bg:#ffffff;
+          --button-primary-bg:#2f2d28;
+          --progress-grad:linear-gradient(90deg,#2eaadc,#2eaadc);
+          --scanline-opacity:0;
+          --border-width:1px;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Share Tech Mono', 'Courier New', monospace;
+            background-color: var(--bg);
+            background-image:
+                linear-gradient(var(--page-grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--page-grid-line) 1px, transparent 1px);
+            background-size: 40px 40px, 40px 40px;
+            color: var(--text);
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* マトリックス風背景 */
+        #matrix-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            opacity: 0.13;
+            pointer-events: none;
+        }
+
+        /* スキャンライン */
+        .scanline {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(91,255,156,.015) 50%);
+            background-size: 100% 4px;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: var(--scanline-opacity);
+        }
+
+        /* テーマ切替ボタン */
+        .theme-toggle {
+            position: fixed;
+            top: 14px; right: 16px;
+            z-index: 10000;
+            background: var(--button-bg);
+            border: 1px solid var(--line2);
+            color: var(--green);
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: .78rem;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: .08em;
+            transition: background .2s, border-color .2s;
+        }
+        .theme-toggle:hover { background: var(--panel3); border-color: var(--green); }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ヘッダー */
+        header {
+            text-align: center;
+            padding: 28px 20px;
+            border: var(--border-width) solid var(--line2);
+            background:
+                linear-gradient(180deg, color-mix(in srgb, var(--green) 4%, transparent), transparent 40%),
+                var(--panel);
+            margin-bottom: 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow), var(--glow);
+            position: relative;
+            overflow: hidden;
+        }
+        header::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--green) 3%, transparent), transparent);
+            pointer-events: none;
+        }
+
+        h1 {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.3em;
+            color: var(--green);
+            text-shadow: 0 0 12px rgba(91,255,156,.5);
+            letter-spacing: .18em;
+            margin-bottom: 8px;
+        }
+        [data-theme="light"] h1 {
+            color: var(--green2);
+            text-shadow: none;
+        }
+
+        .subtitle {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: .78em;
+            color: var(--muted);
+            letter-spacing: .12em;
+        }
+
+        /* パネル共通 */
+        .panel {
+            background:
+                linear-gradient(180deg, color-mix(in srgb, var(--green) 3%, transparent), transparent 32%),
+                var(--panel);
+            border: var(--border-width) solid var(--line);
+            border-radius: var(--radius);
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow), var(--glow);
+            position: relative;
+            overflow: hidden;
+        }
+        [data-theme="light"] .panel { background: var(--panel); }
+        .panel::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--green) 3%, transparent), transparent);
+            opacity: .8;
+            pointer-events: none;
+        }
+        [data-theme="light"] .panel::before { opacity: 0; }
+
+        .panel-title {
+            font-size: 1.1em;
+            color: var(--text-strong);
+            margin-bottom: 18px;
+            text-shadow: 0 0 4px color-mix(in srgb, var(--green) 20%, transparent);
+            border-bottom: 1px solid var(--line2);
+            padding-bottom: 10px;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        [data-theme="light"] .panel-title { text-shadow: none; }
+
+        /* 入力フィールド */
+        .input-group { margin-bottom: 16px; }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--muted);
+            font-size: .85em;
+            letter-spacing: 1px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--line2);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-family: inherit;
+            font-size: .95em;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--green) 14%, transparent);
+        }
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        /* ファイル選択ボタン カスタムスタイル */
+        input[type="file"] {
+            display: none;
+        }
+        .file-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            min-height: 44px;
+            padding: 0 20px;
+            background: var(--button-bg);
+            border: 1px solid var(--green);
+            border-radius: var(--radius-sm);
+            color: var(--green);
+            font-family: inherit;
+            font-size: .9em;
+            font-weight: 800;
+            letter-spacing: .08em;
+            cursor: pointer;
+            transition: background .15s, border-color .15s, box-shadow .15s;
+            box-sizing: border-box;
+        }
+        .file-label:hover {
+            background: var(--panel3);
+            border-color: var(--green);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--green) 25%, transparent);
+        }
+        .file-label-icon { font-size: 1.1em; flex-shrink: 0; }
+        .file-label-text { flex: 1; }
+        .file-name-display {
+            margin-top: 6px;
+            font-size: .82em;
+            color: var(--green);
+            letter-spacing: .04em;
+            min-height: 1.2em;
+            padding-left: 4px;
+            word-break: break-all;
+        }
+
+        /* ボタン */
+        .btn {
+            min-height: 44px;
+            padding: 0 20px;
+            background: var(--button-bg);
+            border: 1px solid var(--line2);
+            border-radius: var(--radius-sm);
+            color: var(--text-strong);
+            font-family: inherit;
+            font-size: .9em;
+            font-weight: 800;
+            letter-spacing: .08em;
+            cursor: pointer;
+            transition: background .15s, border-color .15s, box-shadow .15s;
+        }
+        .btn:hover {
+            background: var(--panel3);
+            border-color: var(--green);
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--green) 20%, transparent);
+        }
+        .btn:active { transform: translateY(1px); }
+        .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+        .btn-primary {
+            background: var(--button-primary-bg);
+            border-color: var(--button-primary-bg);
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background: color-mix(in srgb, var(--button-primary-bg) 90%, var(--green));
+            border-color: var(--green);
+        }
+
+        .btn-secondary {
+            border-color: var(--line2);
+            color: var(--green);
+        }
+        .btn-secondary:hover { border-color: var(--green); }
+
+        /* プログレスバー */
+        .progress-container { margin: 18px 0; }
+
+        .progress-bar {
+            width: 100%;
+            height: 28px;
+            background: var(--panel2);
+            border: 1px solid var(--line2);
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--progress-grad);
+            width: 0%;
+            transition: width .5s;
+            box-shadow: 0 0 8px color-mix(in srgb, var(--green) 50%, transparent);
+        }
+        .progress-text {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-strong);
+            font-weight: bold;
+            font-size: .85em;
+            z-index: 1;
+        }
+
+        /* データテーブル */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: .88em;
+        }
+        .data-table th,
+        .data-table td {
+            padding: 9px 12px;
+            border: 1px solid var(--line);
+            text-align: left;
+        }
+        .data-table th {
+            background: color-mix(in srgb, var(--green) 8%, var(--panel2));
+            color: var(--text-strong);
+            font-weight: bold;
+            letter-spacing: .05em;
+        }
+        .data-table tr:hover td {
+            background: color-mix(in srgb, var(--green) 5%, var(--panel2));
+        }
+
+        /* ログエリア */
+        .log-area {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            max-height: 280px;
+            overflow-y: auto;
+            font-size: .83em;
+            line-height: 1.7;
+        }
+        .log-entry {
+            margin-bottom: 4px;
+            opacity: 0;
+            animation: fadeIn .4s forwards;
+        }
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        .log-time { color: var(--faint); margin-right: 8px; }
+        .log-success { color: var(--green); }
+        .log-error { color: var(--danger); }
+        .log-warning { color: var(--warn); }
+
+        /* グリッド */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 18px;
+        }
+
+        /* ステータスインジケーター */
+        .status-indicator {
+            display: inline-block;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        .status-active { background: var(--green); box-shadow: 0 0 8px var(--green); }
+        .status-idle { background: var(--faint); }
+        .status-error { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+
+        /* 統計カード */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin: 16px 0;
+        }
+        .stat-card {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.9em;
+            font-weight: bold;
+            color: var(--green);
+            text-shadow: 0 0 8px color-mix(in srgb, var(--green) 40%, transparent);
+        }
+        [data-theme="light"] .stat-value { text-shadow: none; }
+        .stat-label {
+            font-size: .82em;
+            color: var(--muted);
+            margin-top: 5px;
+        }
+
+        /* 処理ステップ */
+        .process-steps { margin: 16px 0; }
+        .step {
+            display: flex;
+            align-items: center;
+            padding: 9px 12px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--line2);
+            background: var(--panel2);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            transition: border-color .2s, background .2s, box-shadow .2s;
+        }
+        .step.active {
+            border-left-color: var(--green);
+            background: color-mix(in srgb, var(--green) 7%, var(--panel2));
+            box-shadow: 0 0 8px color-mix(in srgb, var(--green) 20%, transparent);
+        }
+        .step.completed {
+            border-left-color: var(--line3);
+            opacity: .55;
+        }
+        .step-number {
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            width: 28px; height: 28px;
+            background: var(--panel3);
+            border: 1px solid var(--line2);
+            border-radius: 50%;
+            margin-right: 14px;
+            font-weight: bold;
+            font-size: .85em;
+            color: var(--green);
+            flex-shrink: 0;
+        }
+        .step.active .step-number { border-color: var(--green); }
+        .step-text { flex: 1; font-size: .9em; color: var(--text); }
+
+        /* アラート */
+        .alert {
+            padding: 13px 16px;
+            margin: 13px 0;
+            border-radius: var(--radius-sm);
+            border: 1px solid;
+            animation: slideIn .4s;
+        }
+        .alert-success { border-color: var(--green); background: color-mix(in srgb, var(--green) 8%, transparent); color: var(--green); }
+        .alert-error { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, transparent); color: var(--danger); }
+        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* ローディング */
+        .loading {
+            display: inline-block;
+            width: 18px; height: 18px;
+            border: 2px solid var(--line2);
+            border-top-color: var(--green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* スクロールバー */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--panel2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--line3); }
+
+        /* コーナー装飾 */
+        .panel-corners::after,
+        .panel-corners::before {
+            content: '';
+            position: absolute;
+            width: 16px; height: 16px;
+            border: 2px solid var(--line3);
+        }
+        .panel-corners::before { top: -1px; left: -1px; border-right: none; border-bottom: none; border-radius: var(--radius) 0 0 0; }
+        .panel-corners::after { bottom: -1px; right: -1px; border-left: none; border-top: none; border-radius: 0 0 var(--radius) 0; }
+
+        /* ホログラム */
+        .hologram::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--green) 6%, transparent), transparent);
+            animation: hologramScan 4s infinite;
+            pointer-events: none;
+        }
+        @keyframes hologramScan { 0%{left:-100%} 100%{left:200%} }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.5em; letter-spacing: 2px; }
+            .panel { padding: 14px; }
+            .grid, .stats-grid { grid-template-columns: 1fr; }
+            .btn { width: 100%; }
+            .theme-toggle { top: 10px; right: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- マトリックス背景 -->
+    <canvas id="matrix-bg"></canvas>
+    <!-- スキャンライン -->
+    <div class="scanline"></div>
+    <!-- テーマ切替 -->
+    <button class="theme-toggle" onclick="toggleTheme()">THEME</button>
+
+    <div class="container">
+        <!-- ヘッダー -->
+        <header class="hologram">
+            <h1>▌ Applicant Management Panel ▌</h1>
+            <div class="subtitle">DATA PROCESSING SYSTEM ver. 2.0</div>
+        </header>
+
+        <!-- システムステータス -->
+        <div class="panel panel-corners">
+            <div class="panel-title">
+                <span class="status-indicator status-idle" id="statusIndicator"></span>
+                SYSTEM STATUS
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="processedRows">0</div>
+                    <div class="stat-label">処理済み行数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="filteredRows">0</div>
+                    <div class="stat-label">フィルタ適用行数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="errorCount">0</div>
+                    <div class="stat-label">エラー件数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="processingTime">0.00s</div>
+                    <div class="stat-label">処理時間</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ファイルアップロード -->
+        <div class="panel">
+            <div class="panel-title">FILE INPUT</div>
+            <div class="input-group">
+                <label class="file-label" for="excelFile">
+                    <span class="file-label-icon">📂</span>
+                    <span class="file-label-text" id="fileLabelText">Excel/CSVファイルを選択</span>
+                </label>
+                <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" onchange="updateFileLabel(this)" />
+                <div class="file-name-display" id="fileNameDisplay"></div>
+            </div>
+            <div class="input-group">
+                <label for="dateInput">処理日付 (YYYYMMDD形式)</label>
+                <input type="text" id="dateInput" placeholder="例: 20260531" />
+            </div>
+            <button class="btn btn-primary" onclick="startProcessing()">処理開始</button>
+        </div>
+
+        <!-- 処理ステップ -->
+        <div class="panel">
+            <div class="panel-title">PROCESSING STEPS</div>
+            <div class="process-steps" id="processSteps">
+                <div class="step" id="step1"><div class="step-number">1</div><div class="step-text">ファイル読み込み</div></div>
+                <div class="step" id="step2"><div class="step-number">2</div><div class="step-text">不要行削除</div></div>
+                <div class="step" id="step3"><div class="step-number">3</div><div class="step-text">データフィルタリング</div></div>
+                <div class="step" id="step4"><div class="step-number">4</div><div class="step-text">データクレンジング</div></div>
+                <div class="step" id="step5"><div class="step-number">5</div><div class="step-text">列の追加・整形</div></div>
+                <div class="step" id="step6"><div class="step-number">6</div><div class="step-text">行データ処理</div></div>
+                <div class="step" id="step7"><div class="step-number">7</div><div class="step-text">ファイル保存</div></div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- データプレビュー -->
+        <div class="panel">
+            <div class="panel-title">DATA PREVIEW</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>No.</th><th>氏名</th><th>所属</th><th>メールアドレス</th><th>ステータス</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="5" style="text-align:center;opacity:.5;">データが読み込まれていません</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ログ出力 -->
+        <div class="panel">
+            <div class="panel-title">SYSTEM LOG</div>
+            <div class="log-area" id="logArea">
+                <div class="log-entry log-success">
+                    <span class="log-time">[SYSTEM]</span>システムを起動しました。
+                </div>
+            </div>
+        </div>
+
+        <!-- エクスポート -->
+        <div class="panel">
+            <div class="panel-title">EXPORT</div>
+            <button class="btn btn-secondary" onclick="exportToExcel()" id="exportBtn" disabled>
+                処理済みCSVをダウンロード
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        /* ── テーマ切替 ── */
+        function toggleTheme(){
+            const html = document.documentElement;
+            html.setAttribute('data-theme', html.getAttribute('data-theme')==='light' ? 'dark' : 'light');
+        }
+
+        /* ── マトリックス背景（Training Dashboard と同系色）── */
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas(){
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const katakana = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+        const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const nums = '0123456789';
+        const alphabet = katakana + latin + nums;
+        const fontSize = 14;
+        let rainDrops = [];
+
+        function initDrops(){
+            const columns = Math.floor(canvas.width / fontSize);
+            rainDrops = Array.from({length: columns}, () => Math.random() * -50);
+        }
+        initDrops();
+        window.addEventListener('resize', initDrops);
+
+        function drawMatrix(){
+            /* Training Dashboardのdark bg色に合わせてフェード */
+            ctx.fillStyle = 'rgba(4,8,7,0.06)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            /* --green (#5bff9c) に対応 */
+            ctx.fillStyle = '#5bff9c';
+            ctx.font = fontSize + 'px monospace';
+
+            for(let i = 0; i < rainDrops.length; i++){
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                ctx.fillText(text, i * fontSize, rainDrops[i] * fontSize);
+                if(rainDrops[i] * fontSize > canvas.height && Math.random() > 0.975){
+                    rainDrops[i] = 0;
+                }
+                rainDrops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 35);
+
+        /* ── 以下、元のロジックをそのまま維持 ── */
+        /* ── 姓フィルタリスト（889件） ── */
+        const NAME_FILTER = new Set([
+    '児嶋','七部', '三ツ矢', '三上', '三原', '三吉', '三好', '三宅', '三木', '三浦', '三輪', '上原', '上坂', '上山', '上村', '上林', '上田',
+    '上野', '下平', '下村', '下田', '並木', '中', '中上', '中井', '中原', '中垣', '中尾', '中屋', '中山', '中島', '中嶋', '中川', '中村',
+    '中林', '中沢', '中田', '中神', '中西', '中谷', '中里', '中野', '丸山', '丹羽', '久保', '久保田', '久山', '久村', '乙部', '九鬼',
+    '亀山', '五十嵐', '五味', '井上', '井下', '井出', '井原', '井口', '今井', '今村', '今泉', '今田', '今西', '今野', '伊佐治', '伊勢',
+    '伊東', '伊藤', '佐々木', '佐久間', '佐伯', '佐藤', '佐野', '保坂', '倉本', '倉田', '光岡', '八木', '兼子', '内山', '内村', '内海',
+    '内田', '内藤', '冨田', '出口', '前田', '加納', '加藤', '勝又', '勝田', '北', '北原', '北島', '北川', '北村', '北野', '千田', '千葉',
+    '半田', '南', '南雲', '原', '原口', '原田', '及川', '古岩井', '古川', '古田', '古谷', '古賀', '只野', '吉井', '吉原', '吉川', '吉本',
+    '吉村', '吉沢', '吉澤', '吉田', '名取', '向井', '和久井', '和久田', '和佐', '和田', '品川', '唐澤', '喜多', '國府', '園田', '土井',
+    '土屋', '土田', '坂井', '坂口', '坂本', '坂田', '坪田', '城戸', '堀', '堀内', '堀口', '堀川', '堀江', '堀田', '堂崎', '堰端', '塩田',
+    '塩野', '境', '増井', '増田', '墨', '外山', '多田', '大久保', '大倉', '大内', '大和田', '大坪', '大城', '大場', '大塚', '大宮', '大山',
+    '大島', '大川', '大平', '大庭', '大木', '大村', '大森', '大槻', '大橋', '大江', '大沢', '大沼', '大津', '大浦', '大滝', '大瀧', '大田',
+    '大矢', '大石', '大竹', '大西', '大谷', '大野', '天野', '太田', '奈良', '奥', '奥山', '奥村', '奥田', '奥野', '妻木', '安井', '安原',
+    '安田', '安藤', '安部', '宍戸', '室井', '宮下', '宮内', '宮原', '宮城', '宮崎', '宮川', '宮本', '宮沢', '宮田', '富岡', '富永', '富田',
+    '寒川', '寺本', '寺田', '對馬', '小倉', '小原', '小口', '小坂', '小堀', '小室', '小宮', '小山', '小岩', '小島', '小嶋', '小川', '小幡',
+    '小日向', '小早川', '小暮', '小杉', '小松', '小林', '小柳', '小柴', '小森', '小沢', '小沼', '小泉', '小津', '小澤', '小田', '小笠原',
+    '小谷', '小野', '小野塚', '小野寺', '小野田', '小関', '小高', '尾崎', '尾瀬', '山下', '山中', '山内', '山口', '山岡', '山岸', '山崎',
+    '山川', '山本', '山村', '山根', '山梨', '山森', '山瀬', '山田', '山縣', '山脇', '岡', '岡和田', '岡崎', '岡本', '岡村', '岡田', '岡部',
+    '岡野', '岩下', '岩井', '岩佐', '岩崎', '岩本', '岩瀬', '岩田', '岩谷', '岩間', '岸', '岸川', '岸本', '岸田', '峰岸', '島', '島守',
+    '島崎', '島田', '嶋田', '川上', '川下', '川久保', '川原', '川口', '川合', '川島', '川崎', '川本', '川村', '川田', '川端', '川辺',
+    '川野', '工藤', '市原', '市川', '市村', '市野', '布目', '常峰', '干川', '平井', '平塚', '平山', '平岡', '平川', '平松', '平田', '平野',
+    '幸田', '庄司', '廣岡', '廣瀬', '引地', '弥富', '当山', '後藤', '徳永', '徳田', '志村', '志賀', '戸田', '手塚', '手島', '折田', '押川',
+    '押田', '持田', '指田', '斎藤', '新井', '新垣', '新庄', '新田', '新谷', '日下', '日野', '日高', '早坂', '早川', '明石', '星', '星野',
+    '春田', '是永', '時田', '景山', '曽我', '有吉', '有田', '有馬', '服部', '望月', '朝倉', '木下', '木原', '木戸', '木本', '木村', '木田',
+    '末棟', '末永', '本多', '本村', '本津', '本田', '本間', '杉', '杉原', '杉山', '杉本', '杉浦', '杉田', '村上', '村井', '村山', '村木',
+    '村松', '村瀬', '村田', '東京', '東山', '松井', '松原', '松尾', '松山', '松岡', '松島', '松崎', '松本', '松村', '松林', '松浦', '松田',
+    '松野', '松阪', '板倉', '板垣', '板橋', '林', '林田', '枚田', '柏木', '柳', '柳井', '柳沢', '柴崎', '柴田', '栗原', '栗山', '栗田',
+    '根上', '根岸', '根本', '桜井', '梅本', '梅沢', '梅田', '森', '森下', '森山', '森川', '森田', '植木', '植村', '植田', '楠', '楠本',
+    '榊', '榊原', '榎本', '榛葉', '樋口', '横井', '横山', '横澤', '横田', '橋口', '橋本', '櫻井', '權田', '武井', '武元', '武内', '武山',
+    '武本', '武田', '武良', '武藤', '比嘉', '毛利', '氏家', '水上', '水元', '水原', '水品', '水本', '水谷', '水野', '氷室', '永井', '永嶺',
+    '永松', '永田', '永野', '江口', '江崎', '江川', '江藤', '池上', '池内', '池口', '池田', '池谷', '沖', '沢田', '河原', '河合', '河島',
+    '河村', '河野', '沼田', '泊', '法月', '波多野', '津田', '浅井', '浅原', '浅川', '浅沼', '浅田', '浅野', '浜口', '浜崎', '浜田', '浜野',
+    '浦嶋', '浦田', '浮田', '海野', '深井', '深山', '深沢', '深田', '清', '清川', '清水', '清田', '渋谷', '渡辺', '渡邉', '渡邊', '渡部',
+    '湯浅', '溝口', '滝沢', '滝澤', '澤田', '澵井', '瀬戸', '熊木', '片山', '片岡', '片桐', '牟田', '牧', '牧本', '牧野', '猪狩', '猪股',
+    '猪野', '玉城', '玉置', '王', '生山', '田中', '田井', '田井治', '田代', '田原', '田口', '田島', '田所', '田村', '田治', '田渕', '田畑',
+    '田端', '田辺', '甲斐', '町田', '畑中', '畑山', '畠山', '疋田', '白井', '白石', '白神', '白鳥', '百瀬', '的場', '皆川', '目黒', '直井',
+    '相原', '相川', '相沢', '相田', '相良', '相賀', '相馬', '眞野', '真田', '真鍋', '矢島', '矢崎', '矢澤', '矢田', '矢部', '矢野', '矢﨑',
+    '石', '石井', '石原', '石塚', '石山', '石崎', '石川', '石橋', '石渡', '石瀬', '石田', '石黒', '砂川', '磯部', '磯野', '神保', '神山',
+    '神田', '神谷', '祥雲', '福井', '福原', '福山', '福岡', '福島', '福本', '福永', '福田', '秋元', '秋吉', '秋山', '秋本', '秋田', '秦',
+    '種村', '稲垣', '稲田', '稲葉', '窪田', '立花', '竹下', '竹中', '竹内', '竹原', '竹山', '竹本', '竹村', '竹田', '笠井', '笠原', '笹川',
+    '笹木', '笹沼', '筒井', '篠原', '篠崎', '篠田', '米原', '米山', '米田', '粉川', '糟谷', '紀', '納谷', '細川', '細谷', '結城', '網野',
+    '綿貫', '緒方', '織田', '美濃部', '羽田', '翁長', '臼井', '舟橋', '船橋', '良知', '色川', '芝田', '花井', '花岡', '花田', '芳賀',
+    '芹沢', '芹澤', '若山', '若松', '若林', '茅野', '荒井', '荒川', '荒木', '荒牧', '菅', '菅原', '菅沼', '菅谷', '菅野', '菊地', '菊池',
+    '菊間', '萩原', '落合', '葛西', '葦原', '蒲生', '蓮見', '藤井', '藤原', '藤岡', '藤川', '藤本', '藤村', '藤森', '藤沢', '藤田', '藤野',
+    '西', '西原', '西坂', '西堀', '西尾', '西山', '西岡', '西川', '西方', '西本', '西村', '西沢', '西潟', '西潟', '西澤', '西田', '西畑',
+    '西脇', '西谷', '西野', '見城', '角田', '角野', '言問', '設楽', '諏訪', '谷', '谷口', '谷山', '谷川', '谷本', '谷村', '豊田', '貞包',
+    '賀川', '赤井', '赤坂', '赤城', '赤堀', '赤松', '越智', '足立', '跡部', '路傍', '車', '軍司', '軒', '近江谷', '近藤', '遠山', '遠藤',
+    '那須', '酒井', '酒向', '里見', '重山', '重松', '野中', '野口', '野呂', '野尻', '野崎', '野本', '野村', '野池', '野沢', '野田', '金井',
+    '金城', '金子', '金山', '金成', '金本', '金村', '金森', '金沢', '金田', '金谷', '針生', '鈴木', '鈴村', '鍵山', '鎌田', '鐘ヶ江',
+    '長井', '長坂', '長尾', '長岡', '長島', '長崎', '長沢', '長浜', '長瀬', '長田', '長谷', '長谷川', '長谷部', '長野', '門田', '門馬',
+    '関', '関口', '関根', '関谷', '阪本', '阿久津', '阿部', '陣内', '陳', '雨宮', '青山', '青島', '青木', '青柳', '青野', '面川', '須崎',
+    '須田', '須藤', '須賀', '飯塚', '飯尾', '飯山', '飯島', '飯沼', '飯田', '馬場', '駒井', '駿河', '高井', '高倉', '高城', '高場', '高尾',
+    '高山', '高島', '高崎', '高木', '高松', '高梨', '高橋', '高江洲', '高浜', '高瀬', '高田', '高野', '髙柳', '鬼塚', '鬼頭', '魚住',
+    '鮫島', '鳥居', '鳥海', '鳫', '鴇田', '鵜飼', '鹿島', '鹿野', '麻生', '黒川', '黒木', '黒沢', '黒澤', '黒田', '齊藤', '齋藤', '龍崎',
+    '釼持', '坂東', '川井', '戸倉', '田尻', '伏木', '稲本','山口','佐々木','井上','木村','林','斎藤','清水','山崎','森田','阿部',
+    '石井','中島','中野','小野','原田','岡本','松下','村田','菊地','中山',
+    '杉山','増田','大野','内山','柴田','宇野','高山','大山','星野','中井',
+    '荒井','岩田','藤本','栗原','藤原','安田','長谷川','古屋','片岡','黒田',
+    '中尾','石田','西田','山内','矢野','平田','永田','川村','藤井','広瀬',
+    '今田','中西','田口','宮本','岡田','土田','大西','本田','上田','宮田',
+    '北川','杉本','工藤','和田','西村','菅原','石橋','金子','太田','原口',
+    '堀内','長尾','山口','高田','岩本','大塚','田辺','松下','本多','吉岡',
+    '森本','竹田','大橋','黒木','高木','島田','丸山','松岡','高野','田村',
+    '宮城','三好','竹中','石原','早川','田原','河野','中本','宮崎','大田','林','式','熊谷','森岡','成岡','羽村','前川','中塚','柳田','平岩','君塚',
+
+    // ここから新規追加499件
+    '伊集院','伊地知','一色','一宮','一ノ瀬','一戸','一柳','一岡','一条','一ノ木','井筒','井伊','井桁','井手','井上田','井貝','井川','今中',
+    '今岡','今宮','今枝','今給黎','今関','今成','今北','今尾','今来','今泊','今浦','今沢','今子','今仲','今林','今里','今孝','今峰',
+    '今橋','今宗','今市','宇田','宇田川','宇田野','宇佐美','宇佐川','宇治','宇都宮','宇野沢','宇多','内木','内島','内橋','内本',
+    '内谷','内倉','内野','内堀','内尾','内紺','浮島','浮穴','浮ヶ谷','浮谷','浮和田','浮橋','浮上','浮下','浮本','梅林','梅岡','梅崎',
+    '梅野','梅木','梅川','梅村','梅下','梅根','梅山','柿沼','柿本','柿崎','柿内','柿島','柿木','柿田','柿野','柿原','柿谷','鹿児島',
+    '鹿沼','鹿谷','鹿嶋','鹿本','鹿浜','鹿内','鹿毛','鹿倉','鹿子','亀井','亀田','亀岡','亀谷','亀尾','亀村','亀川','亀嶋','亀原',
+    '唐沢','唐木','唐島','唐田','唐橋','唐津','唐谷','唐野','唐崎','唐渡','川畑','川畠','川嶋','川尻','川西','川添','川浪','川浜',
+    '川向','菊谷','菊野','菊本','菊川','菊沢','菊岡','菊崎','菊島','菊田','菊入','木嶋','木内','木崎','木城','木津','木塚','木谷',
+    '木野','木脇','木藤','木元','木暮','木幡','木坂','木俣','木場','木綿','木戸口','木付','木曽','草野','草刈','草川','草間','草田',
+    '草原','草谷','草壁','草柳','草地','熊田','熊倉','熊川','熊坂','熊沢','熊崎','熊本','熊野','熊村','久米','久留米','久留','久永',
+    '久原','久岡','久谷','久米島','久家','久木','栗生','栗谷','栗野','栗岡','栗崎','栗村','栗本','栗下','栗林','栗橋','黒岩','黒岡',
+    '黒柳','黒崎','黒須','黒瀬','黒谷','黒野','桑田','桑原','桑野','桑島','桑村','桑本','桑谷','桑崎','桑川','桑沢','小清水','小椋',
+    '小笠','小宮山','小田切','小田島','小嶌','小磯','小荷田','小比田','小比叡','小比賀','小妻','小竹','小豆島','向山','向野','向坂','向田','向原',
+    '向後','向井田','向谷','向坊','甲田','甲村','甲谷','甲野','甲川','甲崎','甲本','甲原','甲沢','甲橋','河田','河口','河谷','河崎',
+    '河本','河内','河西','河鍋','河添','河津','高岡','高岩','高宮','高木村','高木下','高栁','高比良','高橋野','高嶋','高丘','小針','小林田',
+    '小出','小平','小又','小野川','小野澤','小野山','小根','小橋','近山','近田','近本','近沢','近崎','近野','近原','近橋','近藤田','後藤田',
+    '後藤崎','後藤山','後藤野','後藤村','後藤本','後藤川','後藤沢','後藤原','後藤橋','五反田','五角','五郎','五明','五来','五木田','五十川','五十嵐田','五十崎',
+    '五嶋','斉木','斉川','斉野','斉谷','斉田','斉藤田','斉藤野','斉本','斉崎','斉橋','坂上','坂野','坂崎','坂牧','坂谷','坂根','坂部',
+    '坂脇','坂間','坂下','坂倉','坂元','坂林','坂森','坂枝','坂道','坂原','坂橋','坂尾','堺','堺田','堺山','堺川','堺野','堺谷',
+    '堺本','堺崎','堺村','堺沢','里内','里田','里山','里村','里川','里本','里崎','里谷','里野','里橋','椎名','椎野','椎木','椎崎',
+    '椎田','椎原','椎谷','椎山','椎川','椎本','下川','下坂','下島','下条','下谷','下野','下坪','下地','下岡','下曽根','下原','下畑',
+    '下前','下山','下橋','下松','下嶋','新野','新崎','新本','新川','新倉','新村','新原','新橋','新林','末廣','末広','末吉','末岡',
+    '末次','末松','末田','末野','末原','菅田','菅本','菅崎','菅川','菅村','菅林','菅橋','菅山','須山','須賀田','須賀野','須賀本','須賀橋',
+    '須賀川','須賀村','須賀崎','須賀沢','須賀原','関野','関崎','関山','関原','関川','関村','関田','関本','関橋','高坂','高坪','高杉','高瀬',
+    '高平','高弘','高丸','高見','高安','高田野','竹岡','竹崎','竹谷','竹野','竹橋','竹沢','辰巳','辰野','辰田','辰本','辰崎','辰原',
+    '辰川','辰村','辰谷','辰橋','田尾','田川','田邊','田邉','田巻','田和','田澤','俵','俵田','俵山','俵川','俵谷','俵本','俵崎',
+    '俵野','俵村','俵橋','寺岡','寺川','寺崎','寺西','寺沢','寺谷','寺野','寺橋','寺村','寺下','寺林','寺内','寺嶋','寺尾','寺原',
+    '寺山','寺前','戸川','戸島','戸谷','戸野','戸本','戸原','戸山','戸崎','戸橋','同田','同坂','同谷','同村','同原','三杉','井坂','井原','吉崎','髙橋','佐竹','前野'
+]);
+
+        /* ── 姓名入れ替えリスト（888件） ── */
+        const SWAP_NAME_LIST = new Set([
+    '児嶋','七部', '三ツ矢', '三上', '三原', '三吉', '三好', '三宅', '三木', '三浦', '三輪', '上原', '上坂', '上山', '上村', '上林', '上田',
+    '上野', '下平', '下村', '下田', '並木', '中', '中上', '中井', '中原', '中垣', '中尾', '中屋', '中山', '中島', '中嶋', '中川', '中村',
+    '中林', '中沢', '中田', '中神', '中西', '中谷', '中里', '中野', '丸山', '丹羽', '久保', '久保田', '久山', '久村', '乙部', '九鬼',
+    '亀山', '五十嵐', '五味', '井上', '井下', '井出', '井原', '井口', '今井', '今村', '今泉', '今田', '今西', '今野', '伊佐治', '伊勢',
+    '伊東', '伊藤', '佐々木', '佐久間', '佐伯', '佐藤', '佐野', '保坂', '倉本', '倉田', '光岡', '八木', '兼子', '内山', '内村', '内海',
+    '内田', '内藤', '冨田', '出口', '前田', '加納', '加藤', '勝又', '勝田', '北', '北原', '北島', '北川', '北村', '北野', '千田', '千葉',
+    '半田', '南', '南雲', '原', '原口', '原田', '及川', '古岩井', '古川', '古田', '古谷', '古賀', '只野', '吉井', '吉原', '吉川', '吉本',
+    '吉村', '吉沢', '吉澤', '吉田', '名取', '向井', '和久井', '和久田', '和佐', '和田', '品川', '唐澤', '喜多', '國府', '園田', '土井',
+    '土屋', '土田', '坂井', '坂口', '坂本', '坂田', '坪田', '城戸', '堀', '堀内', '堀口', '堀川', '堀江', '堀田', '堂崎', '堰端', '塩田',
+    '塩野', '境', '増井', '増田', '墨', '外山', '多田', '大久保', '大倉', '大内', '大和田', '大坪', '大城', '大場', '大塚', '大宮', '大山',
+    '大島', '大川', '大平', '大庭', '大木', '大村', '大森', '大槻', '大橋', '大江', '大沢', '大沼', '大津', '大浦', '大滝', '大瀧', '大田',
+    '大矢', '大石', '大竹', '大西', '大谷', '大野', '天野', '太田', '奈良', '奥', '奥山', '奥村', '奥田', '奥野', '妻木', '安井', '安原',
+    '安田', '安藤', '安部', '宍戸', '室井', '宮下', '宮内', '宮原', '宮城', '宮崎', '宮川', '宮本', '宮沢', '宮田', '富岡', '富永', '富田',
+    '寒川', '寺本', '寺田', '對馬', '小倉', '小原', '小口', '小坂', '小堀', '小室', '小宮', '小山', '小岩', '小島', '小嶋', '小川', '小幡',
+    '小日向', '小早川', '小暮', '小杉', '小松', '小林', '小柳', '小柴', '小森', '小沢', '小沼', '小泉', '小津', '小澤', '小田', '小笠原',
+    '小谷', '小野', '小野塚', '小野寺', '小野田', '小関', '小高', '尾崎', '尾瀬', '山下', '山中', '山内', '山口', '山岡', '山岸', '山崎',
+    '山川', '山本', '山村', '山根', '山梨', '山森', '山瀬', '山田', '山縣', '山脇', '岡', '岡和田', '岡崎', '岡本', '岡村', '岡田', '岡部',
+    '岡野', '岩下', '岩井', '岩佐', '岩崎', '岩本', '岩瀬', '岩田', '岩谷', '岩間', '岸', '岸川', '岸本', '岸田', '峰岸', '島', '島守',
+    '島崎', '島田', '嶋田', '川上', '川下', '川久保', '川原', '川口', '川合', '川島', '川崎', '川本', '川村', '川田', '川端', '川辺',
+    '川野', '工藤', '市原', '市川', '市村', '市野', '布目', '常峰', '干川', '平井', '平塚', '平山', '平岡', '平川', '平松', '平田', '平野',
+    '幸田', '庄司', '廣岡', '廣瀬', '引地', '弥富', '当山', '後藤', '徳永', '徳田', '志村', '志賀', '戸田', '手塚', '手島', '折田', '押川',
+    '押田', '持田', '指田', '斎藤', '新井', '新垣', '新庄', '新田', '新谷', '日下', '日野', '日高', '早坂', '早川', '明石', '星', '星野',
+    '春田', '是永', '時田', '景山', '曽我', '有吉', '有田', '有馬', '服部', '望月', '朝倉', '木下', '木原', '木戸', '木本', '木村', '木田',
+    '末棟', '末永', '本多', '本村', '本津', '本田', '本間', '杉', '杉原', '杉山', '杉本', '杉浦', '杉田', '村上', '村井', '村山', '村木',
+    '村松', '村瀬', '村田', '東京', '東山', '松井', '松原', '松尾', '松山', '松岡', '松島', '松崎', '松本', '松村', '松林', '松浦', '松田',
+    '松野', '松阪', '板倉', '板垣', '板橋', '林', '林田', '枚田', '柏木', '柳', '柳井', '柳沢', '柴崎', '柴田', '栗原', '栗山', '栗田',
+    '根上', '根岸', '根本', '桜井', '梅本', '梅沢', '梅田', '森', '森下', '森山', '森川', '森田', '植木', '植村', '植田', '楠', '楠本',
+    '榊', '榊原', '榎本', '榛葉', '樋口', '横井', '横山', '横澤', '横田', '橋口', '橋本', '櫻井', '權田', '武井', '武元', '武内', '武山',
+    '武本', '武田', '武良', '武藤', '比嘉', '毛利', '氏家', '水上', '水元', '水原', '水品', '水本', '水谷', '水野', '氷室', '永井', '永嶺',
+    '永松', '永田', '永野', '江口', '江崎', '江川', '江藤', '池上', '池内', '池口', '池田', '池谷', '沖', '沢田', '河原', '河合', '河島',
+    '河村', '河野', '沼田', '泊', '法月', '波多野', '津田', '浅井', '浅原', '浅川', '浅沼', '浅田', '浅野', '浜口', '浜崎', '浜田', '浜野',
+    '浦嶋', '浦田', '浮田', '海野', '深井', '深山', '深沢', '深田', '清', '清川', '清水', '清田', '渋谷', '渡辺', '渡邉', '渡邊', '渡部',
+    '湯浅', '溝口', '滝沢', '滝澤', '澤田', '澵井', '瀬戸', '熊木', '片山', '片岡', '片桐', '牟田', '牧', '牧本', '牧野', '猪狩', '猪股',
+    '猪野', '玉城', '玉置', '王', '生山', '田中', '田井', '田井治', '田代', '田原', '田口', '田島', '田所', '田村', '田治', '田渕', '田畑',
+    '田端', '田辺', '甲斐', '町田', '畑中', '畑山', '畠山', '疋田', '白井', '白石', '白神', '白鳥', '百瀬', '的場', '皆川', '目黒', '直井',
+    '相原', '相川', '相沢', '相田', '相良', '相賀', '相馬', '眞野', '真田', '真鍋', '矢島', '矢崎', '矢澤', '矢田', '矢部', '矢野', '矢﨑',
+    '石', '石井', '石原', '石塚', '石山', '石崎', '石川', '石橋', '石渡', '石瀬', '石田', '石黒', '砂川', '磯部', '磯野', '神保', '神山',
+    '神田', '神谷', '祥雲', '福井', '福原', '福山', '福岡', '福島', '福本', '福永', '福田', '秋元', '秋吉', '秋山', '秋本', '秋田', '秦',
+    '種村', '稲垣', '稲田', '稲葉', '窪田', '立花', '竹下', '竹中', '竹内', '竹原', '竹山', '竹本', '竹村', '竹田', '笠井', '笠原', '笹川',
+    '笹木', '笹沼', '筒井', '篠原', '篠崎', '篠田', '米原', '米山', '米田', '粉川', '糟谷', '紀', '納谷', '細川', '細谷', '結城', '網野',
+    '綿貫', '緒方', '織田', '美濃部', '羽田', '翁長', '臼井', '舟橋', '船橋', '良知', '色川', '芝田', '花井', '花岡', '花田', '芳賀',
+    '芹沢', '芹澤', '若山', '若松', '若林', '茅野', '荒井', '荒川', '荒木', '荒牧', '菅', '菅原', '菅沼', '菅谷', '菅野', '菊地', '菊池',
+    '菊間', '萩原', '落合', '葛西', '葦原', '蒲生', '蓮見', '藤井', '藤原', '藤岡', '藤川', '藤本', '藤村', '藤森', '藤沢', '藤田', '藤野',
+    '西', '西原', '西坂', '西堀', '西尾', '西山', '西岡', '西川', '西方', '西本', '西村', '西沢', '西潟', '西潟', '西澤', '西田', '西畑',
+    '西脇', '西谷', '西野', '見城', '角田', '角野', '言問', '設楽', '諏訪', '谷', '谷口', '谷山', '谷川', '谷本', '谷村', '豊田', '貞包',
+    '賀川', '赤井', '赤坂', '赤城', '赤堀', '赤松', '越智', '足立', '跡部', '路傍', '車', '軍司', '軒', '近江谷', '近藤', '遠山', '遠藤',
+    '那須', '酒井', '酒向', '里見', '重山', '重松', '野中', '野口', '野呂', '野尻', '野崎', '野本', '野村', '野池', '野沢', '野田', '金井',
+    '金城', '金子', '金山', '金成', '金本', '金村', '金森', '金沢', '金田', '金谷', '針生', '鈴木', '鈴村', '鍵山', '鎌田', '鐘ヶ江',
+    '長井', '長坂', '長尾', '長岡', '長島', '長崎', '長沢', '長浜', '長瀬', '長田', '長谷', '長谷川', '長谷部', '長野', '門田', '門馬',
+    '関', '関口', '関根', '関谷', '阪本', '阿久津', '阿部', '陣内', '陳', '雨宮', '青山', '青島', '青木', '青柳', '青野', '面川', '須崎',
+    '須田', '須藤', '須賀', '飯塚', '飯尾', '飯山', '飯島', '飯沼', '飯田', '馬場', '駒井', '駿河', '高井', '高倉', '高城', '高場', '高尾',
+    '高山', '高島', '高崎', '高木', '高松', '高梨', '高橋', '高江洲', '高浜', '高瀬', '高田', '高野', '髙柳', '鬼塚', '鬼頭', '魚住',
+    '鮫島', '鳥居', '鳥海', '鳫', '鴇田', '鵜飼', '鹿島', '鹿野', '麻生', '黒川', '黒木', '黒沢', '黒澤', '黒田', '齊藤', '齋藤', '龍崎',
+    '釼持', '坂東', '川井', '戸倉', '田尻', '伏木', '稲本','山口','佐々木','井上','木村','林','斎藤','清水','山崎','森田','阿部',
+    '石井','中島','中野','小野','原田','岡本','松下','村田','菊地','中山',
+    '杉山','増田','大野','内山','柴田','宇野','高山','大山','星野','中井',
+    '荒井','岩田','藤本','栗原','藤原','安田','長谷川','古屋','片岡','黒田',
+    '中尾','石田','西田','山内','矢野','平田','永田','川村','藤井','広瀬',
+    '今田','中西','田口','宮本','岡田','土田','大西','本田','上田','宮田',
+    '北川','杉本','工藤','和田','西村','菅原','石橋','金子','太田','原口',
+    '堀内','長尾','山口','高田','岩本','大塚','田辺','松下','本多','吉岡',
+    '森本','竹田','大橋','黒木','高木','島田','丸山','松岡','高野','田村',
+    '宮城','三好','竹中','石原','早川','田原','河野','中本','宮崎','大田','林','式','熊谷','森岡','成岡','羽村','前川','中塚','柳田','平岩','君塚',
+
+    // ここから新規追加499件
+    '伊集院','伊地知','一色','一宮','一ノ瀬','一戸','一柳','一岡','一条','一ノ木','井筒','井伊','井桁','井手','井上田','井貝','井川','今中',
+    '今岡','今宮','今枝','今給黎','今関','今成','今北','今尾','今来','今泊','今浦','今沢','今子','今仲','今林','今里','今孝','今峰',
+    '今橋','今宗','今市','宇田','宇田川','宇田野','宇佐美','宇佐川','宇治','宇都宮','宇野沢','宇多','内木','内島','内橋','内本',
+    '内谷','内倉','内野','内堀','内尾','内紺','浮島','浮穴','浮ヶ谷','浮谷','浮和田','浮橋','浮上','浮下','浮本','梅林','梅岡','梅崎',
+    '梅野','梅木','梅川','梅村','梅下','梅根','梅山','柿沼','柿本','柿崎','柿内','柿島','柿木','柿田','柿野','柿原','柿谷','鹿児島',
+    '鹿沼','鹿谷','鹿嶋','鹿本','鹿浜','鹿内','鹿毛','鹿倉','鹿子','亀井','亀田','亀岡','亀谷','亀尾','亀村','亀川','亀嶋','亀原',
+    '唐沢','唐木','唐島','唐田','唐橋','唐津','唐谷','唐野','唐崎','唐渡','川畑','川畠','川嶋','川尻','川西','川添','川浪','川浜',
+    '川向','菊谷','菊野','菊本','菊川','菊沢','菊岡','菊崎','菊島','菊田','菊入','木嶋','木内','木崎','木城','木津','木塚','木谷',
+    '木野','木脇','木藤','木元','木暮','木幡','木坂','木俣','木場','木綿','木戸口','木付','木曽','草野','草刈','草川','草間','草田',
+    '草原','草谷','草壁','草柳','草地','熊田','熊倉','熊川','熊坂','熊沢','熊崎','熊本','熊野','熊村','久米','久留米','久留','久永',
+    '久原','久岡','久谷','久米島','久家','久木','栗生','栗谷','栗野','栗岡','栗崎','栗村','栗本','栗下','栗林','栗橋','黒岩','黒岡',
+    '黒柳','黒崎','黒須','黒瀬','黒谷','黒野','桑田','桑原','桑野','桑島','桑村','桑本','桑谷','桑崎','桑川','桑沢','小清水','小椋',
+    '小笠','小宮山','小田切','小田島','小嶌','小磯','小荷田','小比田','小比叡','小比賀','小妻','小竹','小豆島','向山','向野','向坂','向田','向原',
+    '向後','向井田','向谷','向坊','甲田','甲村','甲谷','甲野','甲川','甲崎','甲本','甲原','甲沢','甲橋','河田','河口','河谷','河崎',
+    '河本','河内','河西','河鍋','河添','河津','高岡','高岩','高宮','高木村','高木下','高栁','高比良','高橋野','高嶋','高丘','小針','小林田',
+    '小出','小平','小又','小野川','小野澤','小野山','小根','小橋','近山','近田','近本','近沢','近崎','近野','近原','近橋','近藤田','後藤田',
+    '後藤崎','後藤山','後藤野','後藤村','後藤本','後藤川','後藤沢','後藤原','後藤橋','五反田','五角','五郎','五明','五来','五木田','五十川','五十嵐田','五十崎',
+    '五嶋','斉木','斉川','斉野','斉谷','斉田','斉藤田','斉藤野','斉本','斉崎','斉橋','坂上','坂野','坂崎','坂牧','坂谷','坂根','坂部',
+    '坂脇','坂間','坂下','坂倉','坂元','坂林','坂森','坂枝','坂道','坂原','坂橋','坂尾','堺','堺田','堺山','堺川','堺野','堺谷',
+    '堺本','堺崎','堺村','堺沢','里内','里田','里山','里村','里川','里本','里崎','里谷','里野','里橋','椎名','椎野','椎木','椎崎',
+    '椎田','椎原','椎谷','椎山','椎川','椎本','下川','下坂','下島','下条','下谷','下野','下坪','下地','下岡','下曽根','下原','下畑',
+    '下前','下山','下橋','下松','下嶋','新野','新崎','新本','新川','新倉','新村','新原','新橋','新林','末廣','末広','末吉','末岡',
+    '末次','末松','末田','末野','末原','菅田','菅本','菅崎','菅川','菅村','菅林','菅橋','菅山','須山','須賀田','須賀野','須賀本','須賀橋',
+    '須賀川','須賀村','須賀崎','須賀沢','須賀原','関野','関崎','関山','関原','関川','関村','関田','関本','関橋','高坂','高坪','高杉','高瀬',
+    '高平','高弘','高丸','高見','高安','高田野','竹岡','竹崎','竹谷','竹野','竹橋','竹沢','辰巳','辰野','辰田','辰本','辰崎','辰原',
+    '辰川','辰村','辰谷','辰橋','田尾','田川','田邊','田邉','田巻','田和','田澤','俵','俵田','俵山','俵川','俵谷','俵本','俵崎',
+    '俵野','俵村','俵橋','寺岡','寺川','寺崎','寺西','寺沢','寺谷','寺野','寺橋','寺村','寺下','寺林','寺内','寺嶋','寺尾','寺原',
+    '寺山','寺前','戸川','戸島','戸谷','戸野','戸本','戸原','戸山','戸崎','戸橋','同田','同坂','同谷','同村','同原','三杉','井坂','井原','吉崎','髙橋','佐竹','前野'
+]);
+
+        let workbook = null;
+        let processedData = null;
+        let startTime = null;
+
+        function addLog(message, type = 'success'){
+            const logArea = document.getElementById('logArea');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            logEntry.innerHTML = `<span class="log-time">[${timeStr}]</span> ${message}`;
+            logArea.appendChild(logEntry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function updateProgress(percent, stepId){
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressText').textContent = Math.round(percent) + '%';
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+                if(parseInt(step.id.replace('step','')) < stepId) step.classList.add('completed');
+            });
+            if(stepId >= 1 && stepId <= 7) document.getElementById('step'+stepId).classList.add('active');
+        }
+
+        function updateStats(processed, filtered, errors){
+            document.getElementById('processedRows').textContent = processed;
+            document.getElementById('filteredRows').textContent = filtered;
+            document.getElementById('errorCount').textContent = errors;
+            if(startTime){
+                document.getElementById('processingTime').textContent = ((Date.now()-startTime)/1000).toFixed(2)+'s';
+            }
+        }
+
+        function updateDataTable(data, maxRows = 10){
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            data.slice(0, maxRows).forEach((row, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${index+1}</td><td>${row['氏名']||'-'}</td><td>${row['所属施設']||'-'}</td><td>${row['メール']||'-'}</td><td>${row['承認ステータス']||'-'}</td>`;
+                tbody.appendChild(tr);
+            });
+            if(data.length > maxRows){
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="5" style="text-align:center;opacity:.6;">... 他 ${data.length-maxRows} 件</td>`;
+                tbody.appendChild(tr);
+            }
+        }
+
+        function sleep(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
+
+        async function startProcessing(){
+            const fileInput = document.getElementById('excelFile');
+            const dateInput = document.getElementById('dateInput').value;
+            if(!fileInput.files.length){ addLog('ファイルが選択されていません','error'); return; }
+            if(!dateInput || !/^\d{8}$/.test(dateInput)){ addLog('正しい日付形式（YYYYMMDD）を入力してください','error'); return; }
+
+            startTime = Date.now();
+            document.getElementById('statusIndicator').className = 'status-indicator status-active';
+            addLog('処理を開始します...');
+
+            try {
+                updateProgress(10,1); addLog('ファイルを読み込んでいます...'); await sleep(500);
+                const file = fileInput.files[0];
+                const fileName = file.name.toLowerCase();
+                const data = await file.arrayBuffer();
+                const readOpts = fileName.endsWith('.csv')
+                    ? {type:'array', raw:false}
+                    : {type:'array'};
+                workbook = XLSX.read(data, readOpts);
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                let jsonData = XLSX.utils.sheet_to_json(firstSheet, {header:1});
+                addLog(`ファイル読み込み完了: ${jsonData.length} 行 (${fileName.endsWith('.csv') ? 'CSV' : 'Excel'})`);
+
+                updateProgress(20,2); addLog('不要な行を削除しています...'); await sleep(300);
+                jsonData = jsonData.slice(5);
+                addLog(`不要行削除完了: 残り ${jsonData.length} 行`);
+
+                updateProgress(35,3); addLog('データをフィルタリングしています...'); await sleep(300);
+                const headers = jsonData[0];
+                let processedRows = jsonData.slice(1).map(row => {
+                    const obj = {};
+                    headers.forEach((h,i) => { obj[h] = row[i]; });
+                    return obj;
+                });
+                const originalCount = processedRows.length;
+                // 空行除外のみ（NAME_FILTERによる行削除は行わない）
+                processedRows = processedRows.filter(row => Object.values(row).some(v => v!==undefined&&v!==null&&v!==''));
+                const filteredCount = originalCount - processedRows.length;
+                addLog(`フィルタリング完了: 空行除外で ${filteredCount} 行を除外 (残り ${processedRows.length} 行)`);
+
+                updateProgress(50,4); addLog('データをクレンジングしています...'); await sleep(300);
+                const CANONICAL_AFFILIATION = '静岡県立静岡がんセンター';
+                // 列名リネームマップ（「ご」を削除）
+                const COL_RENAME = { 'ご所属施設': '所属施設', 'ご所属部署': '所属部署', '職種：該当する職種にチェックを入れてください。': '職種' };
+                let normalizeCount = 0;
+                processedRows = processedRows.map(row => {
+                    const clean = {};
+                    Object.keys(row).forEach(k => {
+                        let v = row[k];
+                        const newKey = COL_RENAME[k] || k;  // 列名リネーム
+                        if(typeof v==='string'){
+                            v = v.trim().replace(/　/g,' ').replace(/'/g,'');
+                            // 「登録時間」列を YYYY/MM/DD HH:MM 形式に変換
+                            if(newKey === '登録時間'){
+                                const d = new Date(v);
+                                if(!isNaN(d.getTime())){
+                                    const yyyy = d.getFullYear();
+                                    const mm   = String(d.getMonth()+1).padStart(2,'0');
+                                    const dd   = String(d.getDate()).padStart(2,'0');
+                                    const hh   = String(d.getHours()).padStart(2,'0');
+                                    const mi   = String(d.getMinutes()).padStart(2,'0');
+                                    v = `${yyyy}/${mm}/${dd} ${hh}:${mi}`;
+                                }
+                            }
+                            }
+// 「所属施設」列の表記揺れ正規化
+if (newKey === '所属施設') {
+    const norm = v.replace(/[Ａ-Ｚａ-ｚ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+                  .toLowerCase();
+
+    const hasSCC = /\bscc\b/.test(norm);
+    const hasShizuCancerJa = /静岡.*(?:がん|ガン|癌)|(?:がん|ガン|癌).*静岡/.test(v);
+    const hasShizuCancerEn = /shizuoka.*cancer|cancer.*shizuoka/.test(norm);
+
+    if (hasSCC || hasShizuCancerJa || hasShizuCancerEn) {
+        if (v !== CANONICAL_AFFILIATION) normalizeCount++;
+        v = CANONICAL_AFFILIATION;
+    }
+}
+clean[newKey] = v;
+                    });
+                    return clean;
+                });
+                if(normalizeCount > 0) addLog(`所属施設正規化: ${normalizeCount} 件を「静岡県立静岡がんセンター」に統一しました`, 'warning');
+                addLog('データクレンジング完了（列名リネーム・所属施設正規化）');
+
+                // 姓名入れ替え処理
+                let swapCount = 0;
+                processedRows = processedRows.map(row => {
+                    const mei = String(row['名'] ?? '').trim();
+                    if(SWAP_NAME_LIST.has(mei)){
+                        // 名列の値が姓リストに一致 → 名列と姓列を入れ替え
+                        const tmp = row['名'];
+                        row['名'] = row['姓'];
+                        row['姓'] = tmp;
+                        swapCount++;
+                    }
+                    return row;
+                });
+                if(swapCount > 0) addLog(`姓名入れ替え: ${swapCount} 件を補正しました`, 'warning');
+
+                updateProgress(65,5); addLog('列を追加・整形しています...'); await sleep(300);
+                // 出力列順の定義（先頭に通し番号、以降は指定順、末尾に不明列）
+                const COL_ORDER = [
+                    '通し番号',
+                    '氏名', '所属施設', '所属部署', '職種', 'メール', '役割',
+                    '登録時間', '承認ステータス', '電話番号', '名', '姓',
+                    '質問とコメント', '本研修会をどのように知りましたか。'
+                ];
+                processedRows = processedRows.map((row, i) => {
+                    const fullName = ((row['姓']||'') + ' ' + (row['名']||'')).trim();
+                    // 氏名列・通し番号を加えた中間オブジェクト
+                    const base = { ...row, '氏名': fullName, '通し番号': i + 1 };
+                    // COL_ORDERの順に正確に並べる
+                    const ordered = {};
+                    COL_ORDER.forEach(col => {
+                        if (col in base) ordered[col] = base[col];
+                    });
+                    // COL_ORDERにない列を末尾に追加
+                    Object.keys(base).forEach(k => {
+                        if (!(k in ordered)) ordered[k] = base[k];
+                    });
+                    return ordered;
+                });
+                addLog('列の追加・整形完了（通し番号先頭・指定列順済み）');
+
+                updateProgress(80,6); addLog('各行のデータを処理しています...'); await sleep(500);
+                let errorCount = 0;
+                processedRows.forEach((row,i) => {
+                    try {
+                        if(row['メール'] && !validateEmail(row['メール'])){ row['エラー']='メールアドレス形式不正'; errorCount++; }
+                        // ※旧キー名フォールバック（念のため）
+                        // メールバリデーション（上記で処理済み）
+                    } catch(e){ addLog(`行 ${i+1} でエラー: ${e.message}`,'warning'); errorCount++; }
+                });
+                addLog(`行データ処理完了: エラー ${errorCount} 件`);
+
+                updateProgress(100,7); addLog('処理が完了しました','success');
+                updateStats(processedRows.length, filteredCount, errorCount);
+                updateDataTable(processedRows);
+                document.getElementById('exportBtn').disabled = false;
+                document.getElementById('statusIndicator').className = 'status-indicator status-idle';
+                processedData = processedRows;
+                addLog(`総処理時間: ${((Date.now()-startTime)/1000).toFixed(2)}秒`,'success');
+
+            } catch(error){
+                addLog(`エラーが発生しました: ${error.message}`,'error');
+                document.getElementById('statusIndicator').className = 'status-indicator status-error';
+                updateProgress(0,0);
+            }
+        }
+
+        function validateEmail(email){
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).toLowerCase());
+        }
+
+        function exportToExcel(){
+            if(!processedData){ addLog('処理済みデータがありません','error'); return; }
+            try {
+                const dateInput = document.getElementById('dateInput').value;
+                // 先頭行のキー順を基準にし、仙6行にしかないキーを末尾に追加
+                const allKeys = Object.keys(processedData[0] || {});
+                processedData.forEach(row => {
+                    Object.keys(row).forEach(k => { if(!allKeys.includes(k)) allKeys.push(k); });
+                });
+                // BOM付きUTF-8 CSV生成（Excelで開いた際の文字化け防止）
+                const csvRows = [];
+                csvRows.push(allKeys.map(k => '"' + String(k).replace(/"/g,'""') + '"').join(','));
+                processedData.forEach(row => {
+                    csvRows.push(allKeys.map(k => {
+                        const v = row[k] !== undefined && row[k] !== null ? String(row[k]) : '';
+                        return '"' + v.replace(/"/g,'""') + '"';
+                    }).join(','));
+                });
+                const csvStr = '\uFEFF' + csvRows.join('\r\n');
+                const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `処理済み_${dateInput}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+                addLog(`ファイルをエクスポートしました: 処理済み_${dateInput}.csv`,'success');
+            } catch(error){
+                addLog(`エクスポートエラー: ${error.message}`,'error');
+            }
+        }
+
+        function updateFileLabel(input){
+            const display = document.getElementById('fileNameDisplay');
+            const labelText = document.getElementById('fileLabelText');
+            if(input.files && input.files.length > 0){
+                const name = input.files[0].name;
+                labelText.textContent = '選択済み';
+                display.textContent = '▶ ' + name;
+            } else {
+                labelText.textContent = 'Excel/CSVファイルを選択';
+                display.textContent = '';
+            }
+        }
+
+        window.addEventListener('load', () => {
+            addLog('システムの初期化が完了しました','success');
+        });
+    </script>
+</body>
+</html>
