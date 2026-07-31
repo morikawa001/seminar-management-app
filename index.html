@@ -237,6 +237,30 @@
       </div>
     </section>
 
+    <!-- ===== ROW 5: Exception Queue ===== -->
+  <section class="panel section-collapsible open" id="exceptionQueueSection" data-collapsed="false">
+    <div class="corner-label">Exception Queue</div>
+    <div class="panel-head">
+      <div>
+        <h2>Exception Queue</h2>
+        <p>データの不備・例外をルールベースで自動検出します。CSV読込後に更新されます。</p>
+      </div>
+      <div class="panel-nav-actions">
+        <a class="btn small manual-btn" href="#mailTemplateSection" onclick="scrollToSection('mailTemplateSection');return false;">Mail Template</a>
+        <a class="btn small manual-btn" href="#todayCommandSection" onclick="scrollToSection('todayCommandSection');return false;">Today Command</a>
+        <a class="btn small manual-btn" href="#taskChecklistPanel" onclick="scrollToSection('taskChecklistPanel');return false;">Task Checklist</a>
+        <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
+      </div>
+    </div>
+    <div class="alert-wrap" id="exceptionQueueList">
+      <div class="eq-item sev-info">
+        <div><span class="eq-tag info">WAIT</span><div class="eq-no" style="margin-top:4px">-</div></div>
+        <div class="eq-item-body"><strong>例外検出待機中</strong><p>CSVを読み込むか、新規DBを作成すると例外がここに表示されます。</p></div>
+        <div></div>
+      </div>
+    </div>
+  </section>
+
     <!-- Deadline Alert -->
     <section class="panel section-collapsible" id="deadlineAlertSection" data-collapsed="false">
       <div class="corner-label">Deadline Alert</div>
@@ -531,31 +555,6 @@
   </div>
 
     <div class="section-group-label">📦 補助ツール</div>
-
-    <!-- ── Data Tab (cont.) ── -->
-  <!-- ===== ROW 5: Exception Queue ===== -->
-  <section class="panel section-collapsible" id="exceptionQueueSection" data-collapsed="true">
-    <div class="corner-label">Exception Queue</div>
-    <div class="panel-head">
-      <div>
-        <h2>Exception Queue</h2>
-        <p>データの不備・例外をルールベースで自動検出します。CSV読込後に更新されます。</p>
-      </div>
-      <div class="panel-nav-actions">
-        <a class="btn small manual-btn" href="#mailTemplateSection" onclick="scrollToSection('mailTemplateSection');return false;">Mail Template</a>
-        <a class="btn small manual-btn" href="#todayCommandSection" onclick="scrollToSection('todayCommandSection');return false;">Today Command</a>
-        <a class="btn small manual-btn" href="#taskChecklistPanel" onclick="scrollToSection('taskChecklistPanel');return false;">Task Checklist</a>
-        <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
-      </div>
-    </div>
-    <div class="alert-wrap" id="exceptionQueueList">
-      <div class="eq-item sev-info">
-        <div><span class="eq-tag info">WAIT</span><div class="eq-no" style="margin-top:4px">-</div></div>
-        <div class="eq-item-body"><strong>例外検出待機中</strong><p>CSVを読み込むか、新規DBを作成すると例外がここに表示されます。</p></div>
-        <div></div>
-      </div>
-    </div>
-  </section>
 
     <!-- ── Email Tab ── -->
   <!-- ===== ROW 6: Mail Template (全幅) ===== -->
