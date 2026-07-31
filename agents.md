@@ -140,3 +140,9 @@ QR_reader.html                # QRコード出席管理（別ページ、Firebas
 - ✅ ステータスバーにログアウトボタンを追加
 - ✅ ログイン済み再チェック対応（`index.html` と同じパターン）
 - ✅ CSV/XLSX アップロードも従来通り併用可能
+
+### 2026-07-31: 保存してCSVをDLの不具合修正＋変更を保存ボタン追加
+- ✅ トップバーの「💾 保存してDL」ボタン（`saveAndDownloadBtn`）が無効のままだった問題を修正（全データ読込経路で有効化）
+- ✅ `commitDraft()` が保存成功時のみ `true` を返すように変更（検証失敗時はCSVをDLしない）
+- ✅ Entry Console に保存専用ボタン「💾 変更を保存」（`#saveChangesBtn`）を追加
+- ✅ **更新時の `__docId` 欠落バグを修正**: `buildRow()` で新規構築した行に `__docId` が引き継がれず、編集保存で Firestore に新規ドキュメントが追加され続けていた（リロード時に重複・旧データが優先される問題）。`commitDraft` 更新パスで `__docId`・`_order`・フォーム外カラム（`qr_saved_k1/k2/k3`・`DONEAT_*`・`UPDATEDAT_*`・`HISTORY_*` など）を既存行から引き継ぐように修正
