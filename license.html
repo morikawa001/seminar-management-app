@@ -47,11 +47,11 @@
       overflow-x: hidden;
       position: relative;
     }
-    /* マトリックス背景 canvas */
+    /* 背景 canvas（index.html と同じ演出） */
     #matrixCanvas {
       position: fixed; top: 0; left: 0;
       width: 100%; height: 100%;
-      z-index: 0; pointer-events: none; opacity: .18;
+      z-index: 0; pointer-events: none;
     }
     /* 旧 .bg-grid は非表示に */
     .bg-grid { display: none; }
@@ -91,10 +91,26 @@
 
     /* Panel */
     .panel {
-      background:var(--panel); border:1px solid var(--panel-border);
-      box-shadow:var(--shadow); backdrop-filter:blur(12px);
-      border-radius:var(--radius); padding:28px; margin-bottom:20px;
+      position:relative; overflow:hidden;
+      background:
+        linear-gradient(180deg, rgba(56,182,255,0.04), transparent 32%),
+        linear-gradient(90deg, rgba(56,182,255,0.03), transparent 42%),
+        var(--panel);
+      border:1px solid var(--panel-border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow), 0 0 0 1px rgba(56,182,255,.08), 0 0 24px rgba(31,157,255,.07);
+      padding:28px; margin-bottom:20px;
     }
+    .panel::before {
+      content:"";
+      position:absolute; inset:0;
+      pointer-events:none;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.015), transparent 40%),
+        linear-gradient(90deg, transparent, rgba(56,182,255,0.05), transparent);
+      opacity:.8;
+    }
+    .panel > * { position:relative; z-index:1; }
     .panel-title {
       font-size:11px; letter-spacing:0.2em; color:var(--accent);
       text-transform:uppercase; font-weight:700; margin-bottom:18px;
@@ -685,6 +701,131 @@ generateBtn.addEventListener('click', async () => {
 
 
 </script>
-<script src="js/matrix-rain.js"></script>
+<script>
+/* ── 背景コードレイン（index.html と同一演出） ── */
+(function(){
+  const canvas = document.getElementById('matrixCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const RAW_LINES = document.documentElement.outerHTML
+    .split('\n')
+    .map(function(l){ return l.trim(); })
+    .filter(function(l){ return l.length > 4 && l.length < 120; });
+
+  const FONT_SIZE = 11;
+  const FONT = FONT_SIZE + "px 'Share Tech Mono','Courier New',monospace";
+  const COL_W = 360;
+  const SPEED_MIN = 0.20;
+  const SPEED_MAX = 0.60;
+  const COLORS = [
+    'rgba(40,170,255,',
+    'rgba(0,200,235,',
+    'rgba(180,100,255,',
+    'rgba(255,140,0,',
+  ];
+
+  var cols = [];
+  var nodeCache = null;
+  var nodeW = 0, nodeH = 0;
+  var raf = null;
+
+  function resize(){
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    nodeCache = null;
+  }
+
+  function pickLines(n){
+    var arr = [];
+    for(var i=0;i<n;i++)
+      arr.push(RAW_LINES[Math.floor(Math.random()*RAW_LINES.length)]);
+    return arr;
+  }
+
+  function initCols(){
+    resize();
+    var n = Math.ceil(canvas.width / COL_W) + 1;
+    cols = [];
+    for(var i=0;i<n;i++){
+      var lc = Math.floor(8 + Math.random()*10);
+      cols.push({
+        x: i * COL_W,
+        y: -Math.random() * canvas.height,
+        speed: SPEED_MIN + Math.random()*(SPEED_MAX-SPEED_MIN),
+        color: COLORS[i % COLORS.length],
+        lineCount: lc,
+        lines: pickLines(lc)
+      });
+    }
+  }
+
+  function getNodes(){
+    if(nodeCache && nodeW===canvas.width && nodeH===canvas.height) return nodeCache;
+    var GS=40; nodeW=canvas.width; nodeH=canvas.height; nodeCache=[];
+    for(var x=0;x<nodeW;x+=GS)
+      for(var y=0;y<nodeH;y+=GS)
+        if(Math.random()<0.18) nodeCache.push({x:x,y:y});
+    return nodeCache;
+  }
+
+  function drawGrid(){
+    var GS=40;
+    ctx.strokeStyle='rgba(40,150,255,0.05)';
+    ctx.lineWidth=0.5;
+    for(var x=0;x<canvas.width;x+=GS){
+      ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();
+    }
+    for(var y=0;y<canvas.height;y+=GS){
+      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();
+    }
+    var nodes=getNodes();
+    ctx.fillStyle='rgba(40,170,255,0.14)';
+    for(var i=0;i<nodes.length;i++){
+      ctx.beginPath();ctx.arc(nodes[i].x,nodes[i].y,1.4,0,Math.PI*2);ctx.fill();
+    }
+  }
+
+  function drawFrame(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawGrid();
+    ctx.font=FONT;
+    ctx.textBaseline='top';
+    var LH=FONT_SIZE+3;
+    for(var ci=0;ci<cols.length;ci++){
+      var col=cols[ci];
+      for(var li=0;li<col.lines.length;li++){
+        var fy=col.y+li*LH;
+        if(fy<-LH||fy>canvas.height) continue;
+        var ratio=1-li/col.lineCount;
+        var alpha=(0.05+ratio*0.25).toFixed(3);
+        ctx.fillStyle=col.color+alpha+')';
+        ctx.fillText(col.lines[li],col.x,fy);
+      }
+      col.y+=col.speed;
+      if(col.y>canvas.height+LH*2){
+        col.y=-(col.lineCount*LH)-Math.random()*200;
+        col.lines=pickLines(col.lineCount);
+        col.speed=SPEED_MIN+Math.random()*(SPEED_MAX-SPEED_MIN);
+      }
+    }
+  }
+
+  function loop(){ raf=requestAnimationFrame(loop); drawFrame(); }
+
+  initCols();
+  loop();
+
+  var resizeTimer;
+  window.addEventListener('resize',function(){
+    clearTimeout(resizeTimer);
+    resizeTimer=setTimeout(function(){
+      cancelAnimationFrame(raf);
+      initCols();
+      loop();
+    },200);
+  });
+})();
+</script>
 </body>
 </html>
