@@ -147,4 +147,5 @@ QR_reader.html                # QRコード出席管理（別ページ、Firebas
 - ✅ Entry Console に保存専用ボタン「💾 変更を保存」（`#saveChangesBtn`）を追加
 - ✅ **更新時の `__docId` 欠落バグを修正**: `buildRow()` で新規構築した行に `__docId` が引き継がれず、編集保存で Firestore に新規ドキュメントが追加され続けていた（リロード時に重複・旧データが優先される問題）。`commitDraft` 更新パスで `__docId`・`_order`・フォーム外カラム（`qr_saved_k1/k2/k3`・`DONEAT_*`・`UPDATEDAT_*`・`HISTORY_*` など）を既存行から引き継ぐように修正
 - ✅ **新規追加直後の `__docId` 未記録バグを修正**: `saveToFirestore()` の `.add()` で発行されたドキュメントIDを行に記録し、以降の編集で `.set()` により上書き更新されるように修正（新規追加→編集の繰り返しで重複ドキュメントが増える問題を解消）
+- ✅ **読み込み時の重複Noを最新更新日で解決**: `loadFromFirestore()` で `updatedAt` を取得し、`dedupeRowsByNo()` で同一Noの重複行は `updatedAt` が最新のドキュメントを優先。過去のバグで蓄積した重複ドキュメントがリロード時に旧データを表示する問題を解消
 - ✅ ファビコン（`favicon.ico` 404）対策としてインラインSVGファビコンを追加
