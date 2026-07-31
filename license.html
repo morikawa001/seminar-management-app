@@ -6,7 +6,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>受講証ジェネレーター</title>
+  <title>▌ SIBYL SYSTEM // LICENSE 管制 ▌</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/theme-base.css">
@@ -22,18 +22,18 @@
 
   <style>
     :root {
-      --bg: #080f0a;
-      --panel: rgba(11,21,13,0.92);
-      --panel-border: rgba(0,200,83,0.25);
-      --text: #b2dfb8;
-      --text-strong: #e8f5e9;
-      --muted: #4a7a52;
-      --accent: #69f0ae;
-      --accent-strong: #00c853;
-      --accent-dim: rgba(0,200,83,0.10);
-      --danger: #ef5350;
-      --warn: #ffab40;
-      --shadow: 0 0 30px rgba(0,200,83,0.12);
+      --bg: #030509;
+      --panel: rgba(8,17,32,0.92);
+      --panel-border: rgba(56,182,255,0.25);
+      --text: #a9c8ff;
+      --text-strong: #e2eeff;
+      --muted: #405f94;
+      --accent: #38b6ff;
+      --accent-strong: #38b6ff;
+      --accent-dim: rgba(56,182,255,0.10);
+      --danger: #ff5c7a;
+      --warn: #ffd166;
+      --shadow: 0 0 30px rgba(56,182,255,0.12);
       --radius: 14px;
       --radius-sm: 8px;
       --font-mono: 'Share Tech Mono', monospace;
@@ -62,7 +62,7 @@
     .hero-line {
       width:140px; height:2px;
       background:linear-gradient(90deg,transparent,var(--accent),transparent);
-      margin-bottom:16px; box-shadow:0 0 18px rgba(102,242,163,0.5);
+      margin-bottom:16px; box-shadow:0 0 18px rgba(56,182,255,0.5);
     }
     .eyebrow {
       color: var(--muted);
@@ -77,10 +77,17 @@
       line-height: 1.2;
       letter-spacing: .18em;
       color: var(--accent-strong);
-      text-shadow: 0 0 12px rgba(0,200,83,.5);
+      text-shadow: 0 0 12px rgba(56,182,255,.5);
       margin-bottom: 10px;
     }
-    .subtitle { color:#b8e6c9; line-height:1.8; max-width:700px; font-size:14px; }
+    .sb-dot {
+      display: inline-block; width:8px; height:8px; border-radius:50%;
+      background: var(--accent); box-shadow:0 0 10px var(--accent);
+      animation:sibyl-pulse 1.6s ease-in-out infinite;
+      vertical-align:middle; margin-right:9px;
+    }
+    @keyframes sibyl-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.75)} }
+    .subtitle { color:#9fdcff; line-height:1.8; max-width:700px; font-size:14px; }
 
     /* Panel */
     .panel {
@@ -91,7 +98,7 @@
     .panel-title {
       font-size:11px; letter-spacing:0.2em; color:var(--accent);
       text-transform:uppercase; font-weight:700; margin-bottom:18px;
-      padding-bottom:10px; border-bottom:1px solid rgba(102,242,163,0.15);
+      padding-bottom:10px; border-bottom:1px solid rgba(56,182,255,0.15);
     }
 
     /* Fields */
@@ -99,30 +106,30 @@
     .field:last-child { margin-bottom:0; }
     .field > span {
       display:block; margin-bottom:8px;
-      color:#c7f8d9; font-size:13px; letter-spacing:0.04em;
+      color:#9fdcff; font-size:13px; letter-spacing:0.04em;
     }
     input[type="text"], input[type="file"], select {
       width:100%; padding:13px 16px;
       border-radius:var(--radius-sm);
-      border:1px solid rgba(102,242,163,0.22);
-      background:rgba(5,16,12,0.92);
+      border:1px solid rgba(56,182,255,0.22);
+      background:rgba(2,5,12,0.92);
       color:var(--text); outline:none;
       font-family:inherit; font-size:14px;
       transition:border-color 0.2s,box-shadow 0.2s;
     }
     input[type="text"]:focus, input[type="file"]:focus, select:focus {
       border-color:var(--accent-strong);
-      box-shadow:0 0 0 3px rgba(102,242,163,0.12);
+      box-shadow:0 0 0 3px rgba(56,182,255,0.12);
     }
     input[type="file"]::file-selector-button {
-      background:rgba(26,255,140,0.12);
-      border:1px solid rgba(102,242,163,0.3);
+      background:rgba(31,157,255,0.12);
+      border:1px solid rgba(56,182,255,0.3);
       color:var(--accent); border-radius:8px;
       padding:6px 12px; margin-right:12px;
       cursor:pointer; font-size:13px;
       transition:background 0.2s;
     }
-    input[type="file"]::file-selector-button:hover { background:rgba(26,255,140,0.22); }
+    input[type="file"]::file-selector-button:hover { background:rgba(31,157,255,0.22); }
 
     /* 出力形式ラジオ */
     .format-row {
@@ -133,8 +140,8 @@
       display:flex; align-items:center; gap:10px;
       padding:13px 16px;
       border-radius:var(--radius-sm);
-      border:1px solid rgba(102,242,163,0.22);
-      background:rgba(5,16,12,0.92);
+      border:1px solid rgba(56,182,255,0.22);
+      background:rgba(2,5,12,0.92);
       color:var(--text); cursor:pointer;
       font-size:14px; font-family:inherit;
       transition:border-color 0.2s,background 0.2s;
@@ -147,13 +154,13 @@
     }
     .format-btn:has(input:checked) {
       border-color:var(--accent-strong);
-      background:rgba(26,255,140,0.08);
+      background:rgba(31,157,255,0.08);
     }
     .format-badge {
       margin-left:auto; font-size:10px; letter-spacing:0.1em;
       padding:2px 7px; border-radius:999px;
-      background:rgba(102,242,163,0.12);
-      color:var(--accent); border:1px solid rgba(102,242,163,0.2);
+      background:rgba(56,182,255,0.12);
+      color:var(--accent); border:1px solid rgba(56,182,255,0.2);
       white-space:nowrap;
     }
 
@@ -173,14 +180,14 @@
     .generate-btn {
       width:100%; padding:16px;
       border:none; border-radius:14px;
-      background:linear-gradient(135deg,#0d2d1f,#1aff8c);
-      color:#02110a; font-size:16px; font-weight:700;
+      background:linear-gradient(135deg,#0a1a33,#1f9dff);
+      color:#02101c; font-size:16px; font-weight:700;
       cursor:pointer; letter-spacing:0.04em;
       transition:transform 0.2s,box-shadow 0.2s,opacity 0.2s;
-      box-shadow:0 10px 30px rgba(26,255,140,0.24);
+      box-shadow:0 10px 30px rgba(31,157,255,0.24);
       margin-bottom:4px;
     }
-    .generate-btn:hover:not(:disabled){ transform:translateY(-1px); box-shadow:0 14px 36px rgba(26,255,140,0.32); }
+    .generate-btn:hover:not(:disabled){ transform:translateY(-1px); box-shadow:0 14px 36px rgba(31,157,255,0.32); }
     .generate-btn:disabled{ opacity:0.45; cursor:not-allowed; }
 
     /* Status */
@@ -190,9 +197,9 @@
     .status.success { color:var(--accent-strong); }
     .progress-bar-outer {
       display:none; height:6px; border-radius:999px;
-      background:rgba(102,242,163,0.1);
+      background:rgba(56,182,255,0.1);
       margin-top:12px; overflow:hidden;
-      border:1px solid rgba(102,242,163,0.15);
+      border:1px solid rgba(56,182,255,0.15);
     }
     .progress-bar-outer.visible { display:block; }
     .progress-bar-inner {
@@ -200,20 +207,20 @@
       background:linear-gradient(90deg,var(--accent),var(--accent-strong));
       border-radius:999px;
       transition:width 0.25s ease;
-      box-shadow:0 0 10px rgba(26,255,140,0.4);
+      box-shadow:0 0 10px rgba(31,157,255,0.4);
     }
 
     /* Info box */
     .info-box {
-      background:rgba(102,242,163,0.05);
-      border:1px solid rgba(102,242,163,0.18);
+      background:rgba(56,182,255,0.05);
+      border:1px solid rgba(56,182,255,0.18);
       border-radius:var(--radius-sm);
       padding:14px 16px;
       font-size:13px; color:var(--muted); line-height:1.7;
       margin-top:18px;
     }
     .info-box strong { color:var(--accent); }
-    .info-note { color:rgba(136,183,155,0.65); font-size:12px; }
+    .info-note { color:rgba(127,163,221,0.65); font-size:12px; }
 
     /* previewHost: 画面外に配置してDOMレンダリングのみ行う */
     #previewHost {
@@ -238,8 +245,8 @@
 <main class="app-shell">
   <header class="hero">
     <div class="hero-line"></div>
-    <p class="eyebrow">TOA HEAVY INDUSTRIES / SECTION-9 / MATRIX NODE</p>
-    <h1>▌ 受講証ジェネレーター ▌</h1>
+    <p class="eyebrow">PUBLIC SAFETY BUREAU · 公安局 — SECTION-9 / LICENSE NODE</p>
+    <h1><span class="sb-dot"></span>▌ SIBYL SYSTEM // LICENSE 管制 ▌</h1>
     <p class="subtitle">
       DOCXテンプレートの置換キーワードをCSV/Excelの氏名データで差し替え、<br>
       PDF または Word（.docx）形式で一括ZIP出力します。外部サーバー不使用。

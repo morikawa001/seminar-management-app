@@ -3,25 +3,25 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>Matrix Shell QR Generator</title>
+  <title>▌ SIBYL SYSTEM // QR ENCODER 管制 ▌</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- QRCode.js ライブラリ -->
   <script src="https://davidshimjs.github.io/qrcodejs/qrcode.min.js"></script>
 <script src="js/matrix-rain.js"></script>
   <style>
     :root {
-      --bg: #020607;
-      --bg-panel: rgba(5, 15, 12, 0.96);
-      --bg-panel-soft: rgba(8, 22, 16, 0.98);
-      --border-soft: rgba(76, 255, 145, 0.28);
-      --border-strong: rgba(134, 255, 196, 0.65);
-      --text: #8dffb5;
-      --text-dim: #3ea869;
-      --text-faint: #286f47;
-      --accent: #d7ff71;
-      --accent-strong: #f2ff9f;
-      --error: #ff7070;
-      --shadow-soft: 0 0 22px rgba(34, 255, 142, 0.25);
+      --bg: #030509;
+      --bg-panel: rgba(5, 10, 20, 0.96);
+      --bg-panel-soft: rgba(8, 16, 30, 0.98);
+      --border-soft: rgba(56, 182, 255, 0.28);
+      --border-strong: rgba(92, 225, 255, 0.65);
+      --text: #a9c8ff;
+      --text-dim: #405f94;
+      --text-faint: #1a3050;
+      --accent: #38b6ff;
+      --accent-strong: #9fdcff;
+      --error: #ff5c7a;
+      --shadow-soft: 0 0 22px rgba(56, 182, 255, 0.25);
       --radius: 18px;
       --space-3: 0.75rem;
       --space-4: 1rem;
@@ -41,9 +41,9 @@
 
     body {
       background:
-        radial-gradient(circle at top left, rgba(46,255,140,0.18), transparent 45%),
-        radial-gradient(circle at bottom right, rgba(18,140,86,0.22), transparent 45%),
-        linear-gradient(180deg, #010404 0%, #020805 45%, #020403 100%);
+        radial-gradient(circle at top left, rgba(56,182,255,0.18), transparent 45%),
+        radial-gradient(circle at bottom right, rgba(31,157,255,0.22), transparent 45%),
+        linear-gradient(180deg, #010206 0%, #02050a 45%, #02040a 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -70,7 +70,7 @@
       background:
         repeating-linear-gradient(
           180deg,
-          rgba(110,255,170,0.07) 0 1px,
+          rgba(56,182,255,0.07) 0 1px,
           transparent 1px 4px
         ),
         linear-gradient(
@@ -94,8 +94,8 @@
       border: 1px solid var(--border-soft);
       box-shadow: var(--shadow-soft), 0 24px 48px rgba(0,0,0,0.7);
       background:
-        linear-gradient(145deg, rgba(1,10,6,0.96), rgba(4,18,10,0.98)),
-        radial-gradient(circle at top right, rgba(100,255,180,0.08), transparent 55%);
+        linear-gradient(145deg, rgba(2,5,12,0.96), rgba(6,12,24,0.98)),
+        radial-gradient(circle at top right, rgba(56,182,255,0.08), transparent 55%);
       padding: var(--space-5) var(--space-5) var(--space-4);
       overflow: hidden;
     }
@@ -106,8 +106,8 @@
       inset: 0;
       pointer-events: none;
       background:
-        linear-gradient(180deg, rgba(170,255,210,0.08), transparent 20%, transparent 80%, rgba(74,255,160,0.05)),
-        repeating-linear-gradient(90deg, rgba(46,255,140,0.06) 0 1px, transparent 1px 3px);
+        linear-gradient(180deg, rgba(159,220,255,0.08), transparent 20%, transparent 80%, rgba(56,182,255,0.05)),
+        repeating-linear-gradient(90deg, rgba(56,182,255,0.06) 0 1px, transparent 1px 3px);
       mix-blend-mode: color-dodge;
       opacity: 0.45;
     }
@@ -131,7 +131,21 @@
       letter-spacing: 0.22em;
       text-transform: uppercase;
       color: var(--accent-strong);
+      display: flex;
+      align-items: center;
+      gap: 9px;
     }
+
+    .sb-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      animation: sibyl-pulse 1.6s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    @keyframes sibyl-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.75)} }
 
     .subtitle {
       margin: 4px 0 0;
@@ -143,12 +157,12 @@
       z-index: 1;
       padding: 4px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(123,255,183,0.55);
+      border: 1px solid rgba(56,182,255,0.55);
       color: var(--accent);
       font-size: 0.7rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      background: radial-gradient(circle, rgba(104,255,170,0.18), rgba(7,22,14,0.96));
+      background: radial-gradient(circle, rgba(56,182,255,0.18), rgba(5,10,20,0.96));
     }
 
     .grid {
@@ -181,8 +195,8 @@
       inset: 0;
       pointer-events: none;
       background:
-        linear-gradient(180deg, rgba(125,255,195,0.12), transparent 18%, transparent 82%, rgba(92,255,170,0.08)),
-        radial-gradient(circle at top left, rgba(106,255,186,0.18), transparent 55%);
+        linear-gradient(180deg, rgba(56,182,255,0.12), transparent 18%, transparent 82%, rgba(31,157,255,0.08)),
+        radial-gradient(circle at top left, rgba(56,182,255,0.18), transparent 55%);
       mix-blend-mode: screen;
       opacity: 0.55;
     }
@@ -214,15 +228,15 @@
       padding: 0.7rem 0.8rem;
       border-radius: 10px;
       border: 1px solid var(--border-soft);
-      background: rgba(3,12,8,0.98);
+      background: rgba(2,5,12,0.98);
       color: var(--text);
       font-size: 0.9rem;
       outline: none;
-      box-shadow: inset 0 0 8px rgba(13,60,33,0.8);
+      box-shadow: inset 0 0 8px rgba(10,26,52,0.8);
     }
 
     input[type="text"]::placeholder {
-      color: #285540;
+      color: #1a3050;
     }
 
     button {
@@ -234,11 +248,11 @@
       letter-spacing: 0.16em;
       text-transform: uppercase;
       cursor: pointer;
-      background: radial-gradient(circle at top, #baff86, #69ff8e);
-      color: #021307;
+      background: radial-gradient(circle at top, #9fdcff, #38b6ff);
+      color: #02101c;
       transition: transform 0.07s ease, box-shadow 0.07s ease, filter 0.07s ease;
       white-space: nowrap;
-      box-shadow: 0 0 12px rgba(102,255,155,0.6);
+      box-shadow: 0 0 12px rgba(56,182,255,0.6);
     }
 
     button:hover {
@@ -248,7 +262,7 @@
 
     button:active {
       transform: translateY(0);
-      box-shadow: 0 0 4px rgba(79,255,142,0.4);
+      box-shadow: 0 0 4px rgba(56,182,255,0.4);
     }
 
     .options-row {
@@ -271,7 +285,7 @@
       padding: 0.35rem 0.6rem;
       border-radius: 999px;
       border: 1px solid var(--border-soft);
-      background: rgba(3,12,8,0.96);
+      background: rgba(2,5,12,0.96);
       color: var(--text);
       font-size: 0.78rem;
       outline: none;
@@ -288,7 +302,7 @@
     .radio-label input {
       width: auto;
       margin: 0;
-      accent-color: #8dffb5;
+      accent-color: #38b6ff;
     }
 
     .error {
@@ -356,9 +370,9 @@
     }
 
     .footer-row button.secondary {
-      background: radial-gradient(circle at top, #143829, #071812);
+      background: radial-gradient(circle at top, #0a1a33, #050a13);
       color: var(--accent);
-      box-shadow: 0 0 10px rgba(40,150,90,0.7);
+      box-shadow: 0 0 10px rgba(31,157,255,0.7);
     }
 
     .footer-row button.secondary:hover {
@@ -384,8 +398,8 @@
   <div class="app">
     <div class="header">
       <div class="title-block">
-        <h1 class="title">SHELL / QR ENCODER</h1>
-        <p class="subtitle">matrix://ghost-shell › URL を高可読QRコードに変換します。</p>
+        <h1 class="title"><span class="sb-dot"></span>▌ SIBYL SYSTEM // QR ENCODER 管制 ▌</h1>
+        <p class="subtitle">PUBLIC SAFETY BUREAU · 公安局 — URL を高可読QRコードに変換します。</p>
       </div>
       <div class="status-chip">ONLINE · READY</div>
     </div>
