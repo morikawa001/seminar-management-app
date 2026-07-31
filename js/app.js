@@ -277,6 +277,7 @@ const els={
   recordSelect:document.getElementById('recordSelect'),
   openConfirmBtn:document.getElementById('openConfirmBtn'),
   appendBtn:document.getElementById('appendBtn'),
+  saveChangesBtn:document.getElementById('saveChangesBtn'),
   prefillBtn:document.getElementById('prefillBtn'),
   loadSelectedBtn:document.getElementById('loadSelectedBtn'),
   saveAndDownloadBtn:document.getElementById('saveAndDownloadBtn'),
@@ -409,7 +410,7 @@ document.getElementById('dummyDataBtn').addEventListener('click',loadDummyData);
 els.recordSelect.addEventListener('change',handleSelectRecord);
 els.loadSelectedBtn.addEventListener('click',loadSelectedIntoForm);
 els.prefillBtn.addEventListener('click',prefillFromLast);
-els.appendBtn.addEventListener('click',()=>{commitDraft();setTimeout(downloadCsv,100)});
+els.appendBtn.addEventListener('click',()=>{if(commitDraft())setTimeout(downloadCsv,100)});
 els.deleteEntryBtn.addEventListener('click',function(){
   const no=String(fields.no.value||'').trim();
   if(!no){setStatus('削除する No が指定されていません。先に No を選択してください。');return}
@@ -447,7 +448,7 @@ function quickOpenSelected(){
   const sec=document.getElementById('entryConsoleSection');
   if(sec)sec.scrollIntoView({behavior:'smooth',block:'start'});
 }
-els.saveAndDownloadBtn.addEventListener('click',()=>{commitDraft();setTimeout(downloadCsv,100)});
+els.saveAndDownloadBtn.addEventListener('click',()=>{if(commitDraft())setTimeout(downloadCsv,100)});
 fields.cohost.addEventListener('change',()=>{syncCohostFields();recalcDraft();});
 fields.subject.addEventListener('change',recalcDraft);
 
@@ -925,6 +926,8 @@ function createNewDatabase(){
   els.deleteEntryBtn.disabled=true;
   els.loadSelectedBtn.disabled=true;
   els.appendBtn.disabled=false;
+  if(els.saveChangesBtn)els.saveChangesBtn.disabled=false;
+  els.saveAndDownloadBtn.disabled=false;
   els.openConfirmBtn.disabled=false;
   els.miniDbState.textContent='新規DB作成済み';
   els.miniDbText.textContent='空マスターを初期化しました。1件目から登録できます。';
@@ -963,6 +966,8 @@ function loadCsv(e){
       selectedRow = null;
       els.recordSelect.value = '';
       els.appendBtn.disabled=false;
+      if(els.saveChangesBtn)els.saveChangesBtn.disabled=false;
+      els.saveAndDownloadBtn.disabled=false;
       els.openConfirmBtn.disabled=false;
       els.prefillBtn.disabled=dataRows.length===0;
       els.deleteEntryBtn.disabled=dataRows.length===0;
@@ -1374,9 +1379,9 @@ function buildRow(){
 }
 
 function commitDraft(){
-  if(!currentHeaders.length){setStatus('先にCSVを読み込むか、新規データベースを作成してください。');return}
+  if(!currentHeaders.length){setStatus('先にCSVを読み込むか、新規データベースを作成してください。');return false}
   const warns=validateDraft();
-  if(warns.length){renderConfirm(warns);setStatus(`保存前に修正が必要です: ${warns.join(' / ')}`);return}
+  if(warns.length){renderConfirm(warns);setStatus(`保存前に修正が必要です: ${warns.join(' / ')}`);return false}
   stagedRow=buildRow();
   const no=String(stagedRow[fullKeys.no]||'').trim();
   const rawIndex=getRawRowIndexByNo(no);
@@ -1415,8 +1420,12 @@ function commitDraft(){
       });
     }
   }
+  return true;
 }
-
+function saveChanges(){
+  return commitDraft();
+}
+window.saveChanges=saveChanges;
 function getRawRowIndexByNo(no){return rawRows.findIndex(r=>String(r?.[fullKeys.no]||'').trim()===String(no||'').trim())}
 function renderRecordOptions(){
   const options=['<option value="">Noを選択して表示</option>'].concat(dataRows.map(r=>`<option value="${esc(r[fullKeys.no]||'')}">No.${esc(r[fullKeys.no]||'')} / ${esc(r[fullKeys.date]||'-')} / ${esc(r[fullKeys.title]||'-')}</option>`));
@@ -2160,8 +2169,7 @@ const SPARE_BUTTONS = {
 
 function sidebarSaveAndDownload(){
   if(!currentHeaders.length){setStatus('先にCSVを読み込むか、新規データベースを作成してください。');return}
-  commitDraft();
-  setTimeout(downloadCsv,100);
+  if(commitDraft())setTimeout(downloadCsv,100);
 }
 window.sidebarSaveAndDownload=sidebarSaveAndDownload;
 
@@ -2986,6 +2994,8 @@ function onFirebaseLogin(user){
     els.prefillBtn.disabled = !dataRows.length;
     els.deleteEntryBtn.disabled = !dataRows.length;
     els.appendBtn.disabled = false;
+    if(els.saveChangesBtn) els.saveChangesBtn.disabled = false;
+    els.saveAndDownloadBtn.disabled = false;
     els.openConfirmBtn.disabled = false;
     els.miniDbState.textContent = 'DB接続済';
     els.miniDbText.textContent = dataRows.length ? dataRows.length + '件のデータを読み込みました。' : 'データベースに接続しました。新規登録から追加できます。';
@@ -3018,6 +3028,8 @@ function onFirebaseLogout(){
   els.prefillBtn.disabled = true;
   els.deleteEntryBtn.disabled = true;
   els.appendBtn.disabled = true;
+  if(els.saveChangesBtn) els.saveChangesBtn.disabled = true;
+  els.saveAndDownloadBtn.disabled = true;
   els.openConfirmBtn.disabled = true;
   renderTable();
   els.miniDbState.textContent = '未接続';
@@ -3089,6 +3101,8 @@ rawRows=[dummy1,dummy2,dummy3,dummy4].map(r=>normalizeRowShape(r));
   updateTrainingProgressFromRows(rawRows);
   renderMergeOptions();
   els.appendBtn.disabled=false;
+  if(els.saveChangesBtn)els.saveChangesBtn.disabled=false;
+  els.saveAndDownloadBtn.disabled=false;
   els.openConfirmBtn.disabled=false;
   els.prefillBtn.disabled=false;
   els.deleteEntryBtn.disabled=false;
