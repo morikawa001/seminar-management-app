@@ -92,6 +92,13 @@ QR_reader.html                # QRコード出席管理（別ページ、Firebas
 
 ## 変更履歴
 
+### 2026-08-01: index.html に QR 保管場所データ（qr_storage_loc）を反映
+- ✅ `js/app.js` の `DEFAULT_HEADERS` と `fullKeys` に `qr_storage_loc`（`qrStorageLoc`）を追加
+- ✅ `ensureAdditionalHeaders` に `qr_storage_loc` / `qr_saved_k1/k2/k3` を追加（CSV読込時でもQR系カラムを保持）
+- ✅ `commitDraft` の FORM_KEYS から `qrStorageLoc` を除外し、フォーム保存時に保管場所を消さないよう修正
+- ✅ Master Table に「保管場所」列を追加（index.html の thead ＋ `renderTable()` のセル、colspan 12→13）
+- ✅ これにより QR_reader.html で保存した保管場所が、ログイン時・保存（CSV+DB）・CSVダウンロードに反映される
+
 ### 2026-08-01: QR_reader.html のモードボタン縦配置と保管場所の即時DB保存
 - ✅ モード切替ボタンを縦積み配置に変更（上: 📦 保管場所QR / 下: 📄 ファイルQR）し、全幅・同高でバランス調整
 - ✅ 保管場所QRスキャン時に読み込み済みの起案レコードがあれば、`qr_storage_loc` を即座に Firestore へ保存（`updateStorageLocation()` / `saveLocation()`）

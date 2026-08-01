@@ -180,7 +180,8 @@ const DEFAULT_HEADERS=[
   '受講証修了証メール交付_CHECK',
   'qr_saved_k1',
   'qr_saved_k2',
-  'qr_saved_k3'
+  'qr_saved_k3',
+  'qr_storage_loc'
 ];
 
 const fullKeys={
@@ -267,7 +268,8 @@ const fullKeys={
   task33:'受講証修了証メール交付_CHECK',
   qrK1Saved:'qr_saved_k1',
   qrK2Saved:'qr_saved_k2',
-  qrK3Saved:'qr_saved_k3'
+  qrK3Saved:'qr_saved_k3',
+  qrStorageLoc:'qr_storage_loc'
 };
 
 const els={
@@ -1025,7 +1027,8 @@ function ensureAdditionalHeaders(headers){
     'STATUS_K1','STATUS_HP','STATUS_K2','STATUS_K3',
     'DONEAT_K1','DONEAT_HP','DONEAT_K2','DONEAT_K3',
     'UPDATEDAT_K1','UPDATEDAT_HP','UPDATEDAT_K2','UPDATEDAT_K3',
-    'HISTORY_K1','HISTORY_HP','HISTORY_K2','HISTORY_K3'
+    'HISTORY_K1','HISTORY_HP','HISTORY_K2','HISTORY_K3',
+    fullKeys.qrK1Saved, fullKeys.qrK2Saved, fullKeys.qrK3Saved, fullKeys.qrStorageLoc
   ];
 
   const set = new Set((headers || []).map(h => String(h || '').trim()).filter(Boolean));
@@ -1408,7 +1411,7 @@ function commitDraft(){
     var nrUp=normalizeRowShape(stagedRow);
     if(oldRow.__docId)nrUp.__docId=oldRow.__docId;
     var FORM_KEYS={};
-    Object.keys(fullKeys).forEach(function(k){if(k!=='qrK1Saved'&&k!=='qrK2Saved'&&k!=='qrK3Saved')FORM_KEYS[fullKeys[k]]=1});
+    Object.keys(fullKeys).forEach(function(k){if(k!=='qrK1Saved'&&k!=='qrK2Saved'&&k!=='qrK3Saved'&&k!=='qrStorageLoc')FORM_KEYS[fullKeys[k]]=1});
     ['STATUS_K1','STATUS_HP','STATUS_K2','STATUS_K3'].forEach(function(k){FORM_KEYS[k]=1});
     currentHeaders.forEach(function(h){
       if(!FORM_KEYS[h]&&String(oldRow[h]??'').trim()!=='')nrUp[h]=oldRow[h];
@@ -1479,7 +1482,7 @@ function renderTable(){
   const tbody=els.tableList;
   const cnt=document.getElementById('masterCount');
   if(!currentHeaders.length||!dataRows.length){
-    tbody.innerHTML='<tr><td colspan="12" style="padding:2rem;text-align:center;color:var(--muted)">CSVを読み込むか、新規データベースを作成してください。</td></tr>';
+    tbody.innerHTML='<tr><td colspan="13" style="padding:2rem;text-align:center;color:var(--muted)">CSVを読み込むか、新規データベースを作成してください。</td></tr>';
     if(cnt)cnt.textContent='';
     if(typeof PriorityEngine!=='undefined'&&PriorityEngine.decorateMasterTableWithPriority)PriorityEngine.decorateMasterTableWithPriority();
     return;
@@ -1525,6 +1528,7 @@ function renderTable(){
       <td>${hp?`<div class="dtg">🌐${esc(hp)}</div>`:''}</td>
       <td>${k2?`<div class="dtg">📄${esc(k2)}</div>`:''}</td>
       <td>${k3?`<div class="dtg">🏅${esc(k3)}</div>`:''}</td>
+      <td class="tc-site" style="color:var(--muted);font-size:.68rem">${esc(r[fullKeys.qrStorageLoc]||'')||'—'}</td>
       <td style="white-space:nowrap">
         ${moveBtns}
         <button class="btn small" style="min-height:26px;padding:0 8px;font-size:.65rem;border-color:var(--danger);color:var(--danger)" onclick="deleteRecord('${esc(no)}');event.stopPropagation()">削除</button>
