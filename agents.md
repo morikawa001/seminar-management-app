@@ -9,16 +9,16 @@
 
 ## ファイル構成
 ```
-index.html                    # HTML構造 + ログイン画面（1046行）
-css/theme-base.css            # CSS変数定義・テーマ切替・ベーススタイル（49行）
-css/styles.css                # 全コンポーネントスタイル（1623行）
+index.html                    # HTML構造 + ログイン画面（1093行）
+css/theme-base.css            # CSS変数定義・テーマ切替・ベーススタイル（53行）
+css/styles.css                # 全コンポーネントスタイル（1711行）
 js/theme-toggle.js            # SharedTheme オブジェクト（IIFE, 19行）
-js/firebase-config.js         # Firebase Auth + Firestore CRUD（IIFE, 116行）
-js/app.js                     # 全アプリケーションロジック（2963行, 最大ファイル）
+js/firebase-config.js         # Firebase Auth + Firestore CRUD（IIFE, 117行）
+js/app.js                     # 全アプリケーションロジック（3219行, 最大ファイル）
 js/csv-utils.js               # CSV パース・エクスポート（IIFE, 92行）
 js/name-lists.js              # 名字辞書
 js/matrix-rain.js             # 背景マトリックスレインエフェクト
-QR_reader.html                # QRコード出席管理（別ページ、Firebase ES Module, 653行）
+QR_reader.html                # QRファイル管理（別ページ、Firebase ES Module, 773行、ファイルQR/保管場所QR 2モード対応）
 ```
 **読み込み順（重要）**: theme-base.css → styles.css → 外部CDN → theme-toggle.js → firebase-config.js → app.js → csv-utils.js → name-lists.js → matrix-rain.js
 
