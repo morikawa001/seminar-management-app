@@ -2404,7 +2404,7 @@ function renderTodayCommand(){
 
     const btns=(cmd.buttons||[]).map(b=>{
       if(b.label==='確認する'&&b.no){
-        return `<a class="tc-btn" href="#taskChecklistPanel" onclick="loadRowAndOpenTaskChecklist('${esc(b.no)}');return false;">${esc(b.label)}</a>`;
+        return `<a class="tc-btn" href="#taskChecklistPanel" onclick="loadRowAndOpenTaskChecklist('${esc(b.no)}','${esc(cmd.csvKey||'')}');return false;">${esc(b.label)}</a>`;
       }
       if(b.href){
         const secId = b.href.replace('#','');
@@ -2804,10 +2804,24 @@ function selectRecordByNo(no){
 }
 window.selectRecordByNo=selectRecordByNo;
 
-function loadRowAndOpenTaskChecklist(no){
+function openTaskBody(){
+  const body=document.getElementById('taskBody');
+  const btn=document.getElementById('taskToggleBtn');
+  const lbl=document.getElementById('taskToggleLabel');
+  if(body) body.classList.remove('collapsed');
+  if(btn) btn.classList.add('open');
+  if(lbl) lbl.textContent='閉じる';
+}
+
+function loadRowAndOpenTaskChecklist(no, taskKey){
   if(typeof selectRecordByNo==='function') selectRecordByNo(no);
   if(typeof loadSelectedIntoForm==='function') loadSelectedIntoForm();
-  scrollToSection('taskChecklistPanel');
+  openTaskBody();
+  let target='taskChecklistPanel';
+  if(taskKey && String(taskKey).indexOf('task')===0 && document.getElementById('taskcard_'+taskKey)){
+    target='taskcard_'+taskKey;
+  }
+  setTimeout(function(){ scrollToSection(target); }, 420);
 }
 window.loadRowAndOpenTaskChecklist=loadRowAndOpenTaskChecklist;
 
