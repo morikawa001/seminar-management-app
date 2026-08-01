@@ -80,6 +80,11 @@ QR_reader.html                # QRコード出席管理（別ページ、Firebas
 
 ## 変更履歴
 
+### 2026-08-01: live_session.html の選択セレクトで重複行を除外し No 昇順ソート
+- ✅ `buildSelect()` を修正：`起案行No` が同一の重複行は初回のみ表示（`Set` で重複除外）、No なし行は末尾に配置
+- ✅ 表示順を `起案行No` 昇順ソートに変更（No が 1 から順に並ぶ）
+- ✅ `buildSelect()` が表示対象の行インデックス配列を返すようにし、CSV・Firebase DB 双方の読み込み後は先頭（No最小）の行を自動ロード
+
 ### 2026-08-01: attend.html / kenshukai-notion-csv-generator.html の背景を index.html と同一演出に変更
 - ✅ 両ファイルの文字マトリックス雨（`#matrix-bg` / `#bgCanvas`）を廃止し、index.html と同じ「コード列が上から下に流れる」背景（`#bgCodeCanvas`）に置換
 - ✅ CSS・canvas ID・レンダリングスクリプト（HTMLソース行を縦カラムで流す＋グリッド＋ノード）を license.html と同様に index.html と完全一致させた

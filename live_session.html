@@ -1094,18 +1094,34 @@
   function buildSelect(){
     const sel=document.getElementById('ssel');
     sel.innerHTML='<option value="">── 研修会を選択してください ──</option>';
+    const seen=new Set();
+    const idxs=[];
     for(let i=1;i<ST.rows.length;i++){
-      const row=toObj(ST.headers,ST.rows[i]);
+      const no=String(toObj(ST.headers,ST.rows[i])[LBL.no]||'').trim();
+      if(!no){ idxs.push({i,no}); continue; }
+      if(seen.has(no)) continue;
+      seen.add(no);
+      idxs.push({i,no});
+    }
+    idxs.sort(function(a,b){
+      if(a.no===''&&b.no==='')return a.i-b.i;
+      if(a.no==='')return 1;
+      if(b.no==='')return -1;
+      return (Number(a.no)||0)-(Number(b.no)||0);
+    });
+    idxs.forEach(function(e){
+      const row=toObj(ST.headers,ST.rows[e.i]);
       const no=String(row[LBL.no]||'');
       const date=String(row[LBL.date]||'');
       const title=String(row[LBL.title]||'').slice(0,30);
       const lbl=[no&&'No.'+no,date,title].filter(Boolean).join(' / ');
       const opt=document.createElement('option');
-      opt.value=String(i);
-      opt.textContent=lbl||((i+1)+'行目');
+      opt.value=String(e.i);
+      opt.textContent=lbl||((e.i+1)+'行目');
       sel.appendChild(opt);
-    }
+    });
     sel.disabled=false;
+    return idxs.map(e=>e.i);
   }
 
   document.getElementById('dataFile').addEventListener('change', async function(e){
@@ -1132,8 +1148,8 @@
       if(rows.length<2)throw new Error('データ不足（ヘッダー行＋データ行が必要）');
       ST.rows=rows;
       ST.headers=rows[0].map(norm);
-      buildSelect();
-      loadRow(1);
+      const idxs=buildSelect();
+      loadRow(idxs.length?idxs[0]:1);
     }catch(err){
       document.getElementById('olog').textContent='> ERROR: '+err.message;
       document.getElementById('tlst').textContent='読込失敗';
@@ -1174,8 +1190,8 @@
         return LIVE_HEADERS.map(function(h){ return r[h] || ''; });
       }));
       document.getElementById('sbfile').textContent = 'SOURCE: Firebase DB';
-      buildSelect();
-      loadRow(1);
+      const idxs=buildSelect();
+      loadRow(idxs.length?idxs[0]:1);
       document.getElementById('olog').textContent = '> DBから' + rows.length + '件のデータを読み込みました。';
     });
   };
