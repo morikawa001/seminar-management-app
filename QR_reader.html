@@ -49,11 +49,12 @@
         #qr-reader button:not(.btn){ background:var(--primary,#007bff); color:#fff; border:none; border-radius:10px; padding:12px 20px; font-size:15px; }
         .scanner-controls { margin-top: 12px; }
 
-        .mode-selector { display: flex; gap: 8px; }
+        .mode-selector { display: flex; flex-direction: column; gap: 8px; }
         .mode-chip {
-            flex: 1; text-align: center; padding: 12px 8px; border-radius: 10px;
+            width: 100%; text-align: center; padding: 14px 8px; border-radius: 10px;
             border: 2px solid #1f3f6e; cursor: pointer;
-            font-size: 14px; font-weight: bold; color: #7ba3dd;
+            font-size: 15px; font-weight: bold; color: #7ba3dd;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
         }
         .mode-chip.active { border-color: #38b6ff; color: #d7e7ff; background: rgba(56,182,255,0.08); }
         .mode-chip input { display: none; }
@@ -150,11 +151,11 @@
             <div style="padding:14px;">
                 <div id="qr-reader"></div>
                 <div class="mode-selector" style="margin-top:12px;">
-                    <label class="mode-chip active" id="mode-chip-file" onclick="appLayer.setScanMode('file')">
-                        <input type="radio" name="scanMode" value="file" checked> 📄 ファイルQR
-                    </label>
                     <label class="mode-chip" id="mode-chip-loc" onclick="appLayer.setScanMode('loc')">
                         <input type="radio" name="scanMode" value="loc"> 📦 保管場所QR
+                    </label>
+                    <label class="mode-chip active" id="mode-chip-file" onclick="appLayer.setScanMode('file')">
+                        <input type="radio" name="scanMode" value="file" checked> 📄 ファイルQR
                     </label>
                 </div>
                 <div style="display:flex;gap:10px;">
@@ -308,6 +309,13 @@
                 await updateDoc(doc(this.db, "seminars", docId), payload);
             }
 
+            // 保管場所のみ保存（保存ボタン押下を待たずに即時反映）
+            async updateStorageLocation(docId, locStr) {
+                await updateDoc(doc(this.db, "seminars", docId), {
+                    qr_storage_loc: locStr
+                });
+            }
+
             async getAllScanned(proposalNos, userId) {
                 if (proposalNos.length === 0) return [];
                 const q = query(
@@ -345,6 +353,11 @@
                 const dateStr = `${yyyy}/${mm}/${dd}`;
                 await this.db.updateSaveDateWithLocation(docId, dateStr, locStr || "", "qr_saved_" + field.toLowerCase());
                 return dateStr;
+            }
+
+            // 保管場所をデータベースに保存
+            async saveLocation(docId, locStr) {
+                await this.db.updateStorageLocation(docId, locStr);
             }
 
             formatDate(dateStr) {
@@ -439,8 +452,20 @@
                 }
                 if (this.scanMode === "loc") {
                     this.currentLoc = text;
-                    this.updateLocationDisplay();
-                    this.showStatus("scan-status", `保管場所を記録しました: ${this.currentLoc}`, "status-ok");
+                    if (this.currentDoc) {
+                        try {
+                            await this.qrService.saveLocation(this.currentDoc.id, text);
+                            this.currentDoc.data.qr_storage_loc = text;
+                            this.updateLocationDisplay();
+                            this.showStatus("scan-status", `保管場所を記録しました（DBに保存済み）: ${this.currentLoc}`, "status-ok");
+                        } catch (err) {
+                            this.updateLocationDisplay();
+                            this.showStatus("scan-status", "保管場所を記録しました（DB保存エラー: " + err.message + "）", "status-err");
+                        }
+                    } else {
+                        this.updateLocationDisplay();
+                        this.showStatus("scan-status", `保管場所を記録しました: ${this.currentLoc}（保存ボタン押下時にDBへ保存されます）`, "status-ok");
+                    }
                     return;
                 }
                 const proposalNo = text;
