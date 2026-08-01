@@ -2448,7 +2448,7 @@ function buildExceptions(rows){
     const title=row[fullKeys.title]||'（無題）';
     const days=calcDaysUntilEvent(row);
 
-    const push=(sev,label,detail)=>exceptions.push({no,title,sev,label,detail});
+    const push=(sev,label,detail,taskKey)=>exceptions.push({no,title,sev,label,detail,taskKey});
 
     // 必須フィールド欠落
     if(!String(row[fullKeys.title]||'').trim()) push('critical','タイトル未入力','テーマ(標題)_TITLEが空です');
@@ -2474,12 +2474,12 @@ function buildExceptions(rows){
 
     // 起案関連チェック
     if(days!==null&&days<=-1){ // 開催済
-      if(!isCheckedValue(row[fullKeys.checkK3])) push('warning','起案3未完','起案3チェック_CHECK_K3が未チェックです');
-      if(!isCheckedValue(row[fullKeys.task29])) push('info','講師へお礼未完','講師へお礼連絡_CHECKが未チェックです');
-      if(!isCheckedValue(row[fullKeys.task33])) push('info','受講証交付未完','受講証修了証メール交付_CHECKが未チェックです');
+      if(!isCheckedValue(row[fullKeys.checkK3])) push('warning','起案3未完','起案3チェック_CHECK_K3が未チェックです','task28');
+      if(!isCheckedValue(row[fullKeys.task29])) push('info','講師へお礼未完','講師へお礼連絡_CHECKが未チェックです','task29');
+      if(!isCheckedValue(row[fullKeys.task33])) push('info','受講証交付未完','受講証修了証メール交付_CHECKが未チェックです','task33');
     }
     if(days!==null&&days<=0&&days>=-1){
-      if(!isCheckedValue(row[fullKeys.checkK1])) push('warning','起案1未チェック','起案1チェック_CHECK_K1が未チェックです');
+      if(!isCheckedValue(row[fullKeys.checkK1])) push('warning','起案1未チェック','起案1チェック_CHECK_K1が未チェックです','task05');
     }
   });
 
@@ -2506,7 +2506,7 @@ function renderExceptionQueue(){
     return `<div class="eq-item sev-${ex.sev}">
       <div><span class="eq-tag ${tagClass}">${tagLabel}</span><div class="eq-no" style="margin-top:4px">No.${esc(ex.no)}</div></div>
       <div class="eq-item-body"><strong>${esc(ex.label)}</strong><p>${esc(ex.title)} ─ ${esc(ex.detail)}</p></div>
-      <div><a class="btn small" href="#taskChecklistPanel" onclick="loadRowAndOpenTaskChecklist('${esc(ex.no)}');return false;">確認する</a></div>
+      <div><a class="btn small" href="#taskChecklistPanel" onclick="loadRowAndOpenTaskChecklist('${esc(ex.no)}','${esc(ex.taskKey||'')}');return false;">確認する</a></div>
     </div>`;
   }).join('');
 }
