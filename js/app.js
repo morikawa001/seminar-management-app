@@ -464,6 +464,7 @@ fields.subject.addEventListener('change',recalcDraft);
 [els.ckK1,els.ckHp,els.ckK2,els.ckK3].forEach(el=>el.addEventListener('change',recalcDraft));
 fields.title.addEventListener('input',function(){if(selectedRow){selectedRow[fullKeys.title]=this.value;renderRecordOptions()}});
 fields.no.addEventListener('input',function(){els.deleteEntryBtn.disabled=!dataRows.length||!String(this.value||'').trim()});
+fields.zoomUrl.addEventListener('input',updateQRCode);
 
 function getHead1ValueByCohost(cohostValue){
   return String(cohostValue||'').trim()===COHOST_OPTION_TEAM ? HEAD_TEXT_COHOST : HEAD_TEXT_DEFAULT;
@@ -650,9 +651,10 @@ function buildTemplateData(row){
   map[fullKeys.closing1]=String(row?.[fullKeys.closing1] ?? '');
   map['進行表クロージング（選択）_CLOSING_1']=String(row?.[fullKeys.closing1] ?? '');
 
-  const qrNo=String(row?.[fullKeys.no]??'');
-  map['QR']=qrNo;
-  map['QR_URL']=qrNo;
+  const qrZoom=String(row?.[fullKeys.zoomUrl]??'').trim();
+  const validZoom=!!qrZoom&&qrZoom!=='https://zoom.us/';
+  map['QR']=validZoom?qrZoom:'';
+  map['QR_URL']=validZoom?qrZoom:'';
   map['QR_IMAGE']='';
 
   map[fullKeys.lectureStart]=String(row?.[fullKeys.lectureStart] ?? '');
@@ -757,7 +759,9 @@ async function mergeSingleTemplate(file,row){
   var hasQR=false,qrImgXml=null;
   targets.forEach(function(path){if(zip.file(path)){var t=zip.file(path).asText();if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;}});
   if(hasQR){
-    var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),300);
+    var qrZoom=String(row?.[fullKeys.zoomUrl]??'').trim();
+    var validZoom=!!qrZoom&&qrZoom!=='https://zoom.us/';
+    var qrBlob=validZoom?await generateQRBlob(qrZoom,300):null;
     if(qrBlob){
       var ext0=(String(file.name).split('.').pop()||'').toLowerCase();
       qrImgXml=await embedQRImageInZip(zip,ext0,qrBlob);
@@ -829,7 +833,9 @@ async function mergeAllTemplatesZip(){
         var hasQR=false,qrImgXml=null;
         targets.forEach(function(path){if(pzip.file(path)){var t=pzip.file(path).asText();if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;}});
         if(hasQR){
-          var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),300);
+          var qrZoom=String(row?.[fullKeys.zoomUrl]??'').trim();
+          var validZoom=!!qrZoom&&qrZoom!=='https://zoom.us/';
+          var qrBlob=validZoom?await generateQRBlob(qrZoom,300):null;
           if(qrBlob){
             var ext0=(String(file.name).split('.').pop()||'').toLowerCase();
             qrImgXml=await embedQRImageInZip(pzip,ext0,qrBlob);
@@ -1177,14 +1183,20 @@ function handleSelectRecord(){
 }
 
 function updateQRCode(){
-  const no=String(fields.no.value||'').trim();
+  const zoom=String(fields.zoomUrl.value||'').trim();
+  const validZoom=!!zoom&&zoom!=='https://zoom.us/';
   const container=document.getElementById('qrcode');
   const urlDisplay=document.getElementById('qrUrlDisplay');
   const dlBtn=document.getElementById('qrDownloadBtn');
-  if(!no||!container){if(container)container.innerHTML='<div style="width:160px;height:160px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">Noを選択</div>';if(urlDisplay)urlDisplay.textContent='';if(dlBtn)dlBtn.style.display='none';return}
+  if(!validZoom||!container){
+    if(container)container.innerHTML='<div style="width:160px;height:160px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">Zoom URL未設定</div>';
+    if(urlDisplay)urlDisplay.textContent='';
+    if(dlBtn)dlBtn.style.display='none';
+    return
+  }
   container.innerHTML='';
-  try{new QRCode(container,{text:no,width:160,height:160,correctLevel:QRCode.CorrectLevel.M})}catch(e){container.textContent='QR生成エラー'}
-  if(urlDisplay)urlDisplay.textContent='No: '+no;
+  try{new QRCode(container,{text:zoom,width:160,height:160,correctLevel:QRCode.CorrectLevel.M})}catch(e){container.textContent='QR生成エラー'}
+  if(urlDisplay)urlDisplay.textContent=zoom;
   if(dlBtn)dlBtn.style.display='inline-block';
 }
 function downloadQR(){
@@ -1192,7 +1204,7 @@ function downloadQR(){
   if(!canvas)return;
   const a=document.createElement('a');
   a.href=canvas.toDataURL('image/png');
-  a.download='QR_No'+String(fields.no.value||'attendance')+'.png';
+  a.download='QR_No'+String(fields.no.value||'zoom')+'_Zoom.png';
   a.click();
 }
 
