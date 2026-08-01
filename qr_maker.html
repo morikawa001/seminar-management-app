@@ -399,7 +399,7 @@
     <div class="header">
       <div class="title-block">
         <h1 class="title"><span class="sb-dot"></span>▌ SIBYL SYSTEM // QR ENCODER 管制 ▌</h1>
-        <p class="subtitle">PUBLIC SAFETY BUREAU · 公安局 — URL を高可読QRコードに変換します。</p>
+        <p class="subtitle">PUBLIC SAFETY BUREAU · 公安局 — URL や文字データを高可読QRコードに変換します。</p>
       </div>
       <div class="status-chip">ONLINE · READY</div>
     </div>
@@ -408,12 +408,12 @@
       <!-- 左：入力・オプション -->
       <section class="panel">
         <div class="panel-header">INPUT / PARAMETERS</div>
-        <label for="urlInput">TARGET URL</label>
+        <label for="urlInput">TARGET URL / TEXT</label>
         <div class="row">
           <input
             type="text"
             id="urlInput"
-            placeholder="例: https://example.com"
+            placeholder="例: https://example.com ／ 管理棟４階 書庫A-1"
             autocomplete="off"
           />
           <button id="generateBtn">GENERATE</button>
@@ -467,21 +467,14 @@
   <script>
     let qrcodeInstance = null;
 
-    function ensureProtocol(url) {
-      if (!url) return "";
-      const trimmed = url.trim();
-      if (/^https?:\/\//i.test(trimmed)) return trimmed;
-      return "https://" + trimmed;
-    }
-
     function getDensitySize() {
-  const mode = document.getElementById("densitySelect").value;
-  if (mode === "fine") return 320;
-  if (mode === "normal") return 240;
-  if (mode === "rough") return 160;
-  if (mode === "very-rough") return 120;
-  return 240;
-}
+      const mode = document.getElementById("densitySelect").value;
+      if (mode === "fine") return 320;
+      if (mode === "normal") return 240;
+      if (mode === "rough") return 160;
+      if (mode === "very-rough") return 120;
+      return 240;
+    }
 
     function getBackgroundMode() {
       const radios = document.querySelectorAll('input[name="bgMode"]');
@@ -495,20 +488,12 @@
       const input = document.getElementById("urlInput");
       const errorMsg = document.getElementById("errorMsg");
       const wrapper = document.getElementById("qrWrapper");
-      const urlRaw = input.value;
-      const url = ensureProtocol(urlRaw);
+      const value = input.value.trim();
 
       errorMsg.textContent = "";
 
-      if (!urlRaw.trim()) {
-        errorMsg.textContent = "URLを入力してください。";
-        return;
-      }
-
-      try {
-        new URL(url);
-      } catch (e) {
-        errorMsg.textContent = "URLの形式が正しくありません。";
+      if (!value) {
+        errorMsg.textContent = "URLまたは文字データを入力してください。";
         return;
       }
 
@@ -530,7 +515,7 @@
       }
 
       qrcodeInstance = new QRCode(container, {
-        text: url,
+        text: value,
         width: size,
         height: size,
         colorDark: "#000000",
