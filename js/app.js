@@ -749,17 +749,32 @@ function embedQRImageInZip(zip,ext,blob,mediaName){
     reader.readAsArrayBuffer(blob);
   });
 }
+function placeholderRegex(str,global){
+  var chars=String(str).split('').map(function(ch){return ch.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}).join('(?:<[^>]+>)*');
+  return new RegExp(chars,global?'g':'');
+}
+function replaceMergeImage(xml,regex,imgXml,ext){
+  if(!imgXml) return String(xml).replace(regex,'');
+  if(ext==='docx') return String(xml).replace(regex,function(){return '</w:t></w:r>'+imgXml+'<w:r><w:t xml:space="preserve">'});
+  return String(xml).replace(regex,function(){return imgXml});
+}
 async function injectMergeZip(pzip,file,row){
   const data=buildTemplateData(row);
   const targets=targetXmlPathsForTemplate(pzip,file.name);
   if(!targets.length) throw new Error('差し込み対象XMLが見つかりません');
   var qrImgXml=null,qrZoomImgXml=null;
   var hasQR=false,hasZoomQR=false;
+  var qrImageDet=placeholderRegex('{{QR_IMAGE}}',false);
+  var qrDet=placeholderRegex('{{QR}}',false);
+  var qrZoomDet=placeholderRegex('{{QR_Zoom URL}}',false);
+  var qrImageRe=placeholderRegex('{{QR_IMAGE}}',true);
+  var qrRe=placeholderRegex('{{QR}}',true);
+  var qrZoomRe=placeholderRegex('{{QR_Zoom URL}}',true);
   targets.forEach(function(path){
     if(!pzip.file(path))return;
     var t=pzip.file(path).asText();
-    if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;
-    if(t.indexOf('{{QR_Zoom URL}}')>=0)hasZoomQR=true;
+    if(qrImageDet.test(t)||qrDet.test(t))hasQR=true;
+    if(qrZoomDet.test(t))hasZoomQR=true;
   });
   var ext0=(String(file.name).split('.').pop()||'').toLowerCase();
   if(hasQR){
@@ -775,8 +790,11 @@ async function injectMergeZip(pzip,file,row){
   targets.forEach(path=>{
     if(!pzip.file(path))return;
     let out=pzip.file(path).asText();
-    if(qrImgXml){out=out.split('{{QR_IMAGE}}').join(qrImgXml);out=out.split('{{QR}}').join('')}
-    out=out.split('{{QR_Zoom URL}}').join(qrZoomImgXml||'');
+    if(qrImgXml){
+      out=replaceMergeImage(out,qrImageRe,qrImgXml,ext0);
+      out=replaceMergeImage(out,qrRe,'',ext0);
+    }
+    out=replaceMergeImage(out,qrZoomRe,qrZoomImgXml||'',ext0);
     out=replacePlaceholdersInXml(out,data);
     pzip.file(path,out);
   });
