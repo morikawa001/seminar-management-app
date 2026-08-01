@@ -1519,20 +1519,6 @@ label[for="templateFiles"] {
   position:sticky;top:0;z-index:1;
 }
 .win-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.win-controls{display:flex;gap:3px}
-.win-btn{
-  display:flex;align-items:center;justify-content:center;
-  width:20px;height:16px;
-  font-size:.58rem;line-height:1;
-  color:var(--text-strong);
-  background:var(--panel3);
-  border:1px solid var(--line2);
-  border-radius:3px;
-  cursor:default;user-select:none;
-  transition:background 100ms ease,color 100ms ease;
-}
-.win-btn:hover{background:var(--line3)}
-.win-btn.win-close:hover{background:var(--danger);border-color:var(--danger);color:#fff}
 .v2-sidebar-lbl{
   padding:8px 12px 3px;
   font-size:.6rem;font-weight:800;letter-spacing:.12em;
