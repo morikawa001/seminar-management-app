@@ -566,107 +566,6 @@
 
     <div class="section-group-label">📦 補助ツール</div>
 
-    <!-- ── Email Tab ── -->
-  <!-- ===== ROW 6: Mail Template (全幅) ===== -->
-  <section class="panel section-collapsible" id="mailTemplateSection" data-collapsed="true">
-    <div class="corner-label">Mail Template</div>
-    <div class="panel-head">
-      <div>
-        <h2>Mail Template</h2>
-        <p>研修会レコードを選択し、用途タブを選ぶとメール文面を自動生成します。</p>
-      </div>
-      <div class="panel-nav-actions">
-        <a class="btn small manual-btn" href="#exceptionQueueSection" onclick="scrollToSection('exceptionQueueSection');return false;">Exception Queue</a>
-        <a class="btn small manual-btn" href="#todayCommandSection" onclick="scrollToSection('todayCommandSection');return false;">Today Command</a>
-        <a class="btn small manual-btn" href="#taskChecklistPanel" onclick="scrollToSection('taskChecklistPanel');return false;">Task Checklist</a>
-        <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
-      </div>
-    </div>
-
-    <!-- hidden selects for JS compatibility -->
-    <select id="mailRecipient" style="display:none">
-      <option value="">宛先を選択</option>
-      <option value="speaker">講師</option>
-      <option value="cohost">共催・関係者</option>
-    </select>
-    <select id="mailPurpose" style="display:none">
-      <option value="">用途を選択してください</option>
-      <option value="ishi_req">依頼状送付（講師・開催5W前）</option>
-      <option value="hp_report_speaker">HP掲載報告+資料依頼（講師・HP掲載当日）</option>
-      <option value="data_reminder_speaker">資料提出リマインド（講師・開催2W前）</option>
-      <option value="honban_reminder_speaker">本番前リマインド（講師・開催1W前）</option>
-      <option value="shakin_transfer">謝金振込通知（講師・開催7日以内）</option>
-      <option value="thanks_speaker">お礼の連絡（講師・開催後）</option>
-      <option value="hp_upload_req">HP予約投稿依頼（関係者・HP掲載1W前）</option>
-      <option value="hp_done_report">HP掲載完了報告①（関係者・HP掲載1W前）</option>
-      <option value="hp_done_report_day">HP掲載完了報告②（関係者・HP掲載当日）</option>
-      <option value="denshi_post_req">電子カルテ掲載依頼（関係者・HP掲載当日）</option>
-      <option value="denshi_replace_req">電子カルテ差替依頼（関係者・開催1W前）</option>
-      <option value="shakin_proc_req">謝金支払手続依頼（関係者・開催翌〜3日）</option>
-      <option value="seminar_prep">研修会準備依頼（関係者・当日）</option>
-      <option value="jikan_gaizangyo">時間外勤務前申請（関係者・当日）</option>
-    </select>
-
-    <!-- 用途タブ（13種） -->
-    <div class="mail-tab-bar" id="mailTabBar">
-      <button class="mail-tab active" data-recipient="speaker" data-purpose="ishi_req" onclick="mailTabClick(this)">依頼状送付</button>
-      <button class="mail-tab" data-recipient="speaker" data-purpose="hp_report_speaker" onclick="mailTabClick(this)">HP掲載報告+資料依頼</button>
-      <button class="mail-tab" data-recipient="speaker" data-purpose="data_reminder_speaker" onclick="mailTabClick(this)">資料提出リマインド</button>
-      <button class="mail-tab" data-recipient="speaker" data-purpose="honban_reminder_speaker" onclick="mailTabClick(this)">本番前リマインド</button>
-      <button class="mail-tab" data-recipient="speaker" data-purpose="shakin_transfer" onclick="mailTabClick(this)">謝金振込通知</button>
-      <button class="mail-tab" data-recipient="speaker" data-purpose="thanks_speaker" onclick="mailTabClick(this)">お礼の連絡</button>
-      <button class="mail-tab" data-recipient="cohost" data-purpose="hp_upload_req" onclick="mailTabClick(this)">HP予約投稿依頼</button>
-      <button class="mail-tab" data-recipient="cohost" data-purpose="hp_done_report" onclick="mailTabClick(this)">HP掲載完了報告①</button>
-      <button class="mail-tab" data-recipient="cohost" data-purpose="hp_done_report_day" onclick="mailTabClick(this)">HP掲載完了報告②</button>
-      <button class="mail-tab" data-recipient="cohost" data-purpose="denshi_post_req" onclick="mailTabClick(this)">電子カルテ掲載依頼</button>
-      <button class="mail-tab" data-recipient="cohost" data-purpose="denshi_replace_req" onclick="mailTabClick(this)">電子カルテ差替依頼</button>
-      <button class="mail-tab" data-recipient="cohost" data-purpose="shakin_proc_req" onclick="mailTabClick(this)">謝金支払手続依頼</button>
-      <button class="mail-tab" data-recipient="cohost" data-purpose="seminar_prep" onclick="mailTabClick(this)">研修会準備依頼</button>
-      <button class="mail-tab" data-recipient="cohost" data-purpose="jikan_gaizangyo" onclick="mailTabClick(this)">時間外勤務前申請</button>
-      <button class="mail-tab" onclick="openMailPrep()">研修会準備</button>
-    </div>
-
-    <!-- レコード選択行 -->
-    <div class="mail-select-row">
-      <div class="field">
-        <label>研修会No選択</label>
-        <select id="mailRecordSelect">
-          <option value="">Noを選択してください</option>
-        </select>
-      </div>
-      <div class="field" style="align-self:end">
-        <button class="btn small primary" id="mailDownloadBtn">📥 出力</button>
-      </div>
-      <div class="field" style="align-self:end">
-        <button class="btn small" id="mailCopyAllBtn">件名＋本文をコピー</button>
-      </div>
-<div class="field">
-        <label> </label>
-        <button class="btn small" id="mailGenerateBtn">クリア</button>
-      </div>
-    </div>
-
-    <!-- 不足情報警告 -->
-    <div class="mail-missing-warn" id="mailMissingWarn">
-      <strong>⚠ 不足情報：</strong><span id="mailMissingList"></span>
-    </div>
-
-    <!-- プレビューエリア -->
-    <div class="mail-preview" id="mailPreviewWrap" style="display:none">
-      <div class="field">
-        <label>件名</label>
-        <div class="mail-subject-row">
-          <input id="mailSubjectDisplay" type="text" readonly style="background:var(--panel2);cursor:text;user-select:text" placeholder="（メール生成後に表示）">
-          <button class="btn small" id="mailCopySubjectBtn">件名コピー</button>
-        </div>
-      </div>
-      <div class="field">
-        <label>本文（直接編集可）</label>
-        <textarea id="mailBodyDisplay" rows="18" style="min-height:320px;font-family:inherit;line-height:1.7"></textarea>
-      </div>
-    </div>
-  </section>
-
     <!-- ── Tasks Tab ── -->
   <!-- Commit Check / Export Result removed -->
 
@@ -998,6 +897,107 @@
         <div class="hint-box">各タスクを完了したらチェックを入れてください。CSV保存時に状態が保持されます。</div>
         </div>
   </section><!-- /taskChecklistPanel -->
+
+    <!-- ── Email Tab ── -->
+  <!-- ===== ROW 6: Mail Template (全幅) ===== -->
+  <section class="panel section-collapsible" id="mailTemplateSection" data-collapsed="true">
+    <div class="corner-label">Mail Template</div>
+    <div class="panel-head">
+      <div>
+        <h2>Mail Template</h2>
+        <p>研修会レコードを選択し、用途タブを選ぶとメール文面を自動生成します。</p>
+      </div>
+      <div class="panel-nav-actions">
+        <a class="btn small manual-btn" href="#exceptionQueueSection" onclick="scrollToSection('exceptionQueueSection');return false;">Exception Queue</a>
+        <a class="btn small manual-btn" href="#todayCommandSection" onclick="scrollToSection('todayCommandSection');return false;">Today Command</a>
+        <a class="btn small manual-btn" href="#taskChecklistPanel" onclick="scrollToSection('taskChecklistPanel');return false;">Task Checklist</a>
+        <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
+      </div>
+    </div>
+
+    <!-- hidden selects for JS compatibility -->
+    <select id="mailRecipient" style="display:none">
+      <option value="">宛先を選択</option>
+      <option value="speaker">講師</option>
+      <option value="cohost">共催・関係者</option>
+    </select>
+    <select id="mailPurpose" style="display:none">
+      <option value="">用途を選択してください</option>
+      <option value="ishi_req">依頼状送付（講師・開催5W前）</option>
+      <option value="hp_report_speaker">HP掲載報告+資料依頼（講師・HP掲載当日）</option>
+      <option value="data_reminder_speaker">資料提出リマインド（講師・開催2W前）</option>
+      <option value="honban_reminder_speaker">本番前リマインド（講師・開催1W前）</option>
+      <option value="shakin_transfer">謝金振込通知（講師・開催7日以内）</option>
+      <option value="thanks_speaker">お礼の連絡（講師・開催後）</option>
+      <option value="hp_upload_req">HP予約投稿依頼（関係者・HP掲載1W前）</option>
+      <option value="hp_done_report">HP掲載完了報告①（関係者・HP掲載1W前）</option>
+      <option value="hp_done_report_day">HP掲載完了報告②（関係者・HP掲載当日）</option>
+      <option value="denshi_post_req">電子カルテ掲載依頼（関係者・HP掲載当日）</option>
+      <option value="denshi_replace_req">電子カルテ差替依頼（関係者・開催1W前）</option>
+      <option value="shakin_proc_req">謝金支払手続依頼（関係者・開催翌〜3日）</option>
+      <option value="seminar_prep">研修会準備依頼（関係者・当日）</option>
+      <option value="jikan_gaizangyo">時間外勤務前申請（関係者・当日）</option>
+    </select>
+
+    <!-- 用途タブ（13種） -->
+    <div class="mail-tab-bar" id="mailTabBar">
+      <button class="mail-tab active" data-recipient="speaker" data-purpose="ishi_req" onclick="mailTabClick(this)">依頼状送付</button>
+      <button class="mail-tab" data-recipient="speaker" data-purpose="hp_report_speaker" onclick="mailTabClick(this)">HP掲載報告+資料依頼</button>
+      <button class="mail-tab" data-recipient="speaker" data-purpose="data_reminder_speaker" onclick="mailTabClick(this)">資料提出リマインド</button>
+      <button class="mail-tab" data-recipient="speaker" data-purpose="honban_reminder_speaker" onclick="mailTabClick(this)">本番前リマインド</button>
+      <button class="mail-tab" data-recipient="speaker" data-purpose="shakin_transfer" onclick="mailTabClick(this)">謝金振込通知</button>
+      <button class="mail-tab" data-recipient="speaker" data-purpose="thanks_speaker" onclick="mailTabClick(this)">お礼の連絡</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="hp_upload_req" onclick="mailTabClick(this)">HP予約投稿依頼</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="hp_done_report" onclick="mailTabClick(this)">HP掲載完了報告①</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="hp_done_report_day" onclick="mailTabClick(this)">HP掲載完了報告②</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="denshi_post_req" onclick="mailTabClick(this)">電子カルテ掲載依頼</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="denshi_replace_req" onclick="mailTabClick(this)">電子カルテ差替依頼</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="shakin_proc_req" onclick="mailTabClick(this)">謝金支払手続依頼</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="seminar_prep" onclick="mailTabClick(this)">研修会準備依頼</button>
+      <button class="mail-tab" data-recipient="cohost" data-purpose="jikan_gaizangyo" onclick="mailTabClick(this)">時間外勤務前申請</button>
+      <button class="mail-tab" onclick="openMailPrep()">研修会準備</button>
+    </div>
+
+    <!-- レコード選択行 -->
+    <div class="mail-select-row">
+      <div class="field">
+        <label>研修会No選択</label>
+        <select id="mailRecordSelect">
+          <option value="">Noを選択してください</option>
+        </select>
+      </div>
+      <div class="field" style="align-self:end">
+        <button class="btn small primary" id="mailDownloadBtn">📥 出力</button>
+      </div>
+      <div class="field" style="align-self:end">
+        <button class="btn small" id="mailCopyAllBtn">件名＋本文をコピー</button>
+      </div>
+<div class="field">
+        <label> </label>
+        <button class="btn small" id="mailGenerateBtn">クリア</button>
+      </div>
+    </div>
+
+    <!-- 不足情報警告 -->
+    <div class="mail-missing-warn" id="mailMissingWarn">
+      <strong>⚠ 不足情報：</strong><span id="mailMissingList"></span>
+    </div>
+
+    <!-- プレビューエリア -->
+    <div class="mail-preview" id="mailPreviewWrap" style="display:none">
+      <div class="field">
+        <label>件名</label>
+        <div class="mail-subject-row">
+          <input id="mailSubjectDisplay" type="text" readonly style="background:var(--panel2);cursor:text;user-select:text" placeholder="（メール生成後に表示）">
+          <button class="btn small" id="mailCopySubjectBtn">件名コピー</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>本文（直接編集可）</label>
+        <textarea id="mailBodyDisplay" rows="18" style="min-height:320px;font-family:inherit;line-height:1.7"></textarea>
+      </div>
+    </div>
+  </section>
 
     <!-- ── Admin Tab ── -->
   <section class="panel section-collapsible" id="templateInjectionSection" data-collapsed="true">
