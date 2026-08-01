@@ -595,6 +595,7 @@
       <option value="data_reminder_speaker">資料提出リマインド（講師・開催2W前）</option>
       <option value="honban_reminder_speaker">本番前リマインド（講師・開催1W前）</option>
       <option value="shakin_transfer">謝金振込通知（講師・開催7日以内）</option>
+      <option value="thanks_speaker">お礼の連絡（講師・開催後）</option>
       <option value="hp_upload_req">HP予約投稿依頼（関係者・HP掲載1W前）</option>
       <option value="hp_done_report">HP掲載完了報告①（関係者・HP掲載1W前）</option>
       <option value="hp_done_report_day">HP掲載完了報告②（関係者・HP掲載当日）</option>
@@ -612,6 +613,7 @@
       <button class="mail-tab" data-recipient="speaker" data-purpose="data_reminder_speaker" onclick="mailTabClick(this)">資料提出リマインド</button>
       <button class="mail-tab" data-recipient="speaker" data-purpose="honban_reminder_speaker" onclick="mailTabClick(this)">本番前リマインド</button>
       <button class="mail-tab" data-recipient="speaker" data-purpose="shakin_transfer" onclick="mailTabClick(this)">謝金振込通知</button>
+      <button class="mail-tab" data-recipient="speaker" data-purpose="thanks_speaker" onclick="mailTabClick(this)">お礼の連絡</button>
       <button class="mail-tab" data-recipient="cohost" data-purpose="hp_upload_req" onclick="mailTabClick(this)">HP予約投稿依頼</button>
       <button class="mail-tab" data-recipient="cohost" data-purpose="hp_done_report" onclick="mailTabClick(this)">HP掲載完了報告①</button>
       <button class="mail-tab" data-recipient="cohost" data-purpose="hp_done_report_day" onclick="mailTabClick(this)">HP掲載完了報告②</button>
@@ -952,7 +954,10 @@
               <span class="small-label">Task 29</span>
               <strong>講師へお礼の連絡</strong>
             </div>
+            <div class="schedule-actions">
+            <button class="task-mail-btn" onclick="openTaskMail('29')" title="お礼メールを作成">✉</button>
             <label class="schedule-check"><input type="checkbox" id="ck_task29" onchange="updateTaskProgress()"><span>完了</span></label>
+          </div>
           </div>
           <div class="schedule-card" id="taskcard_task30">
             <div class="schedule-left">

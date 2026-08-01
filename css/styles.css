@@ -638,6 +638,9 @@ label[for="templateFiles"] {
   align-items:center;
   gap:6px;
 }
+#taskCheckList .schedule-actions{
+  flex-direction:row;
+}
 .task-mail-btn{
   width:30px;height:30px;
   display:flex;align-items:center;justify-content:center;

@@ -2541,6 +2541,7 @@ function openTaskMail(taskId){
     '22':{recipient:'speaker',purpose:'honban_reminder_speaker'},
     '24':{recipient:'cohost',purpose:'seminar_prep'},
     '26':{recipient:'cohost',purpose:'seminar_prep'},
+    '29':{recipient:'speaker',purpose:'thanks_speaker'},
     '31':{recipient:'cohost',purpose:'shakin_proc_req'},
     '32':{recipient:'speaker',purpose:'shakin_transfer'}
   };
@@ -2912,6 +2913,11 @@ function generateMailTemplate(){
     // 9: 開催7日以内 謝金振込通知
     subj=`【静岡がんセンター】ご講演謝金の振り込みについて`;
     body=`${speaker} 先生\n\n平素より大変お世話になっております。${senderOrg}の${senderName}でございます。先日はお忙しい中、当院の臨床研究研修会にてご講演くださり誠にありがとうございました。\n\nさて、お謝金につきましては、XX月XX日（X）にご指定の口座へお振込みさせていただく予定でございます。お手すきの際にご確認いただけますと幸いです。\n\nなお、万が一お振込みが確認できない場合には、誠に恐れ入りますがご一報いただけますようお願い申し上げます。\n\n今後とも何卒よろしくお願い申し上げます。${sigBlock}`;
+  }
+  else if(purpose==='thanks_speaker'){
+    // 29: 開催後 講師へのお礼
+    subj=`【静岡がんセンター】臨床研究研修会${dateStr}_ご講演のお礼`;
+    body=`${speaker} 先生\n\n平素より大変お世話になっております。\n${senderOrg}の${senderName}でございます。\n\n本日はご多忙のところ、ご講演いただき、誠にありがとうございました。\n\nご講演では、【講演テーマ・キーワード】について大変分かりやすくご解説いただき、\n特に【具体的に印象に残った内容・学び】は、今後の業務に直結する重要な示唆を得ることができました。\n参加者からも「【参加者の感想例】」といった声が寄せられており、大変有意義な研修会となりました。\n\n今回の学びを今後の【業務・研究・教育活動など】に活かし、より一層の質向上に努めてまいります。\n\n改めまして、このたびのご講演に心より御礼申し上げます。\n今後ともご指導ご鞭撻のほど、何卒よろしくお願い申し上げます。\n\n研修会担当\n${senderName}\n＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊\n${senderSig}\n＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊`;
   }
 
   // ============================================================
