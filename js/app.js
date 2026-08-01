@@ -2337,7 +2337,7 @@ function buildTodayCommands(rows){
         if(!postTask29)pending.push('講師へお礼');
         if(!postTask33)pending.push('受講証交付');
         const postKey=!postTask29?'task29':!postTask33?'task33':!postTask28?'task28':'task25';
-        cmds.push({no,title,urgency:'high',csvKey:postKey,action:`事後処理が残っています: ${pending.join(' / ')}`,reason:`開催から${Math.abs(days)}日経過`,buttons:[{label:'確認する',href:'#taskChecklistPanel',no},{label:'お礼メール',recipient:'speaker',purpose:'thanks',no}]});
+        cmds.push({no,title,urgency:'high',csvKey:postKey,action:`事後処理が残っています: ${pending.join(' / ')}`,reason:`開催から${Math.abs(days)}日経過`,buttons:[{label:'確認する',href:'#taskChecklistPanel',no},{label:'お礼の連絡',recipient:'speaker',purpose:'thanks_speaker',no}]});
       }
     }
 
@@ -2916,8 +2916,9 @@ function generateMailTemplate(){
   }
   else if(purpose==='thanks_speaker'){
     // 29: 開催後 講師へのお礼
+    const spk=speaker.replace(/\s*先生\s*$/,'');
     subj=`【静岡がんセンター】臨床研究研修会${dateStr}_ご講演のお礼`;
-    body=`${speaker} 先生\n\n平素より大変お世話になっております。\n${senderOrg}の${senderName}でございます。\n\n本日はご多忙のところ、ご講演いただき、誠にありがとうございました。\n\nご講演では、【講演テーマ・キーワード】について大変分かりやすくご解説いただき、\n特に【具体的に印象に残った内容・学び】は、今後の業務に直結する重要な示唆を得ることができました。\n参加者からも「【参加者の感想例】」といった声が寄せられており、大変有意義な研修会となりました。\n\n今回の学びを今後の【業務・研究・教育活動など】に活かし、より一層の質向上に努めてまいります。\n\n改めまして、このたびのご講演に心より御礼申し上げます。\n今後ともご指導ご鞭撻のほど、何卒よろしくお願い申し上げます。\n\n研修会担当\n${senderName}\n＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊\n${senderSig}\n＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊`;
+    body=`${spk} 先生\n\n平素より大変お世話になっております。\n${senderOrg}の${senderName}でございます。\n\n本日はご多忙のところ、ご講演いただき、誠にありがとうございました。\n\nご講演では、【講演テーマ・キーワード】について大変分かりやすくご解説いただき、\n特に【具体的に印象に残った内容・学び】は、今後の業務に直結する重要な示唆を得ることができました。\n参加者からも「【参加者の感想例】」といった声が寄せられており、大変有意義な研修会となりました。\n\n今回の学びを今後の【業務・研究・教育活動など】に活かし、より一層の質向上に努めてまいります。\n\n改めまして、このたびのご講演に心より御礼申し上げます。\n今後ともご指導ご鞭撻のほど、何卒よろしくお願い申し上げます。\n\n研修会担当\n${senderName}\n＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊\n${senderSig}\n＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊`;
   }
 
   // ============================================================
