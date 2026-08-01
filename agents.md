@@ -80,6 +80,11 @@ QR_reader.html                # QRコード出席管理（別ページ、Firebas
 
 ## 変更履歴
 
+### 2026-08-01: attend.html / kenshukai-notion-csv-generator.html の背景を index.html と同一演出に変更
+- ✅ 両ファイルの文字マトリックス雨（`#matrix-bg` / `#bgCanvas`）を廃止し、index.html と同じ「コード列が上から下に流れる」背景（`#bgCodeCanvas`）に置換
+- ✅ CSS・canvas ID・レンダリングスクリプト（HTMLソース行を縦カラムで流す＋グリッド＋ノード）を license.html と同様に index.html と完全一致させた
+- ✅ テーマ切替・機能ロジック等の他部分は変更なし
+
 ### 2026-07-29: 研修会準備ボタン・Task 24 メールボタン追加
 - ✅ Mail Template セクションに「研修会準備」ボタン追加（`#mailPrepBtn`, `onclick="openMailPrep()"`）
 - ✅ `openMailPrep()` 関数を作成（Entry Console の No を読み取り `openMailTemplate(no,'cohost','seminar_prep')` を呼ぶ）
