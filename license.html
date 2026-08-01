@@ -48,7 +48,7 @@
       position: relative;
     }
     /* 背景 canvas（index.html と同じ演出） */
-    #matrixCanvas {
+    #bgCodeCanvas {
       position: fixed; top: 0; left: 0;
       width: 100%; height: 100%;
       z-index: 0; pointer-events: none;
@@ -262,7 +262,7 @@
   </style>
 </head>
 <body>
-<canvas id="matrixCanvas"></canvas>
+<canvas id="bgCodeCanvas"></canvas>
 <div class="bg-grid"></div>
 <div id="previewHost"></div>
 
@@ -710,9 +710,9 @@ generateBtn.addEventListener('click', async () => {
 
 </script>
 <script>
-/* ── 背景コードレイン（index.html と同一演出） ── */
-(function(){
-  const canvas = document.getElementById('matrixCanvas');
+/* ── Background Code Canvas（index.html と同一演出） ── */
+window.addEventListener('load', function(){
+  const canvas = document.getElementById('bgCodeCanvas');
   if(!canvas) return;
   const ctx = canvas.getContext('2d');
 
@@ -833,7 +833,7 @@ generateBtn.addEventListener('click', async () => {
       loop();
     },200);
   });
-})();
+});
 </script>
 </body>
 </html>
