@@ -759,9 +759,7 @@ async function mergeSingleTemplate(file,row){
   var hasQR=false,qrImgXml=null;
   targets.forEach(function(path){if(zip.file(path)){var t=zip.file(path).asText();if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;}});
   if(hasQR){
-    var qrZoom=String(row?.[fullKeys.zoomUrl]??'').trim();
-    var validZoom=!!qrZoom&&qrZoom!=='https://zoom.us/';
-    var qrBlob=validZoom?await generateQRBlob(qrZoom,300):null;
+    var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),300);
     if(qrBlob){
       var ext0=(String(file.name).split('.').pop()||'').toLowerCase();
       qrImgXml=await embedQRImageInZip(zip,ext0,qrBlob);
@@ -833,9 +831,7 @@ async function mergeAllTemplatesZip(){
         var hasQR=false,qrImgXml=null;
         targets.forEach(function(path){if(pzip.file(path)){var t=pzip.file(path).asText();if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;}});
         if(hasQR){
-          var qrZoom=String(row?.[fullKeys.zoomUrl]??'').trim();
-          var validZoom=!!qrZoom&&qrZoom!=='https://zoom.us/';
-          var qrBlob=validZoom?await generateQRBlob(qrZoom,300):null;
+          var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),300);
           if(qrBlob){
             var ext0=(String(file.name).split('.').pop()||'').toLowerCase();
             qrImgXml=await embedQRImageInZip(pzip,ext0,qrBlob);
