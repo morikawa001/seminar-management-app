@@ -78,6 +78,18 @@ QR_reader.html                # QRコード出席管理（別ページ、Firebas
 - CSS変更後は必ず 900px / 640px ブレークポイントの影響を確認
 - 変更後はコミットして push する（ユーザーが明示的に要求した場合のみ）
 
+## デプロイ（GitHub Pages）同期について
+- **GitHub Pages は `morikawa001/seminar` リポジトリ（`main` ブランチ）から配信**されている
+  - URL例: `https://morikawa001.github.io/seminar/live_session.html`
+- 本リポジトリ（`seminar-management-app` / origin）への push だけでは**デプロイに反映されない**
+- `seminar` リポジトリ側の `main` ブランチに同期が必要。手順:
+  1. `git worktree add --detach ../seminar-publish seminar/main`
+  2. 変更ファイル（例: `live_session.html` 等）を `../seminar-publish/` へコピー
+  3. `git -C ../seminar-publish add ファイル && git -C ../seminar-publish commit -m "..."`
+  4. `git -C ../seminar-publish push seminar HEAD:main`
+  5. `git worktree remove ../seminar-publish --force`（OneDrive ロックで失敗時は `rm -rf` + `git worktree prune`）
+- 公開対象のページのみ同期する（`seminar` リポジトリは公開用の独立ページのみ収録。`index.html` / `js/app.js` / `css/` は含まれない）
+
 ## 変更履歴
 
 ### 2026-08-01: live_session.html の選択セレクトで重複行を除外し No 昇順ソート
