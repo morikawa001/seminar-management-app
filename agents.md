@@ -92,6 +92,10 @@ QR_reader.html                # QRファイル管理（別ページ、Firebase E
 
 ## 変更履歴
 
+### 2026-08-01: QR_reader.html のスキャン開始/停止ボタンとモード切替チップの重なりを修正
+- ✅ `.mode-selector` に `margin-bottom:14px`、スキャンボタン行に `margin-top:14px` を追加し、チップとボタンの間隔を確保
+- ✅ スキャン開始/停止ボタンに `flex-wrap:wrap` / `min-width:130px` を追加（狭い画面でも重ならない）
+
 ### 2026-08-01: index.html に QR 保管場所データ（qr_storage_loc）を反映
 - ✅ `js/app.js` の `DEFAULT_HEADERS` と `fullKeys` に `qr_storage_loc`（`qrStorageLoc`）を追加
 - ✅ `ensureAdditionalHeaders` に `qr_storage_loc` / `qr_saved_k1/k2/k3` を追加（CSV読込時でもQR系カラムを保持）

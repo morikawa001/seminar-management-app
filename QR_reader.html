@@ -49,7 +49,7 @@
         #qr-reader button:not(.btn){ background:var(--primary,#007bff); color:#fff; border:none; border-radius:10px; padding:12px 20px; font-size:15px; }
         .scanner-controls { margin-top: 12px; }
 
-        .mode-selector { display: flex; flex-direction: column; gap: 8px; }
+        .mode-selector { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
         .mode-chip {
             width: 100%; text-align: center; padding: 14px 8px; border-radius: 10px;
             border: 2px solid #1f3f6e; cursor: pointer;
@@ -158,9 +158,9 @@
                         <input type="radio" name="scanMode" value="file" checked> 📄 ファイルQR
                     </label>
                 </div>
-                <div style="display:flex;gap:10px;">
-                    <button id="btn-start-scan" onclick="appLayer.startScanner()" class="btn primary" style="flex:1;">スキャン開始</button>
-                    <button id="btn-stop-scan" onclick="appLayer.stopScanner()" class="btn" style="flex:1;background:var(--danger);color:#fff;" disabled>スキャン停止</button>
+                <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+                    <button id="btn-start-scan" onclick="appLayer.startScanner()" class="btn primary" style="flex:1;min-width:130px;">スキャン開始</button>
+                    <button id="btn-stop-scan" onclick="appLayer.stopScanner()" class="btn" style="flex:1;min-width:130px;background:var(--danger);color:#fff;" disabled>スキャン停止</button>
                 </div>
                 <div id="current-loc-box" class="hidden">
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
