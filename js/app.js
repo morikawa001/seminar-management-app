@@ -703,19 +703,18 @@ function generateQRBlob(text,size){
     }catch(e){document.body.removeChild(div);resolve(null)}
   });
 }
-function embedQRImageInZip(zip,ext,blob,mediaName){
-  mediaName=mediaName||'qr_code.png';
+function embedQRImageInZip(zip,ext,blob){
   return new Promise(function(resolve){
     var reader=new FileReader();
     reader.onload=function(){
       var arrayBuffer=reader.result;
       if(ext==='docx'){
-        var mediaPath='word/media/'+mediaName;
+        var mediaPath='word/media/qr_code.png';
         var relsPath='word/_rels/document.xml.rels';
         var existingRels=zip.file(relsPath)?zip.file(relsPath).asText():'';
         var rId=1;
         while(existingRels.indexOf('Id="rId'+rId+'"')>=0||existingRels.indexOf("Id='rId"+rId+"'")>=0) rId++;
-        var relEntry='<Relationship Id="rId'+rId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/'+mediaName+'"/>';
+        var relEntry='<Relationship Id="rId'+rId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/qr_code.png"/>';
         zip.file(relsPath,existingRels.replace('</Relationships>',relEntry+'</Relationships>'));
         var imgXml='<w:r xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:drawing xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="1524000" cy="1524000"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="1" name="QR"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="0" name="QR"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rId'+rId+'" cstate="print"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="1524000" cy="1524000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
         zip.file(mediaPath,arrayBuffer);
@@ -726,12 +725,12 @@ function embedQRImageInZip(zip,ext,blob,mediaName){
         }
         resolve(imgXml);
       }else if(ext==='pptx'){
-        mediaPath='ppt/media/'+mediaName;
+        mediaPath='ppt/media/qr_code.png';
         relsPath='ppt/_rels/presentation.xml.rels';
         var existingRels=zip.file(relsPath)?zip.file(relsPath).asText():'';
         var rId=1;
         while(existingRels.indexOf('Id="rId'+rId+'"')>=0||existingRels.indexOf("Id='rId"+rId+"'")>=0) rId++;
-        relEntry='<Relationship Id="rId'+rId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/'+mediaName+'"/>';
+        relEntry='<Relationship Id="rId'+rId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/qr_code.png"/>';
         zip.file(relsPath,existingRels.replace('</Relationships>',relEntry+'</Relationships>'));
         imgXml='<p:pic xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><p:nvPicPr><p:cNvPr id="0" name="QR"/><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr><p:blipFill><a:blip r:embed="rId'+rId+'"/><a:stretch><a:fillRect/></a:stretch></p:blipFill><p:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="1524000" cy="1524000"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic>';
         zip.file(mediaPath,arrayBuffer);
@@ -749,42 +748,29 @@ function embedQRImageInZip(zip,ext,blob,mediaName){
     reader.readAsArrayBuffer(blob);
   });
 }
-async function injectMergeZip(pzip,file,row){
-  const data=buildTemplateData(row);
-  const targets=targetXmlPathsForTemplate(pzip,file.name);
-  if(!targets.length) throw new Error('差し込み対象XMLが見つかりません');
-  var qrImgXml=null,qrZoomImgXml=null;
-  var hasQR=false,hasZoomQR=false;
-  targets.forEach(function(path){
-    if(!pzip.file(path))return;
-    var t=pzip.file(path).asText();
-    if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;
-    if(t.indexOf('{{QR_Zoom URL}}')>=0)hasZoomQR=true;
-  });
-  var ext0=(String(file.name).split('.').pop()||'').toLowerCase();
-  if(hasQR){
-    var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),300);
-    if(qrBlob) qrImgXml=await embedQRImageInZip(pzip,ext0,qrBlob);
-  }
-  if(hasZoomQR){
-    var zoomUrl=String(row?.[fullKeys.zoomUrl]??'').trim();
-    var validZoom=!!zoomUrl&&zoomUrl!=='https://zoom.us/';
-    var zoomBlob=validZoom?await generateQRBlob(zoomUrl,300):null;
-    if(zoomBlob) qrZoomImgXml=await embedQRImageInZip(pzip,ext0,zoomBlob,'qr_zoom.png');
-  }
-  targets.forEach(path=>{
-    if(!pzip.file(path))return;
-    let out=pzip.file(path).asText();
-    if(qrImgXml){out=out.split('{{QR_IMAGE}}').join(qrImgXml);out=out.split('{{QR}}').join('')}
-    out=out.split('{{QR_Zoom URL}}').join(qrZoomImgXml||'');
-    out=replacePlaceholdersInXml(out,data);
-    pzip.file(path,out);
-  });
-}
 async function mergeSingleTemplate(file,row){
   const arrayBuffer=await file.arrayBuffer();
   const zip=new PizZip(arrayBuffer);
-  await injectMergeZip(zip,file,row);
+  const data=buildTemplateData(row);
+  const targets=targetXmlPathsForTemplate(zip,file.name);
+  if(!targets.length) throw new Error('差し込み対象XMLが見つかりません');
+  var hasQR=false,qrImgXml=null;
+  targets.forEach(function(path){if(zip.file(path)){var t=zip.file(path).asText();if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;}});
+  if(hasQR){
+    var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),300);
+    if(qrBlob){
+      var ext0=(String(file.name).split('.').pop()||'').toLowerCase();
+      qrImgXml=await embedQRImageInZip(zip,ext0,qrBlob);
+    }
+  }
+  targets.forEach(path=>{
+    if(zip.file(path)){
+      let out=zip.file(path).asText();
+      if(qrImgXml){out=out.split('{{QR_IMAGE}}').join(qrImgXml);out=out.split('{{QR}}').join('')}
+      out=replacePlaceholdersInXml(out,data);
+      zip.file(path,out);
+    }
+  });
   const mimeMap={docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'};
   const ext=(String(file.name).split('.').pop()||'').toLowerCase();
   const out=zip.generate({type:'blob',mimeType:mimeMap[ext]||'application/octet-stream'});
@@ -833,11 +819,30 @@ async function mergeAllTemplatesZip(){
     const jszip=new JSZip();
     let ok=0;
     const logs=[];
+    const data=buildTemplateData(row);
     for(const file of selectedTemplates){
       try{
         const arrayBuffer=await file.arrayBuffer();
         const pzip=new PizZip(arrayBuffer);
-        await injectMergeZip(pzip,file,row);
+        const targets=targetXmlPathsForTemplate(pzip,file.name);
+        if(!targets.length) throw new Error('差し込み対象XMLが見つかりません');
+        var hasQR=false,qrImgXml=null;
+        targets.forEach(function(path){if(pzip.file(path)){var t=pzip.file(path).asText();if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;}});
+        if(hasQR){
+          var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),300);
+          if(qrBlob){
+            var ext0=(String(file.name).split('.').pop()||'').toLowerCase();
+            qrImgXml=await embedQRImageInZip(pzip,ext0,qrBlob);
+          }
+        }
+        targets.forEach(path=>{
+          if(pzip.file(path)){
+            let out=pzip.file(path).asText();
+            if(qrImgXml){out=out.split('{{QR_IMAGE}}').join(qrImgXml);out=out.split('{{QR}}').join('')}
+            out=replacePlaceholdersInXml(out,data);
+            pzip.file(path,out);
+          }
+        });
         const ext=(String(file.name).split('.').pop()||'').toLowerCase();
 const blob=pzip.generate({type:'blob',mimeType:mimeMap[ext]||'application/octet-stream'});
 const baseName=String(file.name);
