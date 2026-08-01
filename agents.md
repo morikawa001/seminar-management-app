@@ -92,6 +92,15 @@ QR_reader.html                # QRコード出席管理（別ページ、Firebas
 
 ## 変更履歴
 
+### 2026-08-01: QR_reader.html に「ファイルQR／保管場所QR」の2モード対応＋保管場所の記録
+- ✅ スキャン画面にモード切替チップ（📄 ファイルQR / 📦 保管場所QR）を追加（`setScanMode()`）
+- ✅ ファイルQR（起案行No）は従来通り DB 検索、保管場所QR はテキスト（例: `管理棟４階　書庫A-1`）として `this.currentLoc` に一時保持
+- ✅ 保管場所QRが未スキャンでもエラーにしない（場所が空なら日付のみ保存）
+- ✅ 実施日保存ボタン（起案1/2/3）押下時に、日付とスキャン済み保管場所をまとめて保存（`updateSaveDateWithLocation()` / `recordSaveDate(field, docId, locStr)`）
+- ✅ 保管場所は起案レコードの新フィールド `qr_storage_loc` に保存、解除（再クリック）時は日付のみ削除で場所は保持
+- ✅ 結果カードに「保管場所」表示を追加（`#result-loc-value`）、スキャン済み保管場所ボックス（`#current-loc-box`）とクリアボタン（`clearCurrentLoc()`）を追加
+- ✅ スキャン成功時・保存成功時に保管場所をメッセージへ反映
+
 ### 2026-08-01: qr_maker.html で URL だけでなく単純な文字データも QR コード化可能に
 - ✅ `ensureProtocol()`（https:// 自動付与）と `new URL()` による URL 形式チェックを廃止
 - ✅ 入力値をそのまま生テキストとして QR コードにエンコード（URL は URL として、`管理棟４階　書庫A-1` のような文字データもそのまま変換）

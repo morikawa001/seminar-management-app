@@ -49,6 +49,19 @@
         #qr-reader button:not(.btn){ background:var(--primary,#007bff); color:#fff; border:none; border-radius:10px; padding:12px 20px; font-size:15px; }
         .scanner-controls { margin-top: 12px; }
 
+        .mode-selector { display: flex; gap: 8px; }
+        .mode-chip {
+            flex: 1; text-align: center; padding: 12px 8px; border-radius: 10px;
+            border: 2px solid #1f3f6e; cursor: pointer;
+            font-size: 14px; font-weight: bold; color: #7ba3dd;
+        }
+        .mode-chip.active { border-color: #38b6ff; color: #d7e7ff; background: rgba(56,182,255,0.08); }
+        .mode-chip input { display: none; }
+        #current-loc-box {
+            margin-top: 12px; padding: 10px 12px; border-radius: 10px;
+            border: 1px dashed #38b6ff; background: rgba(56,182,255,0.05);
+        }
+
         #result-card {
             border: 3px solid #38b6ff;
             border-radius: 12px; padding: 16px;
@@ -136,9 +149,26 @@
             </div>
             <div style="padding:14px;">
                 <div id="qr-reader"></div>
-                <div style="display:flex;gap:10px;margin-top:12px;">
+                <div class="mode-selector" style="margin-top:12px;">
+                    <label class="mode-chip active" id="mode-chip-file" onclick="appLayer.setScanMode('file')">
+                        <input type="radio" name="scanMode" value="file" checked> 📄 ファイルQR
+                    </label>
+                    <label class="mode-chip" id="mode-chip-loc" onclick="appLayer.setScanMode('loc')">
+                        <input type="radio" name="scanMode" value="loc"> 📦 保管場所QR
+                    </label>
+                </div>
+                <div style="display:flex;gap:10px;">
                     <button id="btn-start-scan" onclick="appLayer.startScanner()" class="btn primary" style="flex:1;">スキャン開始</button>
                     <button id="btn-stop-scan" onclick="appLayer.stopScanner()" class="btn" style="flex:1;background:var(--danger);color:#fff;" disabled>スキャン停止</button>
+                </div>
+                <div id="current-loc-box" class="hidden">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                        <div style="flex:1;min-width:0;">
+                            <span style="font-size:12px;font-weight:bold;color:var(--muted);">📦 スキャン済み保管場所</span>
+                            <div id="current-loc-text" style="font-size:15px;color:#d7e7ff;word-break:break-all;margin-top:2px;"></div>
+                        </div>
+                        <button onclick="appLayer.clearCurrentLoc()" class="btn small" style="white-space:nowrap;">クリア</button>
+                    </div>
                 </div>
                 <div style="margin-top:12px;padding-top:12px;border-top:2px solid var(--border);">
                     <label style="display:block;font-size:13px;font-weight:bold;color:var(--muted);margin-bottom:6px;">QRコード画像ファイルを読み込み</label>
@@ -165,7 +195,7 @@
                     <div id="result-fields"></div>
                     <div class="save-section">
                         <p style="text-align:center;color:var(--muted);font-size:14px;margin-bottom:8px;">
-                            各起案の実施日を記録します（再クリックで解除）
+                            各起案の実施日を記録します（再クリックで解除）。保管場所QRを読み取っていれば場所も同時保存されます。
                         </p>
                         <div style="display:flex;flex-direction:column;gap:8px;">
                             <button id="btn-save-k1" onclick="appLayer.handleSaveK1()" class="btn primary" style="padding:14px;font-size:16px;">
@@ -270,6 +300,14 @@
                 });
             }
 
+            // 実施日と保管場所をまとめて保存（保管場所が空なら日付のみ）
+            async updateSaveDateWithLocation(docId, dateStr, locStr, field) {
+                const payload = {};
+                payload[field] = dateStr;
+                if (locStr) payload.qr_storage_loc = locStr;
+                await updateDoc(doc(this.db, "seminars", docId), payload);
+            }
+
             async getAllScanned(proposalNos, userId) {
                 if (proposalNos.length === 0) return [];
                 const q = query(
@@ -298,15 +336,14 @@
                 return result;
             }
 
-            // 保存日付を記録（yyyy/mm/dd 形式）
-            async recordSaveDate(field, docId) {
+            // 保存日付を記録（yyyy/mm/dd 形式）＋保管場所を同時保存
+            async recordSaveDate(field, docId, locStr) {
                 const now = new Date();
                 const yyyy = now.getFullYear();
                 const mm = String(now.getMonth() + 1).padStart(2, "0");
                 const dd = String(now.getDate()).padStart(2, "0");
                 const dateStr = `${yyyy}/${mm}/${dd}`;
-                const method = this.db['updateSaveDate' + field];
-                if (method) await method.call(this.db, docId, dateStr);
+                await this.db.updateSaveDateWithLocation(docId, dateStr, locStr || "", "qr_saved_" + field.toLowerCase());
                 return dateStr;
             }
 
@@ -327,6 +364,8 @@
                 this.html5Qr = null;
                 this.currentDoc = null;   // { id, data }
                 this.scanHistory = [];
+                this.scanMode = "file";
+                this.currentLoc = "";
             }
 
             init(qrService) {
@@ -376,14 +415,35 @@
                 }
             }
 
+            // スキャンモード切替（file: 起案行No検索 / loc: 保管場所テキスト記録）
+            setScanMode(mode) {
+                this.scanMode = mode;
+                const fileChip = document.getElementById("mode-chip-file");
+                const locChip = document.getElementById("mode-chip-loc");
+                if (fileChip) fileChip.classList.toggle("active", mode === "file");
+                if (locChip) locChip.classList.toggle("active", mode === "loc");
+                if (mode === "loc") {
+                    this.showStatus("scan-status", "保管場所QR（例: 管理棟４階　書庫A-1）を読み取ってください。保存ボタン押下時に場所も一緒に記録されます。", "status-info");
+                } else {
+                    this.hideStatus("scan-status");
+                }
+            }
+
             // QRコード読み取り成功コールバック
             async onQrCodeScanned(decodedText) {
                 await this.stopScanner();
-                const proposalNo = decodedText.trim();
-                if (!proposalNo) {
+                const text = decodedText.trim();
+                if (!text) {
                     this.showStatus("scan-status", "QRコードデータが空です", "status-err");
                     return;
                 }
+                if (this.scanMode === "loc") {
+                    this.currentLoc = text;
+                    this.updateLocationDisplay();
+                    this.showStatus("scan-status", `保管場所を記録しました: ${this.currentLoc}`, "status-ok");
+                    return;
+                }
+                const proposalNo = text;
                 this.showStatus("scan-status", `読み取り成功（起案行No: ${proposalNo}）。データを検索中…`, "status-info");
                 try {
                     const result = await this.qrService.lookupByProposalNo(proposalNo);
@@ -413,13 +473,14 @@
                     { label: "開催日", value: _("開催日_DATE_1") },
                     { label: "担当講師", value: _("担当講師_SPEAKER") },
                     { label: "場所", value: _("講演場所_SITE") },
+                    { label: "保管場所", value: data.qr_storage_loc || this.currentLoc || "", id: "result-loc-value" },
                     { label: "対象", value: _("対象_SUBJECT_1") },
                     { label: "目的", value: _("目的_PURPOSE") },
                     { label: "年度", value: _("年度_YEAR_1") },
                     { label: "謝金", value: _("謝金_COST") },
                 ];
                 container.innerHTML = fields.map(f =>
-                    `<div class="result-field"><span class="result-label">${f.label}</span><span class="result-value">${f.value || "-"}</span></div>`
+                    `<div class="result-field"><span class="result-label">${f.label}</span><span class="result-value"${f.id ? ' id="' + f.id + '"' : ""}>${f.value || "-"}</span></div>`
                 ).join("");
 
                 // 各起案ボタンの保存状態を反映
@@ -429,9 +490,34 @@
                 this.updateSaveButtonState(k1Btn, data.qr_saved_k1, "起案１");
                 this.updateSaveButtonState(k2Btn, data.qr_saved_k2, "起案２");
                 this.updateSaveButtonState(k3Btn, data.qr_saved_k3, "起案３");
+                this.updateLocationDisplay();
 
                 document.getElementById("logic-layer-data").dataset.currentProposal = _("起案行No");
                 document.getElementById("logic-layer-data").dataset.currentDocId = this.currentDoc.id || "";
+            }
+
+            updateLocationDisplay() {
+                const box = document.getElementById("current-loc-box");
+                const textEl = document.getElementById("current-loc-text");
+                if (box && textEl) {
+                    if (this.currentLoc) {
+                        textEl.textContent = this.currentLoc;
+                        box.classList.remove("hidden");
+                    } else {
+                        box.classList.add("hidden");
+                    }
+                }
+                const locVal = document.getElementById("result-loc-value");
+                if (locVal) {
+                    const stored = (this.currentDoc && this.currentDoc.data && this.currentDoc.data.qr_storage_loc) || "";
+                    locVal.textContent = (stored || this.currentLoc || "-");
+                }
+            }
+
+            clearCurrentLoc() {
+                this.currentLoc = "";
+                this.updateLocationDisplay();
+                this.showStatus("scan-status", "保管場所の記録をクリアしました", "status-info");
             }
 
             updateSaveButtonState(btn, savedDate, label) {
@@ -468,12 +554,14 @@
                         this.showStatus("save-status", `${label} 保存を解除しました`, "status-info");
                     } else {
                         btn.textContent = "保存中…";
-                        const dateStr = await this.qrService.recordSaveDate(field, this.currentDoc.id);
+                        const dateStr = await this.qrService.recordSaveDate(field, this.currentDoc.id, this.currentLoc);
                         this.currentDoc.data[dataField] = dateStr;
+                        if (this.currentLoc) this.currentDoc.data.qr_storage_loc = this.currentLoc;
                         this.updateSaveButtonState(btn, dateStr, label);
-                        this.showStatus("save-status", `${label} 保存完了: ${dateStr}`, "status-ok");
+                        this.showStatus("save-status", `${label} 保存完了: ${dateStr}` + (this.currentLoc ? `（保管場所: ${this.currentLoc}）` : ""), "status-ok");
                     }
                     this.updateHistoryDate();
+                    this.updateLocationDisplay();
                 } catch (err) {
                     this.showStatus("save-status", "エラー: " + err.message, "status-err");
                 }
