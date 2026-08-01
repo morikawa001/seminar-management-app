@@ -94,7 +94,14 @@
 <!-- ── v2 SIDEBAR + MAIN ── -->
 <div class="v2-layout">
   <nav class="v2-sidebar">
-    <div class="v2-sidebar-lbl">SIBYL SYSTEM · ナビゲーション</div>
+    <div class="win-titlebar">
+      <span class="win-title">SIBYL SYSTEM · ナビゲーション</span>
+      <div class="win-controls">
+        <span class="win-btn" title="最小化">─</span>
+        <span class="win-btn" title="最大化">□</span>
+        <span class="win-btn win-close" title="閉じる">✕</span>
+      </div>
+    </div>
     <button class="v2-sidebar-btn active" data-section="topControlPanel" onclick="scrollToSection('topControlPanel')"><i>◉</i><span>ダッシュボード</span></button>
     <button class="v2-sidebar-btn" data-section="todayCommandSection" onclick="scrollToSection('todayCommandSection')"><i>▶</i><span>今日のアクション</span></button>
     <button class="v2-sidebar-btn" data-section="exceptionQueueSection" onclick="scrollToSection('exceptionQueueSection')"><i>!</i><span>例外確認</span></button>
