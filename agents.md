@@ -97,6 +97,16 @@ QR_reader.html                # QRファイル管理（別ページ、Firebase E
 
 ## 変更履歴
 
+### 2026-08-02: Task Checklist に連動ページへのリンクボタンを追加
+- ✅ Task Checklist の完了チェック左隣に、対応する連動ページを開くボタン（`.task-link-btn`）を追加
+  - Task 15（事前受付終了・Web受講希望者リストの書き出し）: 「申込者管理」→ `https://morikawa001.github.io/seminar/kenshukai-notion-csv-generator.html`
+  - Task 24（研修会本番）: 「当日運営」→ `https://morikawa001.github.io/seminar/live_session.html`（既存✉メールボタンは維持）
+  - Task 25（Zoomレポートダウンロード）: 「受講者管理」→ `https://morikawa001.github.io/seminar/attend.html`
+  - Task 33（受講証・修了証書メール交付）: 「受講証交付」→ `https://morikawa001.github.io/seminar/license.html`
+- ✅ `css/styles.css` に `.task-link-btn` クラスを新設（`color-mix` による dark/light テーマ対応、`manual-btn` と同系統の配色）
+- ✅ リンクURLはサイドバーの既存ボタンと同一の GitHub Pages URL を使用（`target="_blank"` で別タブ表示）
+- ⚠️ 変更対象は `index.html` / `css/styles.css` のみ。JS・他ページは未変更。コミット `6ea2c5e`。ブラウザでの Dark/Light 手動確認はユーザーが実施
+
 ### 2026-08-02: app.js モノリス構造の分割（機能・見た目は不変）
 - ✅ `js/app.js`（3146行）から純粋な依存のないコードを3ファイルに分離し、2720行に削減
   - `js/app-constants.js`（新規・197行）: `DEFAULT_HEADERS` / `fullKeys` / `TASK_IDS` / `HEAD_TEXT_*` / `COHOST_*` / `CLOSING_TEXT_*` / `MERGE_MIME_MAP` / `SPARE_BUTTONS` 等の定数
