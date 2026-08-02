@@ -658,6 +658,39 @@ label[for="templateFiles"] {
   background:var(--panel3);
   color:var(--green);
 }
+.task-link-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:28px;
+  padding:0 10px;
+  border:1px solid color-mix(in srgb, var(--green) 22%, var(--line));
+  border-radius:6px;
+  background:color-mix(in srgb, var(--green) 4%, var(--button-bg));
+  color:var(--green);
+  font-size:.72rem;
+  font-weight:700;
+  letter-spacing:.04em;
+  white-space:nowrap;
+  text-decoration:none;
+  opacity:.85;
+  transition:all 150ms ease;
+  flex-shrink:0;
+}
+.task-link-btn:hover{
+  background:color-mix(in srgb, var(--green) 10%, var(--panel3));
+  border-color:color-mix(in srgb, var(--green) 38%, var(--line2));
+  opacity:1;
+}
+[data-theme="light"] .task-link-btn{
+  color:#0f6cbd;
+  border-color:rgba(15,108,189,.28);
+  background:rgba(15,108,189,.04);
+}
+[data-theme="light"] .task-link-btn:hover{
+  background:rgba(15,108,189,.09);
+  border-color:rgba(15,108,189,.42);
+}
 @media (max-width:1240px){
   .hero-grid,.main-grid,.dual-grid,.parameter-wrap,
   .two-col-grid,.two-col-grid.tc-row,.two-col-grid.entry-row{grid-template-columns:1fr}
