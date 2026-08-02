@@ -1602,9 +1602,13 @@ html{scroll-behavior:smooth}
 .hero-btn-grid{
   display:grid;grid-template-columns:repeat(6,1fr);gap:3px;
   padding:4px 0 8px;
+  container-type:inline-size;
 }
 .hero-btn-grid .manual-btn{
   justify-content:center;font-size:.65rem;padding:8px 2px;min-height:38px;
+  font-size:2.5cqi;
+  line-height:1.15;
+  white-space:nowrap;
 }
 /* ── Master Table (seminar-manager style) ── */
 #masterTableSection .tw{background:var(--panel2);border:1px solid var(--line);border-radius:8px;overflow:hidden}
