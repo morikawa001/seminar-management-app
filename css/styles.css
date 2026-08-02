@@ -292,6 +292,12 @@ input[readonly],textarea[readonly]{
 #recordSelect option{
   text-align:left;
 }
+#quickRecordSelect{
+  text-align:left;
+  text-align-last:left;
+  justify-content:flex-start;
+  padding-left:14px;
+}
 .btn:hover{
   background:var(--panel3);
 }
