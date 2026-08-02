@@ -1099,6 +1099,9 @@ label[for="templateFiles"] {
 .tc-reason{font-size:.85rem;color:var(--muted)}
 .tc-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .tc-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
   min-height:34px;
   padding:0 13px;
   border-radius:8px;
