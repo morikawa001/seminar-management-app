@@ -447,6 +447,51 @@
     html.white .iedit-hint{color:#b0b0b0;font-family:var(--jp);letter-spacing:.02em}
 
     /* ============================================================
+       進行表 各項目 左側 進行ガイド（タイムライン＋マーカー）
+    ============================================================ */
+    .pg-item{display:grid;grid-template-columns:92px 1fr;gap:12px;align-items:start}
+    .pg-guide{
+      display:flex;flex-direction:column;align-items:center;gap:5px;
+      padding-top:3px;text-align:center;flex-shrink:0;
+    }
+    .pg-anchor{
+      font-family:var(--orb);font-size:.95rem;font-weight:700;
+      color:var(--green);text-shadow:var(--glow);letter-spacing:.04em;line-height:1.15;
+      transition:color .35s,text-shadow .35s;
+    }
+    html.white .pg-anchor{font-family:var(--jp);color:#0f6cbd;text-shadow:none;font-weight:700}
+    .pg-track{
+      position:relative;width:3px;height:64px;
+      background:var(--gline-color);border-radius:2px;
+    }
+    .pg-notch{
+      position:absolute;left:-4px;width:11px;height:2px;
+      background:var(--amber);border-radius:2px;opacity:.85;
+    }
+    html.white .pg-notch{background:#b45309}
+    .pg-marker{
+      position:absolute;left:50%;top:6px;width:13px;height:13px;
+      margin-left:-6.5px;border-radius:50%;
+      background:var(--gbar-bg);box-shadow:var(--gbar-shadow);
+      transition:top .9s cubic-bezier(.4,0,.2,1);
+    }
+    .pg-evlabel{font-size:.58rem;letter-spacing:.06em;color:var(--textdim);text-transform:uppercase}
+    html.white .pg-evlabel{font-family:var(--jp);letter-spacing:.02em;color:#9a9a9a}
+    .pg-state{
+      font-size:.6rem;letter-spacing:.1em;padding:1px 7px;border-radius:4px;
+      border:1px solid transparent;line-height:1.5;
+    }
+    .pg-state.wait{color:var(--textdim);border-color:var(--gdim);opacity:.7}
+    .pg-state.now{
+      color:var(--green);border-color:var(--green);text-shadow:var(--glow);
+      background:rgba(56,180,255,.08);
+    }
+    html.white .pg-state.now{color:#0f6cbd;border-color:#0f6cbd;text-shadow:none}
+    .pg-state.done{color:var(--amber);border-color:var(--amber)}
+    html.white .pg-state.done{color:#b45309;border-color:#b45309}
+    .pg-content{display:flex;flex-direction:column;gap:6px;min-width:0}
+
+    /* ============================================================
        質疑応答 定型文パネル
     ============================================================ */
     .qa-box{
@@ -556,6 +601,9 @@
       .tl-card{flex:none;height:600px}
       .main{grid-template-rows:auto auto;overflow:visible;height:auto}
       .intro-stack{max-height:none;overflow:visible}
+      .pg-item{grid-template-columns:70px 1fr;gap:8px}
+      .pg-anchor{font-size:.82rem}
+      .pg-track{height:54px}
       .aw{width:110px;height:110px}
       .hh{height:26px} .mh{height:37px} .sh{height:43px}
       .dtime{font-size:1.45rem}
@@ -729,20 +777,44 @@
 
   <section class="main">
     <div class="pnl intro-stack">
-      <div class="ibox">
-        <div class="ilbl">▸ 進行表導入_INTRO_1<div class="font-ctrl"><button class="font-ctrl-btn" onclick="adjFont('i1',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-i1">標準</span><button class="font-ctrl-btn" onclick="adjFont('i1',1)" aria-label="文字拡大">A＋</button></div></div>
-        <div class="ival" id="i1" contenteditable="true" data-placeholder="CSVを読み込むか直接入力してください"></div>
-        <div class="iedit-hint">クリックして直接編集できます</div>
+      <div class="ibox pg-item">
+        <div class="pg-guide">
+          <div class="pg-anchor" id="pganchor-i1">--:--</div>
+          <div class="pg-track"><div class="pg-notch" id="pgnotch-i1"></div><div class="pg-marker" id="pgmark-i1"></div></div>
+          <div class="pg-evlabel" id="pglabel-i1">--</div>
+          <div class="pg-state wait" id="pgstate-i1">待機</div>
+        </div>
+        <div class="pg-content">
+          <div class="ilbl">▸ 進行表導入_INTRO_1<div class="font-ctrl"><button class="font-ctrl-btn" onclick="adjFont('i1',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-i1">標準</span><button class="font-ctrl-btn" onclick="adjFont('i1',1)" aria-label="文字拡大">A＋</button></div></div>
+          <div class="ival" id="i1" contenteditable="true" data-placeholder="CSVを読み込むか直接入力してください"></div>
+          <div class="iedit-hint">クリックして直接編集できます</div>
+        </div>
       </div>
-      <div class="ibox">
-        <div class="ilbl">▸ 趣旨説明_INTRO_2<div class="font-ctrl"><button class="font-ctrl-btn" onclick="adjFont('i2',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-i2">標準</span><button class="font-ctrl-btn" onclick="adjFont('i2',1)" aria-label="文字拡大">A＋</button></div></div>
-        <div class="ival" id="i2" contenteditable="true" data-placeholder="CSVを読み込むか直接入力してください"></div>
-        <div class="iedit-hint">クリックして直接編集できます</div>
+      <div class="ibox pg-item">
+        <div class="pg-guide">
+          <div class="pg-anchor" id="pganchor-i2">--:--</div>
+          <div class="pg-track"><div class="pg-notch" id="pgnotch-i2"></div><div class="pg-marker" id="pgmark-i2"></div></div>
+          <div class="pg-evlabel" id="pglabel-i2">--</div>
+          <div class="pg-state wait" id="pgstate-i2">待機</div>
+        </div>
+        <div class="pg-content">
+          <div class="ilbl">▸ 趣旨説明_INTRO_2<div class="font-ctrl"><button class="font-ctrl-btn" onclick="adjFont('i2',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-i2">標準</span><button class="font-ctrl-btn" onclick="adjFont('i2',1)" aria-label="文字拡大">A＋</button></div></div>
+          <div class="ival" id="i2" contenteditable="true" data-placeholder="CSVを読み込むか直接入力してください"></div>
+          <div class="iedit-hint">クリックして直接編集できます</div>
+        </div>
       </div>
-      <div class="ibox">
-        <div class="ilbl">▸ 講師紹介_INTRO_3<div class="font-ctrl"><button class="font-ctrl-btn" onclick="adjFont('i3',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-i3">標準</span><button class="font-ctrl-btn" onclick="adjFont('i3',1)" aria-label="文字拡大">A＋</button></div></div>
-        <div class="ival" id="i3" contenteditable="true" data-placeholder="CSVを読み込むか直接入力してください"></div>
-        <div class="iedit-hint">クリックして直接編集できます</div>
+      <div class="ibox pg-item">
+        <div class="pg-guide">
+          <div class="pg-anchor" id="pganchor-i3">--:--</div>
+          <div class="pg-track"><div class="pg-notch" id="pgnotch-i3"></div><div class="pg-marker" id="pgmark-i3"></div></div>
+          <div class="pg-evlabel" id="pglabel-i3">--</div>
+          <div class="pg-state wait" id="pgstate-i3">待機</div>
+        </div>
+        <div class="pg-content">
+          <div class="ilbl">▸ 講師紹介_INTRO_3<div class="font-ctrl"><button class="font-ctrl-btn" onclick="adjFont('i3',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-i3">標準</span><button class="font-ctrl-btn" onclick="adjFont('i3',1)" aria-label="文字拡大">A＋</button></div></div>
+          <div class="ival" id="i3" contenteditable="true" data-placeholder="CSVを読み込むか直接入力してください"></div>
+          <div class="iedit-hint">クリックして直接編集できます</div>
+        </div>
       </div>
 
       <!-- 質疑応答 定型文（トグル・デフォルト閉） -->
@@ -808,10 +880,18 @@
       </div>
 
       <!-- CLOSING_1 DB読み込み -->
-      <div class="ibox">
-        <div class="ilbl">▸ 進行表クロージング（選択）_CLOSING_1<div class="font-ctrl"><button class="font-ctrl-btn" onclick="adjFont('iclosing',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-iclosing">標準</span><button class="font-ctrl-btn" onclick="adjFont('iclosing',1)" aria-label="文字拡大">A＋</button></div></div>
-        <div class="ival" id="iclosing" contenteditable="true" data-placeholder="CSVを読み込むか直接入力してください"></div>
-        <div class="iedit-hint">クリックして直接編集できます</div>
+      <div class="ibox pg-item">
+        <div class="pg-guide">
+          <div class="pg-anchor" id="pganchor-iclosing">--:--</div>
+          <div class="pg-track"><div class="pg-notch" id="pgnotch-iclosing"></div><div class="pg-marker" id="pgmark-iclosing"></div></div>
+          <div class="pg-evlabel" id="pglabel-iclosing">--</div>
+          <div class="pg-state wait" id="pgstate-iclosing">待機</div>
+        </div>
+        <div class="pg-content">
+          <div class="ilbl">▸ 進行表クロージング（選択）_CLOSING_1<div class="font-ctrl"><button class="font-ctrl-btn" onclick="adjFont('iclosing',-1)" aria-label="文字縮小">A−</button><span class="font-ctrl-size" id="fcsz-iclosing">標準</span><button class="font-ctrl-btn" onclick="adjFont('iclosing',1)" aria-label="文字拡大">A＋</button></div></div>
+          <div class="ival" id="iclosing" contenteditable="true" data-placeholder="CSVを読み込むか直接入力してください"></div>
+          <div class="iedit-hint">クリックして直接編集できます</div>
+        </div>
       </div>
 
     </div>
@@ -841,7 +921,7 @@
   };
 
   /* ── アプリ状態 ── */
-  const ST = { rows:[], headers:[], events:[] };
+  const ST = { rows:[], headers:[], events:[], pgMap:{} };
 
   const EVENT_DEFS = [
     { key:'事前打合せ開始時間_PRE_MEETING', label:'事前打合せ' },
@@ -856,6 +936,13 @@
     { key:'進行表研修会趣旨説明_INTRO_2',     elId:'i2'      },
     { key:'進行表講師紹介_INTRO_3',           elId:'i3'      },
     { key:'進行表クロージング（選択）_CLOSING_1', elId:'iclosing'},
+  ];
+  /* 進行表各項目の左側ガイド：対応イベント時刻＋ウィンドウ範囲 */
+  const PG_DEFS = [
+    { elId:'i1',       eventKey:'研修会開始_START_1',     label:'研修会開始', winStart:'研修会開始_START_1', winEnd:'講義開始_START_TIME' },
+    { elId:'i2',       eventKey:'研修会開始_START_1',     label:'研修会開始', winStart:'研修会開始_START_1', winEnd:'講義開始_START_TIME' },
+    { elId:'i3',       eventKey:'講義開始_START_TIME',    label:'講義開始',   winStart:'研修会開始_START_1', winEnd:'講義開始_START_TIME' },
+    { elId:'iclosing', eventKey:'研修会終了_END_1',       label:'終了',       winStart:'質疑応答_QA_TIME',    winEnd:'研修会終了_END_1' },
   ];
   const LBL = { no:'起案行No', date:'開催日_DATE_1', title:'テーマ(標題)_TITLE' };
   const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -955,6 +1042,54 @@
     target.scrollIntoView({ behavior:'smooth', block:'nearest' });
   }
 
+  /* ── 進行表各項目の左側ガイド更新（タイムライン＋マーカー）── */
+  function renderPgGuides(now){
+    const nowMs = now.getTime();
+    PG_DEFS.forEach(function(def){
+      const tEl = document.getElementById('pganchor-' + def.elId);
+      if(!tEl) return;
+      const aMap = ST.pgMap[def.eventKey];
+      const sMap = ST.pgMap[def.winStart];
+      const eMap = ST.pgMap[def.winEnd];
+      tEl.textContent = (aMap && aMap.disp) ? aMap.disp : '--:--';
+      const lEl = document.getElementById('pglabel-' + def.elId);
+      if(lEl) lEl.textContent = def.label;
+      const mEl = document.getElementById('pgmark-' + def.elId);
+      const nEl = document.getElementById('pgnotch-' + def.elId);
+      const stEl = document.getElementById('pgstate-' + def.elId);
+      const t0 = sMap && sMap.date ? sMap.date.getTime() : null;
+      const t1 = eMap && eMap.date ? eMap.date.getTime() : null;
+      if(t0 === null || t1 === null || t1 <= t0){
+        if(mEl) mEl.style.top = '6px';
+        if(nEl) nEl.style.display = 'none';
+        if(stEl){ stEl.textContent = '待機'; stEl.className = 'pg-state wait'; }
+        return;
+      }
+      let pct;
+      if(nowMs < t0) pct = 0;
+      else if(nowMs >= t1) pct = 100;
+      else pct = ((nowMs - t0) / (t1 - t0)) * 100;
+      const track = mEl ? mEl.parentElement : null;
+      const H = track ? track.offsetHeight : 64;
+      const PAD = 6, MARK = 13;
+      const maxTop = H - MARK - PAD;
+      if(mEl) mEl.style.top = Math.round(PAD + (pct / 100) * (maxTop - PAD)) + 'px';
+      let apct = 100;
+      if(aMap && aMap.date){
+        apct = Math.max(0, Math.min(100, ((aMap.date.getTime() - t0) / (t1 - t0)) * 100));
+      }
+      if(nEl){
+        nEl.style.display = 'block';
+        nEl.style.top = Math.round(PAD + (apct / 100) * (maxTop - PAD)) + 'px';
+      }
+      if(stEl){
+        if(nowMs >= t1){ stEl.textContent = '完了'; stEl.className = 'pg-state done'; }
+        else if(nowMs >= t0){ stEl.textContent = '進行中'; stEl.className = 'pg-state now'; }
+        else { stEl.textContent = '待機'; stEl.className = 'pg-state wait'; }
+      }
+    });
+  }
+
   /* ── デジタル時計 tick ── */
   function tickClock(){
     const n = new Date();
@@ -968,6 +1103,7 @@
     document.getElementById('mh').style.transform = `rotate(${m*6+s*0.1}deg)`;
     document.getElementById('sh').style.transform = `rotate(${s*6}deg)`;
     updateGuide(n);
+    renderPgGuides(n);
   }
   setInterval(tickClock, 1000);
   tickClock();
@@ -1078,7 +1214,14 @@
       const disp=typeof raw==='number'?xlTime(raw):String(raw||'');
       return{...def,disp,date:toDate(raw)};
     }).filter(e=>e.date);
+    const pgMap={};
+    EVENT_DEFS.forEach(def=>{
+      const raw=row[def.key]??'';
+      pgMap[def.key]={disp:typeof raw==='number'?xlTime(raw):String(raw||''),date:toDate(raw)};
+    });
+    ST.pgMap=pgMap;
     renderEvents();
+    renderPgGuides(new Date());
     // DOM更新後に1フレーム待ってからガイド計算
     requestAnimationFrame(() => updateGuide(new Date()));
     document.getElementById('ssel').value=String(idx);
@@ -1200,6 +1343,7 @@
     ST.rows = [];
     ST.headers = [];
     ST.events = [];
+    ST.pgMap = {};
     document.getElementById('ssel').innerHTML = '<option value="">── 研修会を選択してください ──</option>';
     document.getElementById('ssel').disabled = true;
     document.getElementById('sbfile').textContent = 'FILE: —';
@@ -1207,6 +1351,7 @@
     document.getElementById('olog').textContent = '> ログアウトしました。';
     document.getElementById('tlst').textContent = '待機中';
     document.getElementById('evlist').innerHTML = '<div class="empty">スケジュールデータなし</div>';
+    renderPgGuides(new Date());
   };
 
   // ログイン済みの場合の再チェック
