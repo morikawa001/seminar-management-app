@@ -9,18 +9,23 @@
 
 ## ファイル構成
 ```
-index.html                    # HTML構造 + ログイン画面（1093行）
+index.html                    # HTML構造 + ログイン画面（1096行）
 css/theme-base.css            # CSS変数定義・テーマ切替・ベーススタイル（53行）
-css/styles.css                # 全コンポーネントスタイル（1711行）
+css/styles.css                # 全コンポーネントスタイル（1727行）
 js/theme-toggle.js            # SharedTheme オブジェクト（IIFE, 19行）
 js/firebase-config.js         # Firebase Auth + Firestore CRUD（IIFE, 117行）
-js/app.js                     # 全アプリケーションロジック（3219行, 最大ファイル）
-js/csv-utils.js               # CSV パース・エクスポート（IIFE, 92行）
+js/app-constants.js           # 定数定義（DEFAULT_HEADERS / fullKeys / TASK_IDS / SPARE_BUTTONS 等, 197行）
+js/app-utils.js               # 純粋ユーティリティ（日付・時間・エスケープ関数, 75行）
+js/app-effects.js             # 背景コードキャンバス + Nixie時計（自己完結, 150行）
+js/app.js                     # アプリケーションロジック本体（2720行, 最大ファイル）
+js/csv-utils.js               # CSV パース・エクスポート（IIFE, 97行）
 js/name-lists.js              # 名字辞書
 js/matrix-rain.js             # 背景マトリックスレインエフェクト
 QR_reader.html                # QRファイル管理（別ページ、Firebase ES Module, 773行、ファイルQR/保管場所QR 2モード対応）
 ```
-**読み込み順（重要）**: theme-base.css → styles.css → 外部CDN → theme-toggle.js → firebase-config.js → app.js → csv-utils.js → name-lists.js → matrix-rain.js
+**読み込み順（重要）**: theme-base.css → styles.css → 外部CDN → theme-toggle.js → firebase-config.js → **app-constants.js → app-utils.js → app-effects.js → app.js** → priority-engine.js → csv-utils.js → name-lists.js → matrix-rain.js
+- **app.js の分割規則**: 定数は `app-constants.js`、副作用のない純粋関数は `app-utils.js`、自己完結の描画エフェクトは `app-effects.js` に置く。`app.js` に残すのは DOM 参照・状態（`els`/`fields`/`rawRows`/`dataRows`）に依存するロジック。**3ファイルは app.js より前に必ず読み込む**（`const` の再宣言エラー防止）
+- 関数・定数はすべてグローバル（`onclick` 属性と `priority-engine.js` が参照するため）。新規抽出時は `node --check` に加え、`app-constants→app-utils→app-effects→app.js→priority-engine` の順で連結した構文チェックで重複宣言がないことを確認すること
 
 ## コードスタイルガイドライン
 
@@ -91,6 +96,16 @@ QR_reader.html                # QRファイル管理（別ページ、Firebase E
 - 公開対象のページのみ同期する（`seminar` リポジトリは公開用の独立ページのみ収録。`index.html` / `js/app.js` / `css/` は含まれない）
 
 ## 変更履歴
+
+### 2026-08-02: app.js モノリス構造の分割（機能・見た目は不変）
+- ✅ `js/app.js`（3146行）から純粋な依存のないコードを3ファイルに分離し、2720行に削減
+  - `js/app-constants.js`（新規・197行）: `DEFAULT_HEADERS` / `fullKeys` / `TASK_IDS` / `HEAD_TEXT_*` / `COHOST_*` / `CLOSING_TEXT_*` / `MERGE_MIME_MAP` / `SPARE_BUTTONS` 等の定数
+  - `js/app-utils.js`（新規・75行）: 日付・時間・エスケープ等の純粋ユーティリティ（`esc` / `safeName` / `parseShortJapaneseDate` / `isCheckedValue` / `boolToCsv` 等）
+  - `js/app-effects.js`（新規・150行）: 背景コードキャンバスとNixie時計（自己完結IIFE）
+- ✅ `index.html` の読み込み順を `app-constants.js → app-utils.js → app-effects.js → app.js → priority-engine.js` に変更
+- ✅ 全関数・定数は従来通りグローバル公開のまま（`onclick` 属性・`priority-engine.js` の参照を維持）
+- ✅ **検証**: 5ファイル（constants→utils→effects→app→priority-engine）を読み込み順に連結した `node --check` で重複宣言なし、DOMスタブによる実行テストで全ファイル正常ロードを確認
+- ⚠️ 変更対象は `index.html` / `js/app.js` / 新規3ファイルのみ。`css/`・他ページは未変更。ブラウザでの Dark/Light 手動確認はユーザーが実施
 
 ### 2026-08-02: コアJSのリファクタリング（構造改善＋セキュリティ強化。機能・見た目は不変）
 - ✅ `js/app.js` の重複 `ensureAdditionalHeaders` 定義（デッドコード）を削除。`senderOrg/senderSig` と `qr_saved_k1/k2/k3` を含む後方定義（`fullKeys` 使用版）を維持

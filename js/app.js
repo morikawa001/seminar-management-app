@@ -41,8 +41,6 @@ function resetAllTasks(){
 window.resetAllTasks = resetAllTasks;
 window.updateTaskProgress = updateTaskProgress;
 
-const TASK_IDS=['01','02','03','04','04a','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33'];
-
 
 function scrollToSection(id){
   const el = document.getElementById(id);
@@ -95,182 +93,6 @@ document.addEventListener('DOMContentLoaded',function(){
 
 const themeBtnEl=document.getElementById('themeBtn');
 if(themeBtnEl) themeBtnEl.addEventListener('click',SharedTheme.toggleTheme);
-
-const DEFAULT_HEADERS=[
-  '起案行No',
-  '年度_YEAR_1',
-  '開催日_DATE_1',
-  '曜日 _DAY',
-  '講義開始_START_TIME',
-  '研修会開始_START_1',
-  '研修会終了_END_1',
-  '質疑応答締切_QA_DADLINE',
-  '質疑応答_QA_TIME',
-  '事前打合せ開始時間_PRE_MEETING',
-  '研修会入室開始時間_TIME_1',
-  '時間（分）_TIME_2',
-  '〆切院外_DEADLINE_1',
-  '〆切時間院内_DEADLINE_2',
-  '配布資料DL〆切_DEADLINE_3',
-  'テーマ(標題)_TITLE',
-  '担当講師_SPEAKER',
-  '対象_SUBJECT_1',
-  '対象詳細_SUBJECT_2',
-  '講演場所_SITE',
-  '共催_COHOST_1',
-  '共催3(選択）_COHOST_3',
-  'オリエンテーションスライドヘッダー_HEAD_1',
-  '進行表クロージング（選択）_CLOSING_1',
-  '起案1開催DATE_KIAN_1',
-  '起案2資料_DATE_KIAN_2',
-  '起案3受講証修了証_DATE_KIAN_3',
-  'HP案内開始チラシ配布',
-  '謝金_COST',
-  '目的_PURPOSE',
-  'メール用研修会開催日付_DATE_2',
-  '名前_NAME',
-  'Zoom_ID_WEBINER_ID',
-  'zoom_url_zoom_url',
-  'HP_URL_url_1',
-  'Zoom_パスコード_PASSCODE',
-  '進行表導入_INTRO_1',
-  '進行表研修会趣旨説明_INTRO_2',
-  '進行表講師紹介_INTRO_3',
-  '講義資料提供の締切_DATA_deadline',
-  '起案1チェック_CHECK_K1',
-  'HPチェック_CHECK_HP',
-  '起案2チェック_CHECK_K2',
-  '起案3チェック_CHECK_K3',
-  '差出人_所属_ORG',
-  '差出人_担当者_NAME',
-  '差出人_署名_SIGNATURE',
-  '研修会演題と目的案を作成_CHECK',
-  '講師にメールで確認_CHECK',
-  'HPブランチ作成依頼_CHECK',
-  'WordPress設定予約投稿_CHECK',
-  '講師依頼状兼業依頼提出CHECK', // ← task04a を追加
-  '起案1_開催_CHECK',
-  'HP公開設定依頼_CHECK',
-  'HP公開受付開始_CHECK',
-  'HP公開開始案内メール_CHECK',
-  '電子カルテ掲示板掲載確認_CHECK',
-  '院内チラシ1回目配布_CHECK',
-  '院内チラシ2回目配布_CHECK',
-  '講師リマインドメール_CHECK',
-  '講師スライド入手_CHECK',
-  '共催企画人材班協力要請_CHECK',
-  '事前受付終了Webリスト書出し_CHECK',
-  '起案2_資料_CHECK',
-  '追加資料有無確認_CHECK',
-  '企画人材班配布資料共有_CHECK',
-  '防災センター報告_CHECK',
-  '講師受講者リマインド1_CHECK',
-  '研修会当日準備_CHECK',
-  '講師受講者リマインド2_CHECK',
-  'PCシステム更新確認_CHECK',
-  '研修会本番_CHECK',
-  'Zoomレポートダウンロード_CHECK',
-  '会場参加者データ企画人材班_CHECK',
-  '出席者受講者リスト入力_CHECK',
-  '起案3_受講証_CHECK',
-  '講師へお礼連絡_CHECK',
-  '受講者数内訳報告_CHECK',
-  '謝金支払い_CHECK',
-  '謝金講師メール_CHECK',
-  '受講証修了証メール交付_CHECK',
-  'qr_saved_k1',
-  'qr_saved_k2',
-  'qr_saved_k3',
-  'qr_storage_loc'
-];
-
-const fullKeys={
-  no:'起案行No',
-  year:'年度_YEAR_1',
-  date:'開催日_DATE_1',
-  day:'曜日 _DAY',
-  lectureStart:'講義開始_START_TIME',
-  start:'研修会開始_START_1',
-  end:'研修会終了_END_1',
-  qaDeadline:'質疑応答締切_QA_DADLINE',
-  qaTime:'質疑応答_QA_TIME',
-  preMeeting:'事前打合せ開始時間_PRE_MEETING',
-  roomOpen:'研修会入室開始時間_TIME_1',
-  duration:'時間（分）_TIME_2',
-  deadline1:'〆切院外_DEADLINE_1',
-  deadline2:'〆切時間院内_DEADLINE_2',
-  deadline3:'配布資料DL〆切_DEADLINE_3',
-  title:'テーマ(標題)_TITLE',
-  speaker:'担当講師_SPEAKER',
-  subject:'対象_SUBJECT_1',
-  subject2:'対象詳細_SUBJECT_2',
-  site:'講演場所_SITE',
-  cohost:'共催_COHOST_1',
-  cohost3:'共催3(選択）_COHOST_3',
-  head1:'オリエンテーションスライドヘッダー_HEAD_1',
-  closing1:'進行表クロージング（選択）_CLOSING_1',
-  k1:'起案1開催DATE_KIAN_1',
-  k2:'起案2資料_DATE_KIAN_2',
-  k3:'起案3受講証修了証_DATE_KIAN_3',
-  hp:'HP案内開始チラシ配布',
-  cost:'謝金_COST',
-  purpose:'目的_PURPOSE',
-  date2:'メール用研修会開催日付_DATE_2',
-  name:'名前_NAME',
-  zoomId:'Zoom_ID_WEBINER_ID',
-  zoomUrl:'zoom_url_zoom_url',
-  hpUrl:'HP_URL_url_1',
-  passcode:'Zoom_パスコード_PASSCODE',
-  intro1:'進行表導入_INTRO_1',
-  intro2:'進行表研修会趣旨説明_INTRO_2',
-  intro3:'進行表講師紹介_INTRO_3',
-  dataDeadline:'講義資料提供の締切_DATA_deadline',
-  checkK1:'起案1チェック_CHECK_K1',
-  checkHp:'HPチェック_CHECK_HP',
-  checkK2:'起案2チェック_CHECK_K2',
-  checkK3:'起案3チェック_CHECK_K3',
-  senderOrg:'差出人_所属_ORG',
-  senderName:'差出人_担当者_NAME',
-  senderSig:'差出人_署名_SIGNATURE',
-  task01:'研修会演題と目的案を作成_CHECK',
-  task02:'講師にメールで確認_CHECK',
-  task03:'HPブランチ作成依頼_CHECK',
-  task04:'WordPress設定予約投稿_CHECK',
-  task04a:'講師依頼状兼業依頼提出CHECK',
-  task05:'起案1_開催_CHECK',
-  task06:'HP公開設定依頼_CHECK',
-  task07:'HP公開受付開始_CHECK',
-  task08:'HP公開開始案内メール_CHECK',
-  task09:'電子カルテ掲示板掲載確認_CHECK',
-  task10:'院内チラシ1回目配布_CHECK',
-  task11:'院内チラシ2回目配布_CHECK',
-  task12:'講師リマインドメール_CHECK',
-  task13:'講師スライド入手_CHECK',
-  task14:'共催企画人材班協力要請_CHECK',
-  task15:'事前受付終了Webリスト書出し_CHECK',
-  task16:'起案2_資料_CHECK',
-  task17:'追加資料有無確認_CHECK',
-  task18:'企画人材班配布資料共有_CHECK',
-  task19:'防災センター報告_CHECK',
-  task20:'講師受講者リマインド1_CHECK',
-  task21:'研修会当日準備_CHECK',
-  task22:'講師受講者リマインド2_CHECK',
-  task23:'PCシステム更新確認_CHECK',
-  task24:'研修会本番_CHECK',
-  task25:'Zoomレポートダウンロード_CHECK',
-  task26:'会場参加者データ企画人材班_CHECK',
-  task27:'出席者受講者リスト入力_CHECK',
-  task28:'起案3_受講証_CHECK',
-  task29:'講師へお礼連絡_CHECK',
-  task30:'受講者数内訳報告_CHECK',
-  task31:'謝金支払い_CHECK',
-  task32:'謝金講師メール_CHECK',
-  task33:'受講証修了証メール交付_CHECK',
-  qrK1Saved:'qr_saved_k1',
-  qrK2Saved:'qr_saved_k2',
-  qrK3Saved:'qr_saved_k3',
-  qrStorageLoc:'qr_storage_loc'
-};
 
 const els={
   csvFile:document.getElementById('csvFile'),
@@ -391,16 +213,6 @@ const fields={
 
 let currentHeaders=[], rawRows=[], dataRows=[], selectedRow=null, stagedRow=null, lastSaveMode='', selectedTemplates=[];
 // チェック時に即時 rawRows へ書き込む方式を使用（pendingChecks廃止）
-
-const HEAD_TEXT_DEFAULT='2026年度　臨床研究研修会';
-const HEAD_TEXT_COHOST='2026年度　臨床腫瘍学コース・臨床研究研修会（共催）';
-const COHOST_OPTION_NONE='なし';
-const COHOST_OPTION_TEAM='企画人材班';
-const COHOST3_TEXT_TEAM='臨床腫瘍学コースとの共催';
-
-const CLOSING_TEXT_RESEARCHER='司会:（研究者） 本日の研修の受講証を希望する方は、終了後のアンケートよりお申込みください。 なお、受講証につきましては、研修会開始から質疑応答終了までの時間のうち3/4以上を聴講した方で、 希望される方に発行いたします。 また、本研修会の修了証書の発行につきまして、修了証書をご希望の方は、 今回を含め、研究者対象の研修会を3回以上受講した方のみ、お申込みいただけます。 対象の研修会を3回受講された方で、修了証の発行をご希望の方は、アンケートよりお申し込みください。 ＜スライド切り替え＞ 最後になりますが、受講者の皆様には、アンケートへのご回答、ご協力をお願いいたします。 ウェビナー退室後にアンケートが表示されますので、 ご回答後に送信ボタンを押して提出してください。 本日は、2026年度_静岡がんセンター臨床研究研修会にご参加いただき、どうもありがとうございました。 本ウェビナーはまもなく切断いたします。';
-const CLOSING_TEXT_SUPPORT='司会:（支援者） 本日の研修の受講証を希望する方は、終了後のアンケートよりお申込みください。 なお、受講証につきましては、研修会開始から質疑応答終了までの時間のうち3/4以上を聴講した方で、 希望される方に発行いたします。 また、本研修会の修了証書の発行につきまして、修了証書をご希望の方は、 今回を含め、研究支援者対象の研修会を3回以上受講した方のみ、お申込みいただけます。 対象の研修会を3回受講された方で、修了証の発行をご希望の方は、アンケートよりお申し込みください。 ＜スライド切り替え＞ 最後になりますが、受講者の皆様には、アンケートへのご回答、ご協力をお願いいたします。 ウェビナー退室後にアンケートが表示されますので、 ご回答後に送信ボタンを押して提出してください。 本日は、2026年度_静岡がんセンター臨床研究研修会にご参加いただき、どうもありがとうございました。 本ウェビナーはまもなく切断いたします。';
-const CLOSING_TEXT_COMMITTEE='司会:（委員会） 本日の研修の受講証を希望する方は、終了後のアンケートよりお申込みください。 なお、受講証につきましては、研修会開始から質疑応答終了までの時間のうち3/4以上を聴講した方で、 希望される方に発行いたします。 ＜スライド切り替え＞ 最後になりますが、受講者の皆様には、アンケートへのご回答、ご協力をお願いいたします。 ウェビナー退室後にアンケートが表示されますので、 ご回答後に送信ボタンを押して提出してください。 本日は、2026年度_静岡がんセンター臨床研究研修会にご参加いただき、どうもありがとうございました。 本ウェビナーはまもなく切断いたします。';
 
 els.csvFile.addEventListener('change',loadCsv);
 els.templateFiles.addEventListener('change',handleTemplateFiles);
@@ -676,7 +488,6 @@ function embedQRImageInZip(zip,ext,blob){
     reader.readAsArrayBuffer(blob);
   });
 }
-const MERGE_MIME_MAP={docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'};
 async function mergeTemplateZip(file,row){
   const arrayBuffer=await file.arrayBuffer();
   const zip=new PizZip(arrayBuffer);
@@ -1043,11 +854,6 @@ function applyScheduleChecksFromRow(row){
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=isCheckedValue(row?.[fullKeys['task'+id]]);}
   updateTaskProgress();
 }
-function isCheckedValue(v){
-  const s=String(v??'').trim().toLowerCase();
-  return ['1','true','yes','y','on','checked','済','済み','done'].includes(s);
-}
-function boolToCsv(v){return v?'1':'0'}
 
 function prefillFromLast(){
   const last=dataRows[dataRows.length-1];
@@ -1513,41 +1319,6 @@ function clickTableRow(no){
   if(sec)sec.scrollIntoView({behavior:'smooth',block:'start'});
 }
 window.clickTableRow=clickTableRow;
-function parseMonthDayText(v, yearText){
-  const m=String(v||'').match(/(\d{1,2})\/(\d{1,2})/);
-  const y=String(yearText||'').match(/(\d{4})/);
-  return m&&y?new Date(`${y[1]}-${String(m[1]).padStart(2,'0')}-${String(m[2]).padStart(2,'0')}T00:00:00`):null;
-}
-function parseAlertDateByEvent(rawValue, eventDateRaw, yearText){
-  const raw=String(rawValue||'').trim();
-  if(!raw) return null;
-
-  const eventDate=parseShortJapaneseDate(eventDateRaw, yearText);
-  if(!eventDate) return null;
-
-  let target=null;
-
-  if(/\d{1,2}\/\d{1,2}/.test(raw) || /\d{1,2}月\d{1,2}日/.test(raw)){
-    target=parseMonthDayText(
-      raw.replace(/（.*?）/g,'').replace(/\(.*?\)/g,'').replace('月','/').replace('日',''),
-      yearText
-    );
-  }else{
-    return null;
-  }
-
-  if(!target) return null;
-
-  if(target > eventDate){
-    target.setFullYear(target.getFullYear()-1);
-  }
-  return target;
-}
-function daysBetween(a,b){
-  const x=new Date(a.getFullYear(),a.getMonth(),a.getDate());
-  const y=new Date(b.getFullYear(),b.getMonth(),b.getDate());
-  return Math.round((y-x)/86400000);
-}
 function collectDeadlineAlerts(){
   const today=new Date();
   const baseToday=new Date(today.getFullYear(),today.getMonth(),today.getDate());
@@ -1787,41 +1558,6 @@ function downloadCsv(){
 }
 
 function setStatus(msg){els.statusBox.textContent=msg}
-function weekdayJa(iso){return iso?['日','月','火','水','木','金','土'][new Date(iso+'T00:00:00').getDay()]:''}
-function addDays(d,days){const x=new Date(d);x.setDate(x.getDate()+days);return x}
-function fmtDate(d){return d?`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`:'-'}
-function fmtMonthDay(d){return d?`${d.getMonth()+1}/${d.getDate()}`:''}
-function formatMonthDayWeek(d){if(!d)return'';const w=['日','月','火','水','木','金','土'][d.getDay()];return `${d.getMonth()+1}月${d.getDate()}日（${w}）`}
-function parseShortJapaneseDate(v,yearText){
-  const m=String(v||'').match(/(\d{1,2})月\s*(\d{1,2})日|^(\d{1,2})\/(\d{1,2})$/);
-  const y=String(yearText||'').match(/(\d{4})/);
-  if(!m||!y)return null;
-  const mm=m[1]||m[3],dd=m[2]||m[4];
-  return new Date(`${y[1]}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}T00:00:00`);
-}
-function toIsoDateFromShortDate(v,yearText){
-  const d=parseShortJapaneseDate(v,yearText);
-  return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`:'';
-}
-function diffMin(a,b){const [ah,am]=a.split(':').map(Number),[bh,bm]=b.split(':').map(Number);return (bh*60+bm)-(ah*60+am)}
-function shiftTime(hhmm,diff){
-  const mins=timeToMinutes(hhmm);
-  if(mins==null)return'';
-  const shifted=mins+diff;
-  const normalized=((shifted%1440)+1440)%1440;
-  return minutesToTime(normalized);
-}
-function timeToMinutes(hhmm){const m=String(hhmm||'').match(/^(\d{2}):(\d{2})$/);return m?Number(m[1])*60+Number(m[2]):null}
-function minutesToTime(mins){const h=Math.floor(mins/60),m=mins%60;return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`}
-function formatDeadline1(isoDate){
-  const base=new Date(isoDate+'T00:00:00');
-  base.setDate(base.getDate()-8);
-  const week=['日','月','火','水','木','金','土'][base.getDay()];
-  return `${base.getMonth()+1}月${base.getDate()}日（${week}）12:00`;
-}
-function normTime(v){const m=String(v||'').match(/(\d{1,2}):(\d{2})/);return m?`${m[1].padStart(2,'0')}:${m[2]}`:''}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function safeName(s){return String(s).replace(/[\\/:*?"<>|\s]+/g,'-')}
 
 syncCohostFields();
 recalcDraft();
@@ -1930,157 +1666,6 @@ async function runAiBrushup(){
   }
 }
 
-/* ── Background Code Canvas ── */
-window.addEventListener('load', function(){
-  const canvas = document.getElementById('bgCodeCanvas');
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-
-  const RAW_LINES = document.documentElement.outerHTML
-    .split('\n')
-    .map(function(l){ return l.trim(); })
-    .filter(function(l){ return l.length > 4 && l.length < 120; });
-
-  const FONT_SIZE = 11;
-  const FONT = FONT_SIZE + "px 'Share Tech Mono','Courier New',monospace";
-  const COL_W = 360;
-  const SPEED_MIN = 0.20;
-  const SPEED_MAX = 0.60;
-  const COLORS = [
-    'rgba(40,170,255,',
-    'rgba(0,200,235,',
-    'rgba(180,100,255,',
-    'rgba(255,140,0,',
-  ];
-
-  var cols = [];
-  var nodeCache = null;
-  var nodeW = 0, nodeH = 0;
-  var raf = null;
-
-  function resize(){
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-    nodeCache = null;
-  }
-
-  function pickLines(n){
-    var arr = [];
-    for(var i=0;i<n;i++)
-      arr.push(RAW_LINES[Math.floor(Math.random()*RAW_LINES.length)]);
-    return arr;
-  }
-
-  function initCols(){
-    resize();
-    var n = Math.ceil(canvas.width / COL_W) + 1;
-    cols = [];
-    for(var i=0;i<n;i++){
-      var lc = Math.floor(8 + Math.random()*10);
-      cols.push({
-        x: i * COL_W,
-        y: -Math.random() * canvas.height,
-        speed: SPEED_MIN + Math.random()*(SPEED_MAX-SPEED_MIN),
-        color: COLORS[i % COLORS.length],
-        lineCount: lc,
-        lines: pickLines(lc)
-      });
-    }
-  }
-
-  function getNodes(){
-    if(nodeCache && nodeW===canvas.width && nodeH===canvas.height) return nodeCache;
-    var GS=40; nodeW=canvas.width; nodeH=canvas.height; nodeCache=[];
-    for(var x=0;x<nodeW;x+=GS)
-      for(var y=0;y<nodeH;y+=GS)
-        if(Math.random()<0.18) nodeCache.push({x:x,y:y});
-    return nodeCache;
-  }
-
-  function drawGrid(){
-    var GS=40;
-    ctx.strokeStyle='rgba(40,150,255,0.05)';
-    ctx.lineWidth=0.5;
-    for(var x=0;x<canvas.width;x+=GS){
-      ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();
-    }
-    for(var y=0;y<canvas.height;y+=GS){
-      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();
-    }
-    var nodes=getNodes();
-    ctx.fillStyle='rgba(40,170,255,0.14)';
-    for(var i=0;i<nodes.length;i++){
-      ctx.beginPath();ctx.arc(nodes[i].x,nodes[i].y,1.4,0,Math.PI*2);ctx.fill();
-    }
-  }
-
-  function drawFrame(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    drawGrid();
-    ctx.font=FONT;
-    ctx.textBaseline='top';
-    var LH=FONT_SIZE+3;
-    for(var ci=0;ci<cols.length;ci++){
-      var col=cols[ci];
-      for(var li=0;li<col.lines.length;li++){
-        var fy=col.y+li*LH;
-        if(fy<-LH||fy>canvas.height) continue;
-        var ratio=1-li/col.lineCount;
-        var alpha=(0.05+ratio*0.25).toFixed(3);
-        ctx.fillStyle=col.color+alpha+')';
-        ctx.fillText(col.lines[li],col.x,fy);
-      }
-      col.y+=col.speed;
-      if(col.y>canvas.height+LH*2){
-        col.y=-(col.lineCount*LH)-Math.random()*200;
-        col.lines=pickLines(col.lineCount);
-        col.speed=SPEED_MIN+Math.random()*(SPEED_MAX-SPEED_MIN);
-      }
-    }
-  }
-
-  function loop(){ raf=requestAnimationFrame(loop); drawFrame(); }
-
-  initCols();
-  loop();
-
-  var resizeTimer;
-  window.addEventListener('resize',function(){
-    clearTimeout(resizeTimer);
-    resizeTimer=setTimeout(function(){
-      cancelAnimationFrame(raf);
-      initCols();
-      loop();
-    },200);
-  });
-});
-
-/* ── Nixie Clock ── */
-(function(){
-  const DOW_JA = ['日曜日','月曜日','火曜日','水曜日','木曜日','金曜日','土曜日'];
-  function pad(n){ return String(n).padStart(2,'0'); }
-  function tick(){
-    const now = new Date();
-    const yEl  = document.getElementById('nixieYear');
-    const moEl = document.getElementById('nixieMonth');
-    const dEl  = document.getElementById('nixieDay');
-    const hEl  = document.getElementById('nixieHour');
-    const miEl = document.getElementById('nixieMin');
-    const sEl  = document.getElementById('nixieSec');
-    const dwEl = document.getElementById('nixieDow');
-    if(!yEl) return;
-    yEl.textContent  = now.getFullYear();
-    moEl.textContent = pad(now.getMonth()+1);
-    dEl.textContent  = pad(now.getDate());
-    hEl.textContent  = pad(now.getHours());
-    miEl.textContent = pad(now.getMinutes());
-    sEl.textContent  = pad(now.getSeconds());
-    dwEl.textContent = DOW_JA[now.getDay()];
-  }
-  tick();
-  setInterval(tick, 1000);
-})();
-
 function toggleTaskBody(){
   const body = document.getElementById('taskBody');
   const btn  = document.getElementById('taskToggleBtn');
@@ -2121,17 +1706,6 @@ function clearAiBrushup(){
   if(copyBtn) copyBtn.disabled = true;
 }
 window.clearAiBrushup = clearAiBrushup;
-
-// ============================================================
-// 予備ボタン設定 — ここを直接編集するだけでURL・ラベルを変更できます
-// ============================================================
-const SPARE_BUTTONS = {
-  1: { url: 'http://10.6.186.1/cms/maintenance-login.php?loggedout=true&wp_lang=ja', label: 'HP編集' },
-  2: { url: 'https://zoom.us/signin#/login', label: 'Zoom' },
-  3: { url: 'https://www.scchr.jp/clinicaltrial/cscc_seminar/index.html', label: 'SCC_HP' },
-  4: { url: 'https://morikawa001.github.io/seminar/qr_maker.html', label: 'QR_maker' },
-  5: { url: 'https://morikawa001.github.io/seminar/SilenceCutPro.html', label: 'SilenceCut' },
-};
 
 function sidebarSaveAndDownload(){
   if(!currentHeaders.length){setStatus('先にCSVを読み込むか、新規データベースを作成してください。');return}
