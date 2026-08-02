@@ -1605,9 +1605,9 @@ html{scroll-behavior:smooth}
   container-type:inline-size;
 }
 .hero-btn-grid .manual-btn{
-  justify-content:center;font-size:.65rem;padding:8px 2px;min-height:38px;
-  font-size:2.5cqi;
-  line-height:1.15;
+  justify-content:center;font-size:.65rem;padding:10px 14px;min-height:38px;
+  font-size:1.6cqi;
+  line-height:1.2;
   white-space:nowrap;
 }
 /* ── Master Table (seminar-manager style) ── */
