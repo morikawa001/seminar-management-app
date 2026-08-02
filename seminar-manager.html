@@ -526,6 +526,33 @@ let sortCol = 'no', sortDir = 1;
 let panelNo = null;
 let importBuf = null;
 
+// ===================== DEDUPE =====================
+function dedupeByNo(items) {
+  const seen = new Set();
+  const out = [];
+  items.forEach(s => {
+    if (!s.no || seen.has(s.no)) return;
+    seen.add(s.no);
+    out.push(s);
+  });
+  return out;
+}
+
+function resetSort() {
+  sortCol = 'no'; sortDir = 1;
+  document.querySelectorAll('.sm-table th[data-s]').forEach(t => {
+    t.classList.remove('srt');
+    const si = t.querySelector('.si');
+    if (si) si.textContent = '↕';
+  });
+  const th = document.querySelector('.sm-table th[data-s="no"]');
+  if (th) {
+    th.classList.add('srt');
+    const si = th.querySelector('.si');
+    if (si) si.textContent = '↑';
+  }
+}
+
 // ===================== RENDER STATS =====================
 function renderStats() {
   const n = seminars.length;
@@ -801,7 +828,7 @@ function loadCSV(file) {
       const text = e.target.result;
       const objects = csvToObjects(text);
       if (!objects.length) { toast('❌ データが見つかりません（列名を確認してください）'); return; }
-      importBuf = objects.map(rowToSeminar);
+      importBuf = dedupeByNo(objects.map(rowToSeminar));
       document.getElementById('impInfo').textContent = `✅ ${importBuf.length}件の研修会を読み込みました`;
       document.getElementById('impRes').style.display = 'block';
       toast(`📋 ${importBuf.length}件を読み込みました`);
@@ -816,7 +843,7 @@ function loadCSV(file) {
     r2.onload = e2 => {
       try {
         const objects = csvToObjects(e2.target.result);
-        importBuf = objects.map(rowToSeminar);
+        importBuf = dedupeByNo(objects.map(rowToSeminar));
         document.getElementById('impInfo').textContent = `✅ ${importBuf.length}件（Shift-JIS）`;
         document.getElementById('impRes').style.display = 'block';
       } catch(e) { toast('❌ 読み込み失敗'); }
@@ -904,6 +931,7 @@ ua.addEventListener('drop', e => { e.preventDefault(); ua.classList.remove('drag
 document.getElementById('applyBtn').addEventListener('click', () => {
   if (importBuf) {
     seminars = importBuf;
+    resetSort();
     buildMonthFilter();
     renderStats();
     renderTable();
@@ -917,7 +945,8 @@ document.getElementById('exportBtn').addEventListener('click', exportCSV);
 
 // ===================== FIREBASE INTEGRATION =====================
 function applyRows(rows) {
-  seminars = rows.map(rowToSeminar).filter(s => s.no !== '');
+  seminars = dedupeByNo(rows.map(rowToSeminar).filter(s => s.no !== ''));
+  resetSort();
   buildMonthFilter();
   renderStats();
   renderTable();
@@ -939,8 +968,8 @@ window.onFirebaseLogin = function(user){
       return;
     }
     applyRows(rows);
-    if(dbText) dbText.textContent = rows.length + '件';
-    toast('✅ DBから' + rows.length + '件のデータを読み込みました');
+    if(dbText) dbText.textContent = seminars.length + '件';
+    toast('✅ DBから' + seminars.length + '件のデータを読み込みました');
   });
 };
 
