@@ -935,12 +935,11 @@
     document.getElementById('mh').style.transform = `rotate(${m*6+s*0.1}deg)`;
     document.getElementById('sh').style.transform = `rotate(${s*6}deg)`;
     updateSideMarker(n);
+    checkAutoCountdown(n);
   }
-  setInterval(tickClock, 1000);
-  tickClock();
 
   /* ── Countdown ── */
-  const CD = { init:300, rem:300, timer:null, run:false };
+  const CD = { init:300, rem:300, timer:null, run:false, auto:false };
 
   function renderCD(){
     const s = Math.max(0, CD.rem);
@@ -956,14 +955,54 @@
     bar.classList.toggle('urgent', urgent);
   }
 
+  /* 研修会開始時刻を取得（イベントデータから） */
+  function getStartTime(){
+    for(let i=0;i<ST.events.length;i++){
+      if(ST.events[i].key==='研修会開始_START_1') return ST.events[i].date;
+    }
+    return null;
+  }
+
+  /* 研修会開始10分前になったら自動カウントダウン（リアルタイム同期） */
+  function checkAutoCountdown(now){
+    const start = getStartTime();
+    if(!start){
+      if(CD.auto){
+        CD.auto=false; clearInterval(CD.timer); CD.run=false;
+        CD.init=300; CD.rem=300; renderCD();
+      }
+      return;
+    }
+    const startMs = start.getTime();
+    const nowMs = now.getTime();
+    const targetMs = startMs - 10*60*1000;
+    if(nowMs >= targetMs && nowMs < startMs){
+      clearInterval(CD.timer); CD.run = false;
+      CD.auto = true; CD.init = 600;
+      CD.rem = Math.max(0, Math.ceil((startMs - nowMs)/1000));
+      renderCD();
+    } else if(nowMs >= startMs){
+      clearInterval(CD.timer); CD.run = false;
+      CD.auto = true; CD.init = 600; CD.rem = 0;
+      renderCD();
+    } else {
+      if(CD.auto){
+        CD.auto = false;
+        clearInterval(CD.timer); CD.run = false;
+        CD.init = 300; CD.rem = 300; renderCD();
+      }
+    }
+  }
+
   document.getElementById('cdset').addEventListener('click', function(){
+    if(CD.auto) return;
     const min = Math.max(0, parseInt(document.getElementById('cdm').value)||0);
     const sec = Math.max(0, Math.min(59, parseInt(document.getElementById('cds').value)||0));
     clearInterval(CD.timer); CD.run = false;
     CD.init = min*60+sec; CD.rem = CD.init; renderCD();
   });
   document.getElementById('cdstart').addEventListener('click', function(){
-    if(CD.run || CD.rem <= 0) return;
+    if(CD.auto || CD.run || CD.rem <= 0) return;
     CD.run = true;
     CD.timer = setInterval(function(){
       CD.rem--;
@@ -972,12 +1011,17 @@
     }, 1000);
   });
   document.getElementById('cdpause').addEventListener('click', function(){
+    if(CD.auto) return;
     clearInterval(CD.timer); CD.run = false;
   });
   document.getElementById('cdreset').addEventListener('click', function(){
+    if(CD.auto) return;
     clearInterval(CD.timer); CD.run = false; CD.rem = CD.init; renderCD();
   });
   renderCD();
+
+  setInterval(tickClock, 1000);
+  tickClock();
 
   /* ── データヘルパー ── */
   function norm(h){ return String(h??'').trim().replace(/^\uFEFF/,''); }
@@ -1031,6 +1075,7 @@
       return{...def,disp,date:toDate(raw)};
     }).filter(e=>e.date);
     renderSideEvents();
+    checkAutoCountdown(new Date());
     document.getElementById('ssel').value=String(idx);
     document.getElementById('sbrow').textContent='ROW: '+(idx+1)+'行目';
     const no=String(row[LBL.no]||'');
@@ -1155,6 +1200,8 @@
     document.getElementById('sbfile').textContent = 'FILE: —';
     document.getElementById('sbrow').textContent = 'ROW: —';
     document.getElementById('olog').textContent = '> ログアウトしました。';
+    CD.auto = false; clearInterval(CD.timer); CD.run = false;
+    CD.init = 300; CD.rem = 300; renderCD();
     renderSideEvents();
     updateSideMarker(new Date());
   };
