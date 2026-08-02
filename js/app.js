@@ -1,7 +1,6 @@
 function updateTaskProgress(){
   const total=34;
   let done=0;
-  const TASK_IDS=['01','02','03','04','04a','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33'];
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el&&el.checked)done++;}
   const remain=total-done;
   const pct=Math.round(done/total*100);
@@ -25,7 +24,6 @@ function updateTaskProgress(){
   }
 }
 function resetAllTasks(){
-  const TASK_IDS=['01','02','03','04','04a','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33'];
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=false;}
   updateTaskProgress();
 }
@@ -43,6 +41,7 @@ function resetAllTasks(){
 window.resetAllTasks = resetAllTasks;
 window.updateTaskProgress = updateTaskProgress;
 
+const TASK_IDS=['01','02','03','04','04a','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33'];
 
 
 function scrollToSection(id){
@@ -94,7 +93,8 @@ document.addEventListener('DOMContentLoaded',function(){
   });
 });
 
-document.getElementById('themeBtn').addEventListener('click',SharedTheme.toggleTheme);
+const themeBtnEl=document.getElementById('themeBtn');
+if(themeBtnEl) themeBtnEl.addEventListener('click',SharedTheme.toggleTheme);
 
 const DEFAULT_HEADERS=[
   '起案行No',
@@ -408,7 +408,7 @@ els.mergeRecordSelect.addEventListener('change',()=>setMergeState());
 els.mergeAllBtn.addEventListener('click',mergeAllTemplates);
 els.mergeAllZipBtn.addEventListener('click',mergeAllTemplatesZip);
 els.newDbBtn.addEventListener('click',createNewDatabase);
-document.getElementById('dummyDataBtn').addEventListener('click',loadDummyData);
+(function(){const b=document.getElementById('dummyDataBtn');if(b)b.addEventListener('click',loadDummyData);})();
 els.recordSelect.addEventListener('change',handleSelectRecord);
 els.loadSelectedBtn.addEventListener('click',loadSelectedIntoForm);
 els.prefillBtn.addEventListener('click',prefillFromLast);
@@ -437,10 +437,14 @@ els.openConfirmBtn.addEventListener('click', () => {
   const el = document.getElementById('entryConsoleSection');
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
-document.getElementById('quickOpenBtn').addEventListener('click',quickOpenSelected);
-document.getElementById('quickRecordSelect').addEventListener('change',function(e){
-  if(this.value)quickOpenSelected();
-});
+(function(){
+  const quickOpenBtn=document.getElementById('quickOpenBtn');
+  const quickRecordSelect=document.getElementById('quickRecordSelect');
+  if(quickOpenBtn) quickOpenBtn.addEventListener('click',quickOpenSelected);
+  if(quickRecordSelect) quickRecordSelect.addEventListener('change',function(e){
+    if(this.value)quickOpenSelected();
+  });
+})();
 function quickOpenSelected(){
   const sel=document.getElementById('quickRecordSelect');
   const no=String(sel.value||'').trim();
@@ -501,84 +505,6 @@ function handleTemplateFiles(e){
 }
 function getRowByNo(no){return dataRows.find(r=>String(r[fullKeys.no]||'').trim()===String(no||'').trim())||null}
 
-function ensureAdditionalHeaders(headers){
-  const extraHeaders = [
-    fullKeys.lectureStart,
-    fullKeys.qaDeadline,
-    fullKeys.qaTime,
-    fullKeys.preMeeting,
-    fullKeys.deadline3,
-    fullKeys.cost,
-    fullKeys.dataDeadline,
-    fullKeys.date2,
-    fullKeys.subject2,
-    fullKeys.name,
-    fullKeys.cohost3,
-    fullKeys.head1,
-    fullKeys.closing1,
-    fullKeys.checkK1,
-    fullKeys.checkHp,
-    fullKeys.checkK2,
-    fullKeys.checkK3,
-    fullKeys.task01,
-    fullKeys.task02,
-    fullKeys.task03,
-    fullKeys.task04,
-    fullKeys.task04a,
-    fullKeys.task05,
-    fullKeys.task06,
-    fullKeys.task07,
-    fullKeys.task08,
-    fullKeys.task09,
-    fullKeys.task10,
-    fullKeys.task11,
-    fullKeys.task12,
-    fullKeys.task13,
-    fullKeys.task14,
-    fullKeys.task15,
-    fullKeys.task16,
-    fullKeys.task17,
-    fullKeys.task18,
-    fullKeys.task19,
-    fullKeys.task20,
-    fullKeys.task21,
-    fullKeys.task22,
-    fullKeys.task23,
-    fullKeys.task24,
-    fullKeys.task25,
-    fullKeys.task26,
-    fullKeys.task27,
-    fullKeys.task28,
-    fullKeys.task29,
-    fullKeys.task30,
-    fullKeys.task31,
-    fullKeys.task32,
-    fullKeys.task33,
-    'STATUS_K1',
-    'STATUS_HP',
-    'STATUS_K2',
-    'STATUS_K3',
-    'DONEAT_K1',
-    'DONEAT_HP',
-    'DONEAT_K2',
-    'DONEAT_K3',
-    'UPDATEDAT_K1',
-    'UPDATEDAT_HP',
-    'UPDATEDAT_K2',
-    'UPDATEDAT_K3',
-    'HISTORY_K1',
-    'HISTORY_HP',
-    'HISTORY_K2',
-    'HISTORY_K3'
-  ];
-
-  const set = new Set(
-    headers.map(h => String(h).trim()).filter(Boolean)
-  );
-  extraHeaders.forEach(h => set.add(h));
-  return Array.from(set);
-}
-  
 function buildTemplateData(row){
   const map={};
   currentHeaders.forEach(h=>map[h]=String(row?.[h]??''));
@@ -750,7 +676,8 @@ function embedQRImageInZip(zip,ext,blob){
     reader.readAsArrayBuffer(blob);
   });
 }
-async function mergeSingleTemplate(file,row){
+const MERGE_MIME_MAP={docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'};
+async function mergeTemplateZip(file,row){
   const arrayBuffer=await file.arrayBuffer();
   const zip=new PizZip(arrayBuffer);
   const data=buildTemplateData(row);
@@ -773,9 +700,15 @@ async function mergeSingleTemplate(file,row){
       zip.file(path,out);
     }
   });
-  const mimeMap={docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'};
-  const ext=(String(file.name).split('.').pop()||'').toLowerCase();
-  const out=zip.generate({type:'blob',mimeType:mimeMap[ext]||'application/octet-stream'});
+  return zip;
+}
+function mergeMimeType(name){
+  const ext=(String(name).split('.').pop()||'').toLowerCase();
+  return MERGE_MIME_MAP[ext]||'application/octet-stream';
+}
+async function mergeSingleTemplate(file,row){
+  const zip=await mergeTemplateZip(file,row);
+  const out=zip.generate({type:'blob',mimeType:mergeMimeType(file.name)});
   const a=document.createElement('a');
   const url=URL.createObjectURL(out);
   a.href=url;
@@ -816,37 +749,14 @@ async function mergeAllTemplatesZip(){
   const row=getRowByNo(no);
   if(!row){setMergeStatus('差し込み対象Noを選択してください。');return}
   setMergeStatus('ZIP作成中...');
-  const mimeMap={docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'};
   try{
     const jszip=new JSZip();
     let ok=0;
     const logs=[];
-    const data=buildTemplateData(row);
     for(const file of selectedTemplates){
       try{
-        const arrayBuffer=await file.arrayBuffer();
-        const pzip=new PizZip(arrayBuffer);
-        const targets=targetXmlPathsForTemplate(pzip,file.name);
-        if(!targets.length) throw new Error('差し込み対象XMLが見つかりません');
-        var hasQR=false,qrImgXml=null;
-        targets.forEach(function(path){if(pzip.file(path)){var t=pzip.file(path).asText();if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;}});
-        if(hasQR){
-          var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),300);
-          if(qrBlob){
-            var ext0=(String(file.name).split('.').pop()||'').toLowerCase();
-            qrImgXml=await embedQRImageInZip(pzip,ext0,qrBlob);
-          }
-        }
-        targets.forEach(path=>{
-          if(pzip.file(path)){
-            let out=pzip.file(path).asText();
-            if(qrImgXml){out=out.split('{{QR_IMAGE}}').join(qrImgXml);out=out.split('{{QR}}').join('')}
-            out=replacePlaceholdersInXml(out,data);
-            pzip.file(path,out);
-          }
-        });
-        const ext=(String(file.name).split('.').pop()||'').toLowerCase();
-const blob=pzip.generate({type:'blob',mimeType:mimeMap[ext]||'application/octet-stream'});
+        const pzip=await mergeTemplateZip(file,row);
+        const blob=pzip.generate({type:'blob',mimeType:mergeMimeType(file.name)});
 const baseName=String(file.name);
 const idx=baseName.indexOf('_');
 const folderName=idx>0?baseName.slice(0,idx):'不明';
@@ -1089,7 +999,6 @@ function resetScheduleChecks(){
   if(els.ckK1Saved) els.ckK1Saved.checked=false;
   if(els.ckK2Saved) els.ckK2Saved.checked=false;
   if(els.ckK3Saved) els.ckK3Saved.checked=false;
-  const TASK_IDS=['01','02','03','04','04a','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33'];
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=false;}
   updateTaskProgress();
 }
@@ -1131,7 +1040,6 @@ function applyScheduleChecksFromRow(row){
   if(els.ckK1Saved) els.ckK1Saved.checked = !!(row?.[fullKeys.qrK1Saved] && String(row[fullKeys.qrK1Saved]).trim());
   if(els.ckK2Saved) els.ckK2Saved.checked = !!(row?.[fullKeys.qrK2Saved] && String(row[fullKeys.qrK2Saved]).trim());
   if(els.ckK3Saved) els.ckK3Saved.checked = !!(row?.[fullKeys.qrK3Saved] && String(row[fullKeys.qrK3Saved]).trim());
-  const TASK_IDS=['01','02','03','04','04a','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33'];
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=isCheckedValue(row?.[fullKeys['task'+id]]);}
   updateTaskProgress();
 }
@@ -1402,7 +1310,6 @@ function buildRow(){
   row['STATUS_HP'] = els.ckHp.checked ? 'DONE' : '';
   row['STATUS_K2'] = els.ckK2.checked ? 'DONE' : '';
   row['STATUS_K3'] = els.ckK3.checked ? 'DONE' : '';
-  const TASK_IDS=['01','02','03','04','04a','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31','32','33'];
   for(const id of TASK_IDS){row[fullKeys['task'+id]]=boolToCsv(document.getElementById('ck_task'+id)?.checked||false);}
   return row;
 }
@@ -1869,7 +1776,7 @@ function downloadCsv(){
     if(!db) return -1;
     return da.getTime() - db.getTime();
   });
-  const csv=Papa.unparse({fields:currentHeaders,data:sorted.map(row=>currentHeaders.map(h=>row[h]??''))});
+  const csv=Papa.unparse({fields:currentHeaders,data:sorted.map(row=>currentHeaders.map(h=>row[h]??''))},{escapeFormulae:true});
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');
   const url=URL.createObjectURL(blob);
@@ -2233,15 +2140,22 @@ function sidebarSaveAndDownload(){
 window.sidebarSaveAndDownload=sidebarSaveAndDownload;
 
 // 起動時に SPARE_BUTTONS の設定を適用（in-memoryキャッシュ方式）
+function sanitizeLinkUrl(url){
+  const v=String(url||'').trim();
+  if(!v) return v;
+  if(/^(javascript|data|vbscript|file|blob):/i.test(v)) return '';
+  return v;
+}
 const _spareBtnCache = {}; // { [num]: {url, label} }
 document.addEventListener('DOMContentLoaded', function(){
   [1,2,3,4,5].forEach(function(num){
     const btn = document.getElementById('spareBtn' + num);
     if(!btn) return;
     const cfg = SPARE_BUTTONS[num];
+    const cleanUrl = sanitizeLinkUrl(cfg.url);
     btn.textContent = cfg.label;
-    btn.setAttribute('href', cfg.url);
-    _spareBtnCache[num] = {url: cfg.url, label: cfg.label};
+    btn.setAttribute('href', cleanUrl);
+    _spareBtnCache[num] = {url: cleanUrl, label: cfg.label};
   });
 });
 
@@ -2253,9 +2167,14 @@ function editSpareUrl(num){
   const currentLabel = btn.textContent.trim();
   const newUrl = prompt('「ボタン' + num + '」 URLを入力:', currentUrl);
   if(newUrl === null) return;
+  const cleanUrl = sanitizeLinkUrl(newUrl);
+  if(newUrl.trim() && !cleanUrl){
+    alert('許可されないURL形式です（javascript: 等）。http/https または相対パスで入力してください。');
+    return;
+  }
   const newLabel = prompt('「ボタン' + num + '」 ラベルを入力:', currentLabel);
   if(newLabel === null) return;
-  if(newUrl.trim())   { btn.setAttribute('href', newUrl.trim()); if(_spareBtnCache[num]) _spareBtnCache[num].url=newUrl.trim(); }
+  if(cleanUrl)   { btn.setAttribute('href', cleanUrl); if(_spareBtnCache[num]) _spareBtnCache[num].url=cleanUrl; }
   if(newLabel.trim()) { btn.textContent = newLabel.trim(); if(_spareBtnCache[num]) _spareBtnCache[num].label=newLabel.trim(); }
 }
 window.editSpareUrl = editSpareUrl;

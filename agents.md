@@ -92,6 +92,16 @@ QR_reader.html                # QRファイル管理（別ページ、Firebase E
 
 ## 変更履歴
 
+### 2026-08-02: コアJSのリファクタリング（構造改善＋セキュリティ強化。機能・見た目は不変）
+- ✅ `js/app.js` の重複 `ensureAdditionalHeaders` 定義（デッドコード）を削除。`senderOrg/senderSig` と `qr_saved_k1/k2/k3` を含む後方定義（`fullKeys` 使用版）を維持
+- ✅ `TASK_IDS` 配列を5箇所の重複から単一定数（app.js:44）に集約
+- ✅ テンプレート差し込み処理を共通化：`mergeTemplateZip()` / `MERGE_MIME_MAP` / `mergeMimeType()` を抽出し、`mergeSingleTemplate` と `mergeAllTemplatesZip` の重複ロジックを削除
+- ✅ **URL注入対策**: `sanitizeLinkUrl()` を新設。`editSpareUrl()` と SPARE_BUTTONS 初期適用で `javascript:` / `data:` / `vbscript:` / `file:` / `blob:` スキームを遮断（http/https/相対パスは従来通り）
+- ✅ **CSVインジェクション対策**: `downloadCsv()` に `Papa.unparse` の `escapeFormulae:true` を追加、`csv-utils.js` の `exportCSV()` に `csvCellSafe()` を追加（`=` `+` `-` `@` で始まるセルを `'` 前置で無害化）
+- ✅ トップレベルDOMアクセスに null ガードを追加（`themeBtn` / `dummyDataBtn` / `quickOpenBtn` / `quickRecordSelect`）。要素欠落時にスクリプト全体が停止するのを防止
+- ✅ `innerHTML` 動的挿入箇所を監査（全箇所 `esc()` 通過済みを確認。XSS対策は健全）
+- ⚠️ 変更対象は `js/app.js` / `js/csv-utils.js` のみ。HTML・CSS・他ページは未変更。`node --check` 全7ファイル通過済み。ブラウザでの Dark/Light 手動確認はユーザーが実施
+
 ### 2026-08-01: QR_reader.html のスキャン開始/停止ボタンとモード切替チップの重なりを修正
 - ✅ `.mode-selector` に `margin-bottom:14px`、スキャンボタン行に `margin-top:14px` を追加し、チップとボタンの間隔を確保
 - ✅ スキャン開始/停止ボタンに `flex-wrap:wrap` / `min-width:130px` を追加（狭い画面でも重ならない）

@@ -65,10 +65,15 @@
     return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
   }
 
+  function csvCellSafe(v){
+    var s=String(v==null?'':v);
+    return /^[=+\-@\t\r]/.test(s)?("'"+s):s;
+  }
+
   function exportCSV(headers, rows, prefix, date){
-    var csvRows = [headers.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',')];
+    var csvRows = [headers.map(function(c){ return '"'+csvCellSafe(c).replace(/"/g,'""')+'"'; }).join(',')];
     rows.forEach(function(row){
-      csvRows.push(headers.map(function(c){ return '"'+String(row[c]||'').replace(/"/g,'""')+'"'; }).join(','));
+      csvRows.push(headers.map(function(c){ return '"'+csvCellSafe(row[c]||'').replace(/"/g,'""')+'"'; }).join(','));
     });
     var csv = '\uFEFF' + csvRows.join('\r\n');
     var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
