@@ -6,14 +6,11 @@
   }
 
   function countIncompleteTasks(row){
-    var done=0,total=0,i,k;
-    for(i=1;i<=33;i++){
-      total++;
-      k='task'+String(i).padStart(2,'0');
+    var done=0,total=TASK_IDS.length,i,k;
+    for(i=0;i<TASK_IDS.length;i++){
+      k='task'+TASK_IDS[i];
       if(isCheckedValue(row[fullKeys[k]]))done++;
     }
-    total++;
-    if(isCheckedValue(row[fullKeys.task04a]))done++;
     return total-done;
   }
 
@@ -47,7 +44,7 @@
     }
 
     var speaker=String(record[fullKeys.speaker]||'').trim();
-    var mailPending=speaker&&['task02','task12','task13'].some(function(k){return !isCheckedValue(record[fullKeys[k]])});
+    var mailPending=speaker&&['task02','task13','task14'].some(function(k){return !isCheckedValue(record[fullKeys[k]])});
     if(days!==null&&days>=0&&days<=14&&mailPending)add(10,'講師向けメール/資料が未対応');
 
     if(days!==null&&days<=7&&days>=-7&&!isCheckedValue(record[fullKeys.checkK2]))add(10,'資料締切が近い・超過（起案2未チェック）');

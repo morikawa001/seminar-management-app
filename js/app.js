@@ -740,13 +740,13 @@ function ensureAdditionalHeaders(headers){
     fullKeys.name, fullKeys.cohost3, fullKeys.head1, fullKeys.closing1,
     fullKeys.checkK1, fullKeys.checkHp, fullKeys.checkK2, fullKeys.checkK3,
     fullKeys.senderOrg, fullKeys.senderName, fullKeys.senderSig,
-    fullKeys.task01, fullKeys.task02, fullKeys.task03, fullKeys.task04, fullKeys.task04a,
+    fullKeys.task01, fullKeys.task02, fullKeys.task03, fullKeys.task04,
     fullKeys.task05,fullKeys.task06, fullKeys.task07, fullKeys.task08, fullKeys.task09, 
     fullKeys.task10,fullKeys.task11, fullKeys.task12, fullKeys.task13, fullKeys.task14, 
     fullKeys.task15,fullKeys.task16, fullKeys.task17, fullKeys.task18, fullKeys.task19, 
     fullKeys.task20,fullKeys.task21, fullKeys.task22, fullKeys.task23, fullKeys.task24, 
     fullKeys.task25,fullKeys.task26, fullKeys.task27, fullKeys.task28, fullKeys.task29, 
-    fullKeys.task30,fullKeys.task31, fullKeys.task32, fullKeys.task33,
+    fullKeys.task30,fullKeys.task31, fullKeys.task32, fullKeys.task33, fullKeys.task34,
     'STATUS_K1','STATUS_HP','STATUS_K2','STATUS_K3',
     'DONEAT_K1','DONEAT_HP','DONEAT_K2','DONEAT_K3',
     'UPDATEDAT_K1','UPDATEDAT_HP','UPDATEDAT_K2','UPDATEDAT_K3',
@@ -1794,7 +1794,7 @@ function buildTodayCommands(rows){
 
     // 開催当日
     if(days===0){
-      cmds.push({no, title, urgency:'critical', csvKey:'task21',
+      cmds.push({no, title, urgency:'critical', csvKey:'task22',
   action:'本日開催です。当日準備を確認してください。',reason:`Task完了: ${taskDone}/${TASK_IDS.length}`,buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no},{label:'メール作成',recipient:'attendee',purpose:'reminder',no}]});
       if(!zoomUrl||zoomUrl==='https://zoom.us/'){
         cmds.push({no,title,urgency:'critical',csvKey:'checkK3',action:'Zoom URLが未入力です。今すぐ登録してください。',reason:'当日前にZoom URLが必要です',buttons:[{label:'Entry Consoleで補完',href:'#entryConsoleSection',no}]});
@@ -1830,17 +1830,17 @@ function buildTodayCommands(rows){
     }
     // 開催後（事後処理）
     else if(days<0&&days>=-30){
-      const postTask25=isCheckedValue(row[fullKeys.task25]);
-      const postTask28=isCheckedValue(row[fullKeys.task28]);
+      const postTask26=isCheckedValue(row[fullKeys.task26]);
       const postTask29=isCheckedValue(row[fullKeys.task29]);
-      const postTask33=isCheckedValue(row[fullKeys.task33]);
-      if(!postTask25||!postTask28||!postTask29||!postTask33){
+      const postTask30=isCheckedValue(row[fullKeys.task30]);
+      const postTask34=isCheckedValue(row[fullKeys.task34]);
+      if(!postTask26||!postTask29||!postTask30||!postTask34){
         const pending=[];
-        if(!postTask25)pending.push('Zoomレポート');
-        if(!postTask28)pending.push('起案3(受講証)');
-        if(!postTask29)pending.push('講師へお礼');
-        if(!postTask33)pending.push('受講証交付');
-        const postKey=!postTask29?'task29':!postTask33?'task33':!postTask28?'task28':'task25';
+        if(!postTask26)pending.push('Zoomレポート');
+        if(!postTask29)pending.push('起案3(受講証)');
+        if(!postTask30)pending.push('講師へお礼');
+        if(!postTask34)pending.push('受講証交付');
+        const postKey=!postTask30?'task30':!postTask34?'task34':!postTask29?'task29':'task26';
         cmds.push({no,title,urgency:'high',csvKey:postKey,action:`事後処理が残っています: ${pending.join(' / ')}`,reason:`開催から${Math.abs(days)}日経過`,buttons:[{label:'確認する',href:'#taskChecklistPanel',no},{label:'お礼の連絡',recipient:'speaker',purpose:'thanks_speaker',no}]});
       }
     }
@@ -1978,12 +1978,12 @@ function buildExceptions(rows){
 
     // 起案関連チェック
     if(days!==null&&days<=-1){ // 開催済
-      if(!isCheckedValue(row[fullKeys.checkK3])) push('warning','起案3未完','起案3チェック_CHECK_K3が未チェックです','task28');
-      if(!isCheckedValue(row[fullKeys.task29])) push('info','講師へお礼未完','講師へお礼連絡_CHECKが未チェックです','task29');
-      if(!isCheckedValue(row[fullKeys.task33])) push('info','受講証交付未完','受講証修了証メール交付_CHECKが未チェックです','task33');
+      if(!isCheckedValue(row[fullKeys.checkK3])) push('warning','起案3未完','起案3チェック_CHECK_K3が未チェックです','task29');
+      if(!isCheckedValue(row[fullKeys.task30])) push('info','講師へお礼未完','講師へお礼連絡_CHECKが未チェックです','task30');
+      if(!isCheckedValue(row[fullKeys.task34])) push('info','受講証交付未完','受講証修了証メール交付_CHECKが未チェックです','task34');
     }
     if(days!==null&&days<=0&&days>=-1){
-      if(!isCheckedValue(row[fullKeys.checkK1])) push('warning','起案1未チェック','起案1チェック_CHECK_K1が未チェックです','task05');
+      if(!isCheckedValue(row[fullKeys.checkK1])) push('warning','起案1未チェック','起案1チェック_CHECK_K1が未チェックです','task06');
     }
   });
 
@@ -2033,21 +2033,21 @@ function openTaskMail(taskId){
   var map={
     '02':{recipient:'speaker',purpose:'ishi_req'},
     '03':{recipient:'cohost',purpose:'hp_upload_req'},
-    '04a':{recipient:'speaker',purpose:'ishi_req'},
-    '06':{recipient:'cohost',purpose:'hp_upload_req'},
-    '07':{recipient:'speaker',purpose:'hp_report_speaker'},
-    '08':{recipient:'cohost',purpose:'hp_done_report'},
-    '09':{recipient:'cohost',purpose:'denshi_post_req'},
-    '11':{recipient:'cohost',purpose:'denshi_replace_req'},
-    '12':{recipient:'speaker',purpose:'honban_reminder_speaker'},
-    '13':{recipient:'speaker',purpose:'data_reminder_speaker'},
-    '20':{recipient:'speaker',purpose:'honban_reminder_speaker'},
-    '22':{recipient:'speaker',purpose:'honban_reminder_speaker'},
-    '24':{recipient:'cohost',purpose:'seminar_prep'},
-    '26':{recipient:'cohost',purpose:'seminar_prep'},
-    '29':{recipient:'speaker',purpose:'thanks_speaker'},
-    '31':{recipient:'cohost',purpose:'shakin_proc_req'},
-    '32':{recipient:'speaker',purpose:'shakin_transfer'}
+    '05':{recipient:'speaker',purpose:'ishi_req'},
+    '07':{recipient:'cohost',purpose:'hp_upload_req'},
+    '08':{recipient:'speaker',purpose:'hp_report_speaker'},
+    '09':{recipient:'cohost',purpose:'hp_done_report'},
+    '10':{recipient:'cohost',purpose:'denshi_post_req'},
+    '12':{recipient:'cohost',purpose:'denshi_replace_req'},
+    '13':{recipient:'speaker',purpose:'honban_reminder_speaker'},
+    '14':{recipient:'speaker',purpose:'data_reminder_speaker'},
+    '21':{recipient:'speaker',purpose:'honban_reminder_speaker'},
+    '23':{recipient:'speaker',purpose:'honban_reminder_speaker'},
+    '25':{recipient:'cohost',purpose:'seminar_prep'},
+    '27':{recipient:'cohost',purpose:'seminar_prep'},
+    '30':{recipient:'speaker',purpose:'thanks_speaker'},
+    '32':{recipient:'cohost',purpose:'shakin_proc_req'},
+    '33':{recipient:'speaker',purpose:'shakin_transfer'}
   };
   var m=map[taskId];
   if(!m) return;
@@ -2676,7 +2676,7 @@ function loadDummyData(){
 
   const dummy1=makeRow(1,day5,'臨床試験の倫理審査と研究計画書作成実務','田中 研一','','',''); // ZoomURL未設定
   const dummy2=makeRow(2,day14,'臨床研究データ管理実務','佐藤 美咲','https://zoom.us/j/99999999999','12345','999 9999 9999',{[fullKeys.checkK1]:'1',[fullKeys.checkHp]:'1'});
-  const dummy3=makeRow(3,dayM7,'研究倫理・インフォームドコンセント','鈴木 倫理','https://zoom.us/j/88888888888','67890','888 8888 8888',{[fullKeys.checkK1]:'1',[fullKeys.checkHp]:'1',[fullKeys.checkK2]:'1',[fullKeys.task25]:'1'}); // 開催済みzoom済み、事後処理一部残
+  const dummy3=makeRow(3,dayM7,'研究倫理・インフォームドコンセント','鈴木 倫理','https://zoom.us/j/88888888888','67890','888 8888 8888',{[fullKeys.checkK1]:'1',[fullKeys.checkHp]:'1',[fullKeys.checkK2]:'1',[fullKeys.task26]:'1'}); // 開催済みzoom済み、事後処理一部残
   const dummy4=makeRow(4,day45,'統計解析の基礎と実践（演習付き）','山田 統計子','','',''); // 遠い将来
 
   currentHeaders = ensureAdditionalHeaders(currentHeaders && currentHeaders.length ? currentHeaders : [...DEFAULT_HEADERS]);
