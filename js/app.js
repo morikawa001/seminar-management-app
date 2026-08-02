@@ -1,5 +1,5 @@
 function updateTaskProgress(){
-  const total=34;
+  const total=TASK_IDS.length;
   let done=0;
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el&&el.checked)done++;}
   const remain=total-done;
@@ -1769,9 +1769,8 @@ function calcDaysUntilEvent(row){
 
 function countTasksDone(row){
   let done=0;
-  for(let i=1;i<=33;i++){
-    const k='task'+String(i).padStart(2,'0');
-    if(isCheckedValue(row[fullKeys[k]])) done++;
+  for(const id of TASK_IDS){
+    if(isCheckedValue(row[fullKeys['task'+id]])) done++;
   }
   return done;
 }
@@ -1796,7 +1795,7 @@ function buildTodayCommands(rows){
     // 開催当日
     if(days===0){
       cmds.push({no, title, urgency:'critical', csvKey:'task21',
-  action:'本日開催です。当日準備を確認してください。',reason:`Task完了: ${taskDone}/33`,buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no},{label:'メール作成',recipient:'attendee',purpose:'reminder',no}]});
+  action:'本日開催です。当日準備を確認してください。',reason:`Task完了: ${taskDone}/${TASK_IDS.length}`,buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no},{label:'メール作成',recipient:'attendee',purpose:'reminder',no}]});
       if(!zoomUrl||zoomUrl==='https://zoom.us/'){
         cmds.push({no,title,urgency:'critical',csvKey:'checkK3',action:'Zoom URLが未入力です。今すぐ登録してください。',reason:'当日前にZoom URLが必要です',buttons:[{label:'Entry Consoleで補完',href:'#entryConsoleSection',no}]});
       }
