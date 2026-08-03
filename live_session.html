@@ -620,12 +620,17 @@
     }
     html.white .zcheck-count{font-family:var(--jp);color:#0f6cbd;text-shadow:none}
     .zcheck-go{
-      display:none;font-family:var(--orb);font-size:1.7rem;font-weight:900;
-      letter-spacing:.16em;color:#41ffb0;line-height:1;
+      display:inline-block;font-family:var(--orb);font-size:1.4rem;font-weight:900;
+      letter-spacing:.16em;color:#e53e3e;line-height:1;
+      text-shadow:0 0 16px rgba(229,62,62,.55),0 0 40px rgba(229,62,62,.25);
+    }
+    html.white .zcheck-go{font-family:var(--jp);font-size:1.2rem;color:#c53030;text-shadow:none}
+    .zcheck-go.ready{
+      color:#41ffb0;
       text-shadow:0 0 16px rgba(65,255,176,.75),0 0 44px rgba(65,255,176,.35);
       animation:go-pulse 1.1s ease-in-out infinite;
     }
-    html.white .zcheck-go{
+    html.white .zcheck-go.ready{
       font-family:var(--jp);color:#15883e;text-shadow:none;
       animation:go-pulse-white 1.1s ease-in-out infinite;
     }
@@ -735,7 +740,7 @@
     <div class="slbl zcheck-lbl" onclick="toggleZoomCheck()"><span class="sb-dot" style="margin-right:6px;vertical-align:middle"></span>▸ ZOOM 事前チェックリスト<span class="zcheck-arrow">▶</span></div>
     <div class="zcheck-right">
       <span class="zcheck-count" id="zcheckCount">0/13</span>
-      <span class="zcheck-go" id="zcheckGo">GO</span>
+      <span class="zcheck-go" id="zcheckGo">STANDBY</span>
     </div>
   </div>
   <div class="zcheck-cols">
@@ -1201,8 +1206,9 @@
     function update(){
       const done=boxes.filter(function(b){return b.checked;}).length;
       const all=done===boxes.length;
-      cnt.textContent=all?'全項目完了':done+'/'+boxes.length;
-      go.style.display=all?'inline-block':'none';
+      cnt.textContent=done+'/'+boxes.length;
+      go.textContent=all?'GO':'STANDBY';
+      go.classList.toggle('ready',all);
       panel.classList.toggle('ready',all);
       if(all) panel.classList.remove('open');
     }
