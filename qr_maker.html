@@ -514,14 +514,27 @@
         wrapper.classList.remove("transparent");
       }
 
-      qrcodeInstance = new QRCode(container, {
-        text: value,
-        width: size,
-        height: size,
-        colorDark: "#000000",
-        colorLight: colorLight,
-        correctLevel: QRCode.CorrectLevel.M
-      });
+      const levels = [QRCode.CorrectLevel.M, QRCode.CorrectLevel.L];
+      let lastErr = null;
+      for (const level of levels) {
+        container.innerHTML = "";
+        try {
+          qrcodeInstance = new QRCode(container, {
+            text: value,
+            width: size,
+            height: size,
+            colorDark: "#000000",
+            colorLight: colorLight,
+            correctLevel: level
+          });
+          return;
+        } catch (e) {
+          lastErr = e;
+        }
+      }
+      errorMsg.textContent =
+        "QRコードを生成できませんでした。入力文字列が長すぎます（QRコードの容量上限を超えています）。文字数を減らして再実行してください。" +
+        (lastErr && lastErr.message ? "（" + lastErr.message + "）" : "");
     }
 
         function clearAll() {
