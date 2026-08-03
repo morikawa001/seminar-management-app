@@ -1013,6 +1013,20 @@ function applyGain(buf,gainLinear){
   return buf;
 }
 
+function waitEvent(el,event,opts){
+  const ms=(opts&&opts.timeout)||15000;
+  const errEvent=opts&&opts.errorEvent;
+  return new Promise((resolve,reject)=>{
+    let done=false;
+    const timer=setTimeout(()=>{if(done)return;cleanup();reject(new Error((opts&&opts.timeoutMsg)||'処理がタイムアウトしました'));},ms);
+    const onEvent=()=>{if(done)return;cleanup();resolve();};
+    const onError=()=>{if(done)return;cleanup();reject(new Error((opts&&opts.errorMsg)||'エラーが発生しました'));};
+    function cleanup(){done=true;clearTimeout(timer);el.removeEventListener(event,onEvent);if(errEvent)el.removeEventListener(errEvent,onError);}
+    el.addEventListener(event,onEvent);
+    if(errEvent)el.addEventListener(errEvent,onError);
+  });
+}
+
 processBtn.addEventListener('click',async()=>{
   if(!videoFile||keepSegments.length===0)return;
   processBtn.disabled=true; analyzeBtn.disabled=true;
@@ -1032,8 +1046,8 @@ processBtn.addEventListener('click',async()=>{
     let recorded=0;
 
     const video=document.createElement('video');
-    video.src=url; video.preload='auto';
-    await new Promise(res=>{video.onloadedmetadata=res;});
+    video.src=url; video.preload='auto'; video.muted=true;
+    await waitEvent(video,'loadedmetadata',{errorEvent:'error',errorMsg:'動画をデコードできませんでした。コーデックがブラウザ非対応の可能性があります。',timeoutMsg:'動画の読み込みがタイムアウトしました。コーデック非対応の可能性があります。'});
 
     const canvas=document.createElement('canvas');
     canvas.width=video.videoWidth||1280;
@@ -1041,6 +1055,8 @@ processBtn.addEventListener('click',async()=>{
     const ctx=canvas.getContext('2d');
 
     const audioCtx=new AudioContext();
+    if(audioCtx.state==='suspended'){try{await audioCtx.resume();}catch(e){}}
+    if(audioCtx.state!=='running') throw new Error('オーディオコンテキストを開始できませんでした');
 
     let procBuffer=audioBuffer;
     setProgress(10,'音声を処理中...');
@@ -1102,7 +1118,7 @@ processBtn.addEventListener('click',async()=>{
       addLog(`区間 ${i+1}/${keepSegments.length}: ${seg.start.toFixed(2)}s〜${seg.end.toFixed(2)}s`,'proc');
 
       video.currentTime=seg.start;
-      await new Promise(res=>{video.onseeked=res;});
+      await Promise.race([waitEvent(video,'seeked'),new Promise(res=>setTimeout(res,2000))]);
 
       const audioSrc2=audioCtx.createBufferSource();
       audioSrc2.buffer=procBuffer;
@@ -1119,14 +1135,13 @@ processBtn.addEventListener('click',async()=>{
       }
       audioSrc2.start(now, seg.start, segDur);
 
-      await video.play();
-      const drawLoop=()=>{ctx.drawImage(video,0,0,canvas.width,canvas.height);if(!video.paused&&!video.ended)requestAnimationFrame(drawLoop);};
+      let stopDraw=false;
+      try{await video.play();}catch(e){addLog('映像再生を開始できませんでした。音声のみ書き出します。','warn');}
+      const drawLoop=()=>{ctx.drawImage(video,0,0,canvas.width,canvas.height);if(!stopDraw&&!video.paused&&!video.ended)requestAnimationFrame(drawLoop);};
       requestAnimationFrame(drawLoop);
 
-      await new Promise(res=>{
-        const check=()=>{if(video.currentTime>=seg.end-0.05){video.pause();res();}else requestAnimationFrame(check);};
-        check();
-      });
+      await waitEvent(audioSrc2,'ended',{timeout:Math.ceil(segDur*1000)+10000,timeoutMsg:'区間の再生がタイムアウトしました'});
+      stopDraw=true;
       audioSrc2.stop();
       segGain.disconnect();
       recorded+=segDur;
@@ -1135,7 +1150,7 @@ processBtn.addEventListener('click',async()=>{
     video.pause();
     recorder.stop();
     setProgress(95,'書き出し中...');
-    await new Promise(res=>{recorder.onstop=res;});
+    await waitEvent(recorder,'stop',{timeoutMsg:'書き出しがタイムアウトしました'});
 
     const blob=new Blob(chunks,{type:mimeType});
     const outUrl=URL.createObjectURL(blob);
