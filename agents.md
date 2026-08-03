@@ -97,6 +97,27 @@ QR_reader.html                # QRファイル管理（別ページ、Firebase E
 
 ## 変更履歴
 
+### 2026-08-03: qr_maker.html を GitHub Pages 用 seminar リポジトリへ同期（デプロイ反映）
+- ✅ `qr_maker.html`（長文QR修正版）と `js/qrcode.js`（修正済みローカルライブラリ、新規追加）を `morikawa001/seminar` リポジトリの `main` へコピーし、`dd275e7` で push
+- ✅ 原因: デプロイ版は旧CDN `qrcode.min.js`（日本語文字化け・長文不可）を読み込んでおり、本リポジトリの修正が Pages に反映されていなかった
+- ⚠️ 対象は `qr_maker.html` / `js/qrcode.js`（seminar リポジトリ側のみ）。本リポジトリは変更なし
+
+### 2026-08-03: トップバーのNo選択と Quick Operation のNo選択を連動
+- ✅ `selectRecordByNo()`（app.js）を修正し、`recordSelect` と `quickRecordSelect` の両方の値を同時更新（Task Checklistリンク・Master Table行クリック等の全経路で連動）
+- ✅ `handleSelectRecord()` でトップバーの選択変更時に Quick Operation 側も同期（Quick Operation側→トップバーは `quickOpenSelected()` → `selectRecordByNo()` 経由で自動連動）
+- ✅ `createNewDatabase()` で新規DB作成時に両セレクトをリセット
+- ⚠️ 変更対象は `js/app.js` のみ。コミット `7ec0e9a`。ヘッドレスChromeで双方向同期を検証済み
+
+### 2026-08-03: qr_maker.html の長い文字列でQRが生成されない問題を修正
+- ✅ `js/qrcode.js` の `_getTypeNumber()` のオフバイワン（`i <= len`）を修正し、QR容量（エラーレベルMで2331バイト）超過時に暗号 `TypeError` ではなく `"Too long data"` を送出するように
+- ✅ `qr_maker.html` の `generateQR()` を try/catch 化し、失敗時にエラーメッセージを表示。エラーレベル M → L（上限2953バイト）へフォールバックして長文でも生成可能に
+- ⚠️ 変更対象は `qr_maker.html` / `js/qrcode.js`。コミット `79e474f`。`seminar` リポジトリへの同期は別途実施（上記）
+
+### 2026-08-03: Template Injection の QR プレースホルダに Zoom URL が注入される問題を修正
+- ✅ `buildTemplateData()`（app.js）の素のプレースホルダキー `map['QR']` / `map['QR_URL']` / `map['QR_IMAGE']` を `{{QR}}` / `{{QR_URL}}` / `{{QR_IMAGE}}` 形式に変更
+- ✅ これにより文書中の素の「QR」文字列（`QRコード` や埋め込みQR画像XML内の `name="QR"` 属性等）へ Zoom URL が差し込まれるのを防止。明示的な `{{QR}}` プレースホルダのみ置換される
+- ⚠️ 変更対象は `js/app.js` のみ。コミット `41aa0c7`
+
 ### 2026-08-02: Task Checklist に連動ページへのリンクボタンを追加
 - ✅ Task Checklist の完了チェック左隣に、対応する連動ページを開くボタン（`.task-link-btn`）を追加
   - Task 15（事前受付終了・Web受講希望者リストの書き出し）: 「申込者管理」→ `https://morikawa001.github.io/seminar/kenshukai-notion-csv-generator.html`
