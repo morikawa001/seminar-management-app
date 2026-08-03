@@ -391,9 +391,9 @@ function buildTemplateData(row){
 
   const qrZoom=String(row?.[fullKeys.zoomUrl]??'').trim();
   const validZoom=!!qrZoom&&qrZoom!=='https://zoom.us/';
-  map['QR']=validZoom?qrZoom:'';
-  map['QR_URL']=validZoom?qrZoom:'';
-  map['QR_IMAGE']='';
+  map['{{QR}}']=validZoom?qrZoom:'';
+  map['{{QR_URL}}']=validZoom?qrZoom:'';
+  map['{{QR_IMAGE}}']='';
 
   map[fullKeys.lectureStart]=String(row?.[fullKeys.lectureStart] ?? '');
   map['講義開始_START_TIME']=String(row?.[fullKeys.lectureStart] ?? '');
