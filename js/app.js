@@ -647,6 +647,8 @@ function createNewDatabase(){
   resetScheduleChecks();
   els.recordSelect.innerHTML='<option value="">Noを選択して表示</option>';
   els.recordSelect.disabled=true;
+  const qs=document.getElementById('quickRecordSelect');
+  if(qs){qs.value='';qs.innerHTML='<option value="">Noを選択して表示</option>';qs.disabled=true;}
   els.prefillBtn.disabled=true;
   els.deleteEntryBtn.disabled=true;
   els.loadSelectedBtn.disabled=true;
@@ -888,6 +890,8 @@ function prefillFromLast(){
 
 function handleSelectRecord(){
   const no=els.recordSelect.value;
+  const qs=document.getElementById('quickRecordSelect');
+  if(qs) qs.value=no;
   selectedRow=dataRows.find(r=>String(r[fullKeys.no]||'').trim()===String(no||'').trim())||null;
   if(selectedRow)setStatus(`No.${selectedRow[fullKeys.no]} を選択しました。`);
 }
@@ -2303,6 +2307,8 @@ window.tcToggleExpand=tcToggleExpand;
 function selectRecordByNo(no){
   const sel=document.getElementById('recordSelect');
   if(sel) sel.value=no;
+  const qs=document.getElementById('quickRecordSelect');
+  if(qs) qs.value=no;
   const row=dataRows.find(r=>String(r[fullKeys.no]||'').trim()===String(no||'').trim())||null;
   if(row){ selectedRow=row; }
 }
