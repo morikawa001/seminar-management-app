@@ -712,8 +712,11 @@ async function getVideoDuration(file){
     const video=document.createElement('video');
     video.preload='metadata';
     video.src=url;
-    video.onloadedmetadata=()=>{ const d=video.duration; URL.revokeObjectURL(url); resolve(d); };
-    video.onerror=()=>{ URL.revokeObjectURL(url); reject(new Error('動画の長さを取得できませんでした')); };
+    let done=false;
+    const finish=(fn,v)=>{ if(done) return; done=true; URL.revokeObjectURL(url); fn(v); };
+    video.onloadedmetadata=()=>finish(resolve, video.duration);
+    video.onerror=()=>finish(reject, new Error('動画の長さを取得できませんでした'));
+    setTimeout(()=>finish(resolve, 0), 10000);
   });
 }
 function getTrimBounds(duration){
@@ -731,8 +734,18 @@ dropzone.addEventListener('dragleave',()=>dropzone.classList.remove('drag-over')
 dropzone.addEventListener('drop',e=>{e.preventDefault();dropzone.classList.remove('drag-over');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);});
 fileInput.addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0]);});
 
+const VIDEO_EXT={mp4:1,m4v:1,webm:1,mov:1,mkv:1,avi:1,mpg:1,mpeg:1,ogv:1,'3gp':1};
+function isVideoFile(f){
+  const t=String(f && f.type || '').toLowerCase();
+  if(t.startsWith('video/')) return true;
+  if(t && t!=='application/octet-stream' && t!=='application/octet-stream;charset=binary') return false;
+  const n=(f && f.name || '').toLowerCase();
+  const dot=n.lastIndexOf('.');
+  return dot>=0 && VIDEO_EXT[n.slice(dot+1)]===1;
+}
+
 async function handleFile(f){
-  if(!f.type.startsWith('video/')){addLog('動画ファイルを選択してください。','error');return;}
+  if(!isVideoFile(f)){addLog('動画ファイルを選択してください。（.mp4 / .webm 対応）','error');return;}
   videoFile=f; audioBuffer=null; keepSegments=[]; noiseProfile=null;
   document.getElementById('fileInfo').classList.remove('hidden');
   document.getElementById('fileInfoText').textContent='✓ '+f.name+'  （'+(f.size/1024/1024).toFixed(1)+' MB）';
@@ -741,8 +754,12 @@ async function handleFile(f){
   document.getElementById('downloadCard').classList.add('hidden');
   try{
     originalDuration=await getVideoDuration(f);
-    document.getElementById('trimEnd').value=formatSec(originalDuration);
-    addLog('ファイルを読み込みました: '+f.name+' / 長さ '+originalDuration.toFixed(2)+'秒','success');
+    if(originalDuration>0){
+      document.getElementById('trimEnd').value=formatSec(originalDuration);
+      addLog('ファイルを読み込みました: '+f.name+' / 長さ '+originalDuration.toFixed(2)+'秒','success');
+    }else{
+      addLog('ファイルを読み込みました: '+f.name+'（動画の長さは解析時に判定します）','success');
+    }
   }catch(err){
     addLog('ファイルを読み込みました: '+f.name,'success');
   }
