@@ -637,16 +637,29 @@
       transition:transform .22s;
     }
     .zoomcheck.open .zcheck-lbl .zcheck-arrow{transform:rotate(90deg)}
-    .zcheck-items{
-      display:flex;flex-wrap:wrap;gap:7px;overflow:hidden;
+    .zcheck-cols{
+      display:grid;grid-template-columns:1fr 1fr;gap:10px;overflow:hidden;
       max-height:0;opacity:0;
       transition:max-height .3s ease,opacity .25s ease;
     }
-    .zoomcheck.open .zcheck-items{
+    .zoomcheck.open .zcheck-cols{
       max-height:2000px;opacity:1;
     }
+    .zcheck-col{
+      display:flex;flex-direction:column;gap:6px;
+      border:1px solid var(--border);border-radius:10px;background:var(--ibox-bg);
+      padding:8px 10px 10px;
+    }
+    html.white .zcheck-col{border-color:#e3e3df}
+    .zcheck-col-head{
+      font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;color:var(--green3);
+      display:flex;align-items:center;gap:6px;padding-bottom:5px;margin-bottom:2px;
+      border-bottom:1px dashed rgba(56,180,255,.15);
+    }
+    html.white .zcheck-col-head{font-family:var(--jp);color:#0f6cbd;letter-spacing:.03em;border-bottom-color:#e0e0e0}
+    .zcheck-items{display:flex;flex-direction:column;gap:6px}
     .zcheck-item{
-      display:flex;align-items:center;gap:7px;flex:1 1 auto;min-width:280px;max-width:100%;
+      display:flex;align-items:center;gap:7px;width:100%;
       border:1px solid var(--border);border-radius:8px;background:var(--ibox-bg);
       padding:6px 10px;font-size:.68rem;color:var(--text);cursor:pointer;user-select:none;
       transition:background .2s,border-color .2s,box-shadow .2s,color .35s;
@@ -673,12 +686,6 @@
       font-family:var(--orb);font-size:.6rem;color:var(--textdim);flex-shrink:0;
     }
     html.white .zcheck-item .zc-no{font-family:var(--jp);color:#9a9a9a}
-    .zcheck-item .zc-phase{
-      font-size:.56rem;letter-spacing:.03em;color:var(--amber);
-      border:1px solid var(--amber);border-radius:4px;padding:0 6px;line-height:1.7;
-      flex-shrink:0;opacity:.95;white-space:nowrap;
-    }
-    html.white .zcheck-item .zc-phase{font-family:var(--jp);color:#b45309;border-color:#b45309}
     .zcheck-item .zc-label{flex:1;min-width:0;line-height:1.5}
     .zcheck-item.done{
       border-color:var(--green);color:var(--green3);background:rgba(56,180,255,.07);
@@ -692,7 +699,7 @@
     @media (max-width:700px){
       .zoomcheck{margin:8px 8px 0;padding:9px 10px 10px}
       .zcheck-right{padding-right:90px}
-      .zcheck-item{min-width:100%}
+      .zcheck-cols{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -731,7 +738,16 @@
       <span class="zcheck-go" id="zcheckGo">GO</span>
     </div>
   </div>
-  <div class="zcheck-items" id="zcheckItems"></div>
+  <div class="zcheck-cols">
+    <div class="zcheck-col">
+      <div class="zcheck-col-head">◀ ZOOM入室前</div>
+      <div class="zcheck-items" id="zcheckItemsBefore"></div>
+    </div>
+    <div class="zcheck-col">
+      <div class="zcheck-col-head">ZOOM入室後 ▶</div>
+      <div class="zcheck-items" id="zcheckItemsAfter"></div>
+    </div>
+  </div>
 </div>
 
 <main class="app" id="appContainer">
@@ -1154,11 +1170,12 @@
     ['Zoom入室後','PCのスピーカーとマイク、モニターがOFFになっていることを確認'],
   ];
   (function(){
-    const wrap=document.getElementById('zcheckItems');
+    const wrapB=document.getElementById('zcheckItemsBefore');
+    const wrapA=document.getElementById('zcheckItemsAfter');
     const cnt=document.getElementById('zcheckCount');
     const go=document.getElementById('zcheckGo');
     const panel=document.getElementById('zoomCheckPanel');
-    if(!wrap||!cnt||!go||!panel)return;
+    if(!wrapB||!wrapA||!cnt||!go||!panel)return;
     const boxes=[];
     ZOOM_CHECK.forEach(function(entry,i){
       const lab=document.createElement('label');
@@ -1168,21 +1185,17 @@
       const no=document.createElement('span');
       no.className='zc-no';
       no.textContent=String(i+1).padStart(2,'0');
-      const ph=document.createElement('span');
-      ph.className='zc-phase';
-      ph.textContent=entry[0];
       const tx=document.createElement('span');
       tx.className='zc-label';
       tx.textContent=entry[1];
       lab.appendChild(cb);
       lab.appendChild(no);
-      lab.appendChild(ph);
       lab.appendChild(tx);
       cb.addEventListener('change',function(){
         lab.classList.toggle('done',cb.checked);
         update();
       });
-      wrap.appendChild(lab);
+      (entry[0]==='Zoom入室前'?wrapB:wrapA).appendChild(lab);
       boxes.push(cb);
     });
     function update(){
