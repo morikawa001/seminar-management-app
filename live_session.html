@@ -631,8 +631,19 @@
     }
     @keyframes go-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(1.06)}}
     @keyframes go-pulse-white{0%,100%{opacity:1}50%{opacity:.5}}
+    .zcheck-lbl{cursor:pointer;user-select:none}
+    .zcheck-lbl .zcheck-arrow{
+      margin-left:8px;font-size:.78rem;opacity:.7;display:inline-block;
+      transition:transform .22s;
+    }
+    .zoomcheck.open .zcheck-lbl .zcheck-arrow{transform:rotate(90deg)}
     .zcheck-items{
-      display:flex;flex-wrap:wrap;gap:7px;
+      display:flex;flex-wrap:wrap;gap:7px;overflow:hidden;
+      max-height:0;opacity:0;
+      transition:max-height .3s ease,opacity .25s ease;
+    }
+    .zoomcheck.open .zcheck-items{
+      max-height:2000px;opacity:1;
     }
     .zcheck-item{
       display:flex;align-items:center;gap:7px;flex:1 1 auto;min-width:280px;max-width:100%;
@@ -712,9 +723,9 @@
 <button id="themeBtn" onclick="toggleTheme()">☀ WHITE MODE</button>
 
 <!-- Zoom 事前チェックパネル -->
-<div class="pnl zoomcheck" id="zoomCheckPanel">
+<div class="pnl zoomcheck open" id="zoomCheckPanel">
   <div class="zcheck-head">
-    <div class="slbl"><span class="sb-dot" style="margin-right:6px;vertical-align:middle"></span>▸ ZOOM 事前チェックリスト</div>
+    <div class="slbl zcheck-lbl" onclick="toggleZoomCheck()"><span class="sb-dot" style="margin-right:6px;vertical-align:middle"></span>▸ ZOOM 事前チェックリスト<span class="zcheck-arrow">▶</span></div>
     <div class="zcheck-right">
       <span class="zcheck-count" id="zcheckCount">0/13</span>
       <span class="zcheck-go" id="zcheckGo">GO</span>
@@ -903,6 +914,12 @@
   /* ── QAトグル ── */
   window.toggleQA = function(id){
     document.getElementById(id).classList.toggle('open');
+  };
+
+  /* ── ZOOM チェックパネルトグル ── */
+  window.toggleZoomCheck = function(){
+    const p = document.getElementById('zoomCheckPanel');
+    if(p) p.classList.toggle('open');
   };
 
   /* ── テーマ切替 ── */
@@ -1174,6 +1191,7 @@
       cnt.textContent=all?'全項目完了':done+'/'+boxes.length;
       go.style.display=all?'inline-block':'none';
       panel.classList.toggle('ready',all);
+      if(all) panel.classList.remove('open');
     }
     update();
   })();
