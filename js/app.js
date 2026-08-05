@@ -922,6 +922,16 @@ function downloadQR(){
   a.click();
 }
 
+function updateStorageLocation(){
+  const nameEl=document.getElementById('storageLocName');
+  const valueEl=document.getElementById('storageLocValue');
+  if(!nameEl||!valueEl)return;
+  const loc=selectedRow?String(selectedRow[fullKeys.qrStorageLoc]||'').trim():'';
+  nameEl.textContent=selectedRow?`No.${selectedRow[fullKeys.no]||''} の保存場所`:'保存場所';
+  valueEl.textContent=loc||'保管場所データが未登録です。';
+}
+window.updateStorageLocation=updateStorageLocation;
+
 function loadSelectedIntoForm(){
   if(!selectedRow){setStatus('先に表示したい No を選択してください。');return}
   fields.no.value=selectedRow[fullKeys.no]||'';
@@ -966,6 +976,7 @@ function loadSelectedIntoForm(){
   recalcDraft();
   els.deleteEntryBtn.disabled=false;
   updateQRCode();
+  updateStorageLocation();
   setStatus(`No.${selectedRow[fullKeys.no]} を入力欄へ反映しました。保存すると同じNoを上書きします。`);
 }
 

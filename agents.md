@@ -97,6 +97,13 @@ QR_reader.html                # QRファイル管理（別ページ、Firebase E
 
 ## 変更履歴
 
+### 2026-08-06: index.html にファイル保存場所パネルを新設（QR_reader.html の保管場所データを表示）
+- ✅ `index.html` の `#qrCodePanel`（QR File Code）直下に新パネル `#storageLocPanel`（ファイルの保存場所）を新設
+- ✅ `js/app.js` に `updateStorageLocation()` を追加：選択中レコードの `qr_storage_loc`（QR_reader.html が Firestore 保存する保管場所データ）を読み込み `#storageLocName` / `#storageLocValue` に反映（未登録時は「保管場所データが未登録です。」）
+- ✅ `loadSelectedIntoForm()` 末尾で `updateStorageLocation()` を呼び出し、No 選択時に同期更新
+- ✅ `window.updateStorageLocation` でグローバル公開
+- ⚠️ 変更対象は `index.html` / `js/app.js` のみ。node --check 通過済み。ブラウザでの Dark/Light 手動確認はユーザーが実施
+
 ### 2026-08-03: qr_maker.html を GitHub Pages 用 seminar リポジトリへ同期（デプロイ反映）
 - ✅ `qr_maker.html`（長文QR修正版）と `js/qrcode.js`（修正済みローカルライブラリ、新規追加）を `morikawa001/seminar` リポジトリの `main` へコピーし、`dd275e7` で push
 - ✅ 原因: デプロイ版は旧CDN `qrcode.min.js`（日本語文字化け・長文不可）を読み込んでおり、本リポジトリの修正が Pages に反映されていなかった
