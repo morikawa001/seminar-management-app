@@ -894,6 +894,7 @@ function handleSelectRecord(){
   if(qs) qs.value=no;
   selectedRow=dataRows.find(r=>String(r[fullKeys.no]||'').trim()===String(no||'').trim())||null;
   if(selectedRow)setStatus(`No.${selectedRow[fullKeys.no]} を選択しました。`);
+  updateStorageLocation();
 }
 
 function updateQRCode(){
@@ -2322,6 +2323,7 @@ function selectRecordByNo(no){
   if(qs) qs.value=no;
   const row=dataRows.find(r=>String(r[fullKeys.no]||'').trim()===String(no||'').trim())||null;
   if(row){ selectedRow=row; }
+  updateStorageLocation();
 }
 window.selectRecordByNo=selectRecordByNo;
 
