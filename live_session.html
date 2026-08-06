@@ -1398,13 +1398,6 @@
     updateSideMarker(new Date());
   };
 
-  // ログイン済みの場合の再チェック
-  (function(){
-    if(typeof FirebaseApp !== 'undefined' && FirebaseApp.getCurrentUser()){
-      if(typeof onFirebaseLogin === 'function') onFirebaseLogin(FirebaseApp.getCurrentUser());
-    }
-  })();
-
 })();
 </script>
 

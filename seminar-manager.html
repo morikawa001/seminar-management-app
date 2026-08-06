@@ -997,12 +997,6 @@ window.onFirebaseLogout = function(){
   if(m) m.style.display = 'none';
 };
 
-(function(){
-  if(typeof FirebaseApp !== 'undefined' && FirebaseApp.getCurrentUser()){
-    window.onFirebaseLogin(FirebaseApp.getCurrentUser());
-  }
-})();
-
 // ===================== INIT — 空の状態で起動、CSVインポートを促す =====================
 function init() {
   renderStats();

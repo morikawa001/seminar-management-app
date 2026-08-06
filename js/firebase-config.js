@@ -15,20 +15,34 @@
 
   var DB_COLLECTION = 'seminars';
   var currentUser = null;
+  var authRetryTimer = null;
+  var authDispatched = false;
 
   auth.onAuthStateChanged(function(user){
     currentUser = user;
     var loginSection = document.getElementById('loginSection');
     var appContainer = document.getElementById('appContainer');
+    if(loginSection) loginSection.style.display = user ? 'none' : '';
+    if(appContainer) appContainer.style.display = user ? '' : 'none';
+
     if(user){
-      if(loginSection) loginSection.style.display = 'none';
-      if(appContainer) appContainer.style.display = '';
-      if(typeof onFirebaseLogin === 'function') onFirebaseLogin(user);
-    } else {
-      if(loginSection) loginSection.style.display = '';
-      if(appContainer) appContainer.style.display = 'none';
+      authDispatched = false;
+      dispatchAuth();
     }
   });
+
+  // onFirebase ハンドラがまだ未定義（スクリプト読込順序）で発火した場合、
+  // 定義されるまで再評価して取りこぼさずに送出する（各ページの再チェックは不要）
+  function dispatchAuth(){
+    if(!currentUser || authDispatched) return;
+    if(typeof onFirebaseLogin !== 'function' || typeof onFirebaseLogout !== 'function'){
+      clearTimeout(authRetryTimer);
+      authRetryTimer = setTimeout(dispatchAuth, 100);
+      return;
+    }
+    authDispatched = true;
+    onFirebaseLogin(currentUser);
+  }
 
   function getEmail(){ return (document.getElementById('loginEmail')||{}).value || ''; }
   function getPassword(){ return (document.getElementById('loginPassword')||{}).value || ''; }

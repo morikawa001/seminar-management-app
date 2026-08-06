@@ -2648,14 +2648,6 @@ function onFirebaseLogout(){
   if(loginMsg) loginMsg.style.display = 'none';
 }
 
-// ログイン済みの場合、onAuthStateChanged が firebase-config.js 読み込み時に
-// 発火しても onFirebaseLogin が未定義だったためスキップされる → ここで再チェック
-(function(){
-  if(typeof FirebaseApp !== 'undefined' && FirebaseApp.getCurrentUser()){
-    onFirebaseLogin(FirebaseApp.getCurrentUser());
-  }
-})();
-
 // ダミーデータ挿入
 function loadDummyData(){
   const today=new Date();
