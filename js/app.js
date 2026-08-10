@@ -1999,7 +1999,7 @@ function buildExceptions(rows){
       if(!isCheckedValue(row[fullKeys.task34])) push('info','受講証交付未完','受講証修了証メール交付_CHECKが未チェックです','task34');
     }
     if(days!==null&&days<=0&&days>=-1){
-      if(!isCheckedValue(row[fullKeys.checkK1])) push('warning','起案1未チェック','起案1チェック_CHECK_K1が未チェックです','task06');
+      if(!isCheckedValue(row[fullKeys.checkK1])) push('warning','起案1未チェック','起案1チェック_CHECK_K1が未チェックです','task04');
     }
   });
 
