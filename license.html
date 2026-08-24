@@ -259,6 +259,12 @@
       margin:0 !important;
       background:#fff !important;
     }
+    .docx-page-border {
+      position:absolute;
+      pointer-events:none;
+      box-sizing:border-box;
+      z-index:2;
+    }
   </style>
 </head>
 <body>
@@ -317,7 +323,7 @@
       <label class="format-btn">
         <input type="radio" name="outputFmt" value="pdf" checked>
         <span>PDF形式</span>
-        <span class="format-badge">画像変換</span>
+        <span class="format-badge">レイアウト保持</span>
       </label>
       <label class="format-btn">
         <input type="radio" name="outputFmt" value="docx">
@@ -371,7 +377,7 @@
     <div class="info-box">
       <strong>PDF出力：</strong>
       DOCXを docx-preview でブラウザ描画 → html2canvas でキャプチャ → jsPDF でPDF化。<br>
-      Word独自のページ枠線は構造上再現されにくい場合があります。<br><br>
+      ページ枠線（ページ罫線）・表の枠線・余白・ページサイズなど Word のレイアウトをできる限り保持します。<br><br>
       <strong>Word出力：</strong>
       置換済みDOCXをそのまま保存。<strong>枠線・書式を完全保持。</strong><br>
       <span class="info-note">※ Word形式はWordまたはLibreOfficeで開いてPDF印刷することを推奨します。</span>
@@ -545,6 +551,103 @@ function collectDocxStyles() {
   return parts.join('\n');
 }
 
+/* ── ページ枠線（w:pgBorders）抽出・描画 ── */
+function pgBorderStyle(val) {
+  switch (val) {
+    case 'single': case 'thick': case 'dashDotStroked': case 'threeDEmboss': case 'threeDEngrave': return 'solid';
+    case 'double': case 'triple': case 'doubleWave': return 'double';
+    case 'dashed': case 'dashSmallGap': return 'dashed';
+    case 'dotted': case 'dotDash': case 'dotDotDash': return 'dotted';
+    case 'none': case 'nil': return 'none';
+    default: return 'solid';
+  }
+}
+
+function collectPgBorders(sectPr) {
+  const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+  const attr = (el, name) => {
+    for (let i = 0; el && i < el.attributes.length; i++) {
+      if (el.attributes.item(i).localName === name) return el.attributes.item(i).value;
+    }
+    return null;
+  };
+  const borders = { top: 'none', right: 'none', bottom: 'none', left: 'none' };
+  const spaces  = { top: 0, right: 0, bottom: 0, left: 0 };
+  let any = false;
+  if (!sectPr) return { borders, spaces, any };
+  let pgb = null;
+  for (let i = 0; i < sectPr.children.length; i++) {
+    if (sectPr.children[i].localName === 'pgBorders') { pgb = sectPr.children[i]; break; }
+  }
+  if (!pgb) return { borders, spaces, any };
+  const sides = {};
+  for (let i = 0; i < pgb.children.length; i++) sides[pgb.children[i].localName] = pgb.children[i];
+  const pxPerPt = 96 / 72;
+  for (const side of ['top', 'right', 'bottom', 'left']) {
+    const el = sides[side];
+    if (!el) continue;
+    const style = pgBorderStyle(attr(el, 'val'));
+    if (style === 'none') { borders[side] = 'none'; continue; }
+    const rawSz = parseFloat(attr(el, 'sz')) || 0;
+    const sizePx = Math.min(Math.max(rawSz / 8, 0.25), 12) * pxPerPt;
+    let color = (attr(el, 'color') || '').replace('#', '').toLowerCase();
+    let col = /^[0-9a-f]{3}$/.test(color) ? '#' + color
+            : /^[0-9a-f]{6}$/.test(color) ? '#' + color
+            : '#000000';
+    borders[side] = `${sizePx.toFixed(2)}px ${style} ${col}`;
+    spaces[side] = parseInt(attr(el, 'space'), 10) || 0;
+    any = true;
+  }
+  return { borders, spaces, any };
+}
+
+async function extractPageBorders(arrayBuffer) {
+  try {
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    const docFile = zip.file('word/document.xml');
+    if (!docFile) return { borders: null, spaces: null, any: false };
+    const xmlText = await docFile.async('string');
+    const doc = new DOMParser().parseFromString(xmlText, 'application/xml');
+    const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+    const list = doc.getElementsByTagNameNS(W, 'sectPr');
+    if (!list.length) return { borders: null, spaces: null, any: false };
+    const bodySect = list[list.length - 1];
+    return collectPgBorders(bodySect);
+  } catch (e) {
+    console.error('ページ枠線の抽出に失敗', e);
+    return { borders: null, spaces: null, any: false };
+  }
+}
+
+function applyPageBorders(host, info) {
+  const pxPerPt = 96 / 72;
+  const pages = host.querySelectorAll('section.docx');
+  pages.forEach((sec) => {
+    const cs = getComputedStyle(sec);
+    const pad = {
+      top: parseFloat(cs.paddingTop) || 0,
+      right: parseFloat(cs.paddingRight) || 0,
+      bottom: parseFloat(cs.paddingBottom) || 0,
+      left: parseFloat(cs.paddingLeft) || 0,
+    };
+    const ov = document.createElement('div');
+    ov.className = 'docx-page-border';
+    ov.style.top    = Math.max(0, pad.top    - info.spaces.top    * pxPerPt) + 'px';
+    ov.style.left   = Math.max(0, pad.left   - info.spaces.left   * pxPerPt) + 'px';
+    ov.style.right  = Math.max(0, pad.right  - info.spaces.right  * pxPerPt) + 'px';
+    ov.style.bottom = Math.max(0, pad.bottom - info.spaces.bottom * pxPerPt) + 'px';
+    ov.style.borderTop    = info.borders.top;
+    ov.style.borderRight  = info.borders.right;
+    ov.style.borderBottom = info.borders.bottom;
+    ov.style.borderLeft   = info.borders.left;
+    ov.style.position = 'absolute';
+    ov.style.pointerEvents = 'none';
+    ov.style.boxSizing = 'border-box';
+    ov.style.zIndex = '2';
+    sec.appendChild(ov);
+  });
+}
+
 /* ── DOCX → PDF 変換 ── */
 async function docxBlobToPdf(docxBlob, scale) {
   const arrayBuffer = await docxBlob.arrayBuffer();
@@ -567,6 +670,9 @@ async function docxBlobToPdf(docxBlob, scale) {
 
   if (document.fonts?.ready) await document.fonts.ready;
   await new Promise(r => setTimeout(r, 800));
+
+  const pbInfo = await extractPageBorders(arrayBuffer);
+  if (pbInfo.any && pbInfo.borders) applyPageBorders(previewHost, pbInfo);
 
   const pages   = Array.from(previewHost.querySelectorAll('section.docx'));
   const targets = pages.length > 0 ? pages : [previewHost];
