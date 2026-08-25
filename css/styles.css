@@ -1622,9 +1622,9 @@ html{scroll-behavior:smooth}
 }
 /* ── Master Table (seminar-manager style) ── */
 #masterTableSection .tw{background:var(--panel2);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-#masterTableSection .ts{overflow-x:auto}
+#masterTableSection .ts{max-height:min(560px,65vh);overflow:auto}
 #masterTableSection .dt{min-width:900px;border-collapse:collapse;width:100%}
-#masterTableSection .dt thead th{background:var(--panel3);padding:8px 12px;font-size:.78rem;font-weight:700;color:var(--text-strong);text-align:left;white-space:nowrap;border-bottom:2px solid var(--line);cursor:pointer;user-select:none;letter-spacing:.02em}
+#masterTableSection .dt thead th{background:var(--panel3);padding:8px 12px;font-size:.78rem;font-weight:700;color:var(--text-strong);text-align:left;white-space:nowrap;border-bottom:2px solid var(--line);cursor:pointer;user-select:none;letter-spacing:.02em;position:sticky;top:0;z-index:2}
 #masterTableSection .dt thead th:hover{color:var(--green)}
 #masterTableSection .dt tbody tr{border-bottom:1px solid var(--line);cursor:pointer;transition:background 120ms}
 #masterTableSection .dt tbody tr:hover{background:var(--panel3)}
