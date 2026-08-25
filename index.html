@@ -99,6 +99,7 @@
     </div>
     <button class="v2-sidebar-btn active" data-section="topControlPanel" onclick="scrollToSection('topControlPanel')"><i>◉</i><span>ダッシュボード</span></button>
     <button class="v2-sidebar-btn" data-section="todayCommandSection" onclick="scrollToSection('todayCommandSection')"><i>▶</i><span>今日のアクション</span></button>
+    <button class="v2-sidebar-btn" data-section="cautionSection" onclick="scrollToSection('cautionSection')"><i>⚠</i><span>期限切れ確認</span></button>
     <button class="v2-sidebar-btn" data-section="exceptionQueueSection" onclick="scrollToSection('exceptionQueueSection')"><i>!</i><span>例外確認</span></button>
     <button class="v2-sidebar-btn" data-section="deadlineAlertSection" onclick="scrollToSection('deadlineAlertSection')"><i>⚠</i><span>期限アラート</span></button>
     <button class="v2-sidebar-btn" data-section="quickOperationSection" onclick="scrollToSection('quickOperationSection')" title="Quick Operationと連結"><i>◇</i><span>研修会選択</span></button>
@@ -225,6 +226,28 @@
     </div>
 
     <div class="section-group-label">⚡ 今日の優先アクション</div>
+
+    <!-- CAUTION -->
+    <section class="panel section-collapsible open" id="cautionSection" data-collapsed="false">
+      <div class="corner-label">CAUTION</div>
+      <div class="panel-head">
+        <div>
+          <h2>CAUTION</h2>
+          <p>本日の月日を過ぎているのに未チェックの項目を表示します。チェックで完了になります。</p>
+        </div>
+        <div class="panel-nav-actions">
+          <a class="btn small manual-btn" href="#todayCommandSection" onclick="scrollToSection('todayCommandSection');return false;">Today Command</a>
+          <a class="btn small manual-btn" href="#topControlPanel">Dual Theme Control UI</a>
+        </div>
+      </div>
+      <div class="alert-wrap" id="cautionList">
+        <div class="alert-item">
+          <div><span class="alert-tag">WAIT</span></div>
+          <div><strong>監視待機中</strong><p>CSVを読み込むと期限切れ項目がここに表示されます。</p></div>
+          <div class="mono">No data</div>
+        </div>
+      </div>
+    </section>
 
     <!-- Today Command -->
     <section class="panel section-collapsible open" id="todayCommandSection" data-collapsed="false">

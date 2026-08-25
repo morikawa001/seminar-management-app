@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded',function(){
       }
     });
   },{rootMargin:'-56px 0px -60% 0px'});
-  const sectionIds = ['topControlPanel','todayCommandSection','deadlineAlertSection','quickOperationSection','entryConsoleSection','mailTemplateSection','taskChecklistPanel','exceptionQueueSection','masterTableSection','templateInjectionSection'];
+  const sectionIds = ['topControlPanel','todayCommandSection','cautionSection','deadlineAlertSection','quickOperationSection','entryConsoleSection','mailTemplateSection','taskChecklistPanel','exceptionQueueSection','masterTableSection','templateInjectionSection'];
   sectionIds.forEach(id=>{
     const el = document.getElementById(id);
     if(el) observer.observe(el);
@@ -1389,6 +1389,82 @@ function collectDeadlineAlerts(){
   items.sort((a,b)=>a.diff-b.diff||Number(a.no)-Number(b.no));
   return items;
 }
+function buildCautionItems(){
+  const today=new Date();
+  const baseToday=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+  const items=[];
+  const labelToCsvKey={'起案1':'checkK1','HP案内・チラシ':'checkHp','起案2':'checkK2','起案3':'checkK3','院外締切':'checkK1','資料締切':'checkK2','配布資料DL締切':'checkK2'};
+
+  dataRows.forEach(r=>{
+    const year=r[fullKeys.year]||fields.year.value||'';
+    const title=r[fullKeys.title]||'無題';
+    const no=r[fullKeys.no]||'-';
+    const eventDateRaw=r[fullKeys.date];
+
+    const pushItem=(label,dateObj,raw)=>{
+      if(!dateObj) return;
+      const csvKey=labelToCsvKey[label]||'checkK1';
+      if(isCheckedValue(r[fullKeys[csvKey]])) return;
+      const diff=daysBetween(baseToday,dateObj);
+      if(diff>=0) return;
+      items.push({no,title,label,raw:raw||fmtDate(dateObj),diff,csvKey});
+    };
+
+    pushItem('起案1', parseAlertDateByEvent(r[fullKeys.k1], eventDateRaw, year), r[fullKeys.k1]);
+    pushItem('HP案内・チラシ', parseAlertDateByEvent(r[fullKeys.hp], eventDateRaw, year), r[fullKeys.hp]);
+    pushItem('起案2', parseAlertDateByEvent(r[fullKeys.k2], eventDateRaw, year), r[fullKeys.k2]);
+    pushItem('起案3', parseAlertDateByEvent(r[fullKeys.k3], eventDateRaw, year), r[fullKeys.k3]);
+    pushItem('院外締切', parseAlertDateByEvent(String(r[fullKeys.deadline1]||'').replace(/\s*\d{1,2}:\d{2}.*/, ''), eventDateRaw, year), r[fullKeys.deadline1]);
+    pushItem('資料締切', parseAlertDateByEvent(r[fullKeys.dataDeadline], eventDateRaw, year), r[fullKeys.dataDeadline]);
+    pushItem('配布資料DL締切', parseAlertDateByEvent(r[fullKeys.deadline3], eventDateRaw, year), r[fullKeys.deadline3]);
+  });
+
+  items.sort((a,b)=>a.diff-b.diff||Number(a.no)-Number(b.no));
+  return items;
+}
+function renderCaution(){
+  const el=document.getElementById('cautionList');
+  if(!el) return;
+  if(!currentHeaders.length){
+    el.innerHTML = `
+      <div class="alert-item">
+        <div><span class="alert-tag">WAIT</span></div>
+        <div><strong>監視待機中</strong><p>CSVを読み込むと期限切れ項目がここに表示されます。</p></div>
+        <div class="mono">No data</div>
+      </div>
+    `;
+    return;
+  }
+  const items=buildCautionItems();
+  if(!items.length){
+    el.innerHTML = `
+      <div class="alert-item">
+        <div><span class="alert-tag">CLEAR</span></div>
+        <div><strong>期限切れなし</strong><p>過ぎた月日で未チェックの項目はありません。</p></div>
+        <div class="mono">Stable</div>
+      </div>
+    `;
+    return;
+  }
+  el.innerHTML=items.map((a,i)=>{
+    const aid=`caution-item-${i}`;
+    const tag=`${Math.abs(a.diff)}D経過`;
+    return `
+      <div class="alert-item" id="${aid}" data-no="${esc(a.no)}" data-csvkey="${esc(a.csvKey||'checkK1')}">
+        <div class="alert-item-tag-wrap">
+          <input type="checkbox" class="alert-check"
+            onclick="event.stopPropagation();cautionCheckDone('${aid}',this.checked)" title="完了">
+          <span class="alert-tag" style="background:color-mix(in srgb, var(--danger) 85%, var(--panel3));color:var(--bg);font-weight:800;border-color:var(--danger)">${tag}</span>
+        </div>
+        <div class="alert-body">
+          <strong>No.${esc(a.no)} ${esc(a.title)}</strong>
+          <p>${esc(a.label)} : ${esc(a.raw||'-')}（${tag}）</p>
+        </div>
+        <div class="alert-meta mono">CAUTION</div>
+      </div>
+    `;
+  }).join('');
+}
 function renderAlerts(){
   if(!currentHeaders.length){
     els.alertList.innerHTML = `
@@ -1400,6 +1476,7 @@ function renderAlerts(){
     `;
     renderTodayCommand();
     renderExceptionQueue();
+    renderCaution();
     return;
   }
 
@@ -1446,6 +1523,7 @@ function renderAlerts(){
 
   renderTodayCommand();
   renderExceptionQueue();
+  renderCaution();
 }
 
 function updateAnnualGauge(done,total,yearCount,soon,draftCount){
@@ -2309,6 +2387,25 @@ function alertToggleExpand(aid){
   if(meta) meta.style.display=isHidden?'':'none';
 }
 window.alertCheckDone=alertCheckDone;
+
+function cautionCheckDone(aid, checked){
+  const item=document.getElementById(aid);
+  if(!item) return;
+  const no=item.dataset.no || '';
+  const csvKeyName=item.dataset.csvkey || 'checkK1';
+  if(no && csvKeyName){
+    writeCheckToRaw(no, csvKeyName, checked);
+    dataRows = buildDisplayRowsFromRaw(rawRows);
+    renderTodayCommand();
+    renderExceptionQueue();
+    renderAlerts();
+    renderTable();
+    renderStats();
+    updateTrainingProgressFromRows(rawRows);
+    showCsvSavedToast();
+  }
+}
+window.cautionCheckDone=cautionCheckDone;
 
 // Mail Template タブ切替
 function mailTabClick(btn){
