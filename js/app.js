@@ -389,10 +389,8 @@ function buildTemplateData(row){
   map[fullKeys.closing1]=String(row?.[fullKeys.closing1] ?? '');
   map['進行表クロージング（選択）_CLOSING_1']=String(row?.[fullKeys.closing1] ?? '');
 
-  const qrZoom=String(row?.[fullKeys.zoomUrl]??'').trim();
-  const validZoom=!!qrZoom&&qrZoom!=='https://zoom.us/';
-  map['{{QR}}']=validZoom?qrZoom:'';
-  map['{{QR_URL}}']=validZoom?qrZoom:'';
+  map['{{QR}}']='';
+  map['{{QR_URL}}']='';
   map['{{QR_IMAGE}}']='';
 
   map[fullKeys.lectureStart]=String(row?.[fullKeys.lectureStart] ?? '');
@@ -495,7 +493,7 @@ async function mergeTemplateZip(file,row){
   const targets=targetXmlPathsForTemplate(zip,file.name);
   if(!targets.length) throw new Error('差し込み対象XMLが見つかりません');
   var hasQR=false,qrImgXml=null;
-  targets.forEach(function(path){if(zip.file(path)){var t=zip.file(path).asText();if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;}});
+  targets.forEach(function(path){if(zip.file(path)){var t=zip.file(path).asText();if(t.indexOf('{{QR_IMAGE}}')>=0||t.indexOf('{{QR_URL}}')>=0||t.indexOf('{{QR}}')>=0)hasQR=true;}});
   if(hasQR){
     var qrBlob=await generateQRBlob(String(row?.[fullKeys.no]??''),300);
     if(qrBlob){
@@ -506,7 +504,7 @@ async function mergeTemplateZip(file,row){
   targets.forEach(path=>{
     if(zip.file(path)){
       let out=zip.file(path).asText();
-      if(qrImgXml){out=out.split('{{QR_IMAGE}}').join(qrImgXml);out=out.split('{{QR}}').join('')}
+      if(qrImgXml){out=out.split('{{QR_IMAGE}}').join(qrImgXml);out=out.split('{{QR_URL}}').join(qrImgXml);out=out.split('{{QR}}').join(qrImgXml)}
       out=replacePlaceholdersInXml(out,data);
       zip.file(path,out);
     }
