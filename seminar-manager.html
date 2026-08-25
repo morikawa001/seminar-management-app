@@ -62,6 +62,7 @@
 .sm-table .dot.on{background:var(--success)}
 .sm-table .dot.off{background:var(--line2)}
 .sm-table .dtg{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;background:var(--panel3);border-radius:12px;font-size:.7rem;color:var(--muted);white-space:nowrap;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.sm-table .dtg.done{background:color-mix(in srgb, var(--green) 14%, var(--panel3));color:var(--muted);text-decoration:line-through;text-decoration-thickness:2px}
 .sm-table .sm-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:12px;font-size:.72rem;font-weight:700}
 
 /* Detail overlay */
@@ -75,6 +76,8 @@
 .sm-ps h3{font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .sm-ig{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .sm-ii{display:grid;gap:2px}
+.sm-ii.done{padding:4px 6px;background:color-mix(in srgb, var(--green) 10%, var(--panel3));border-radius:6px}
+.sm-ii.done label,.sm-ii.done span{color:var(--muted);text-decoration:line-through;text-decoration-thickness:2px}
 .sm-ii label{font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em}
 .sm-ii span{font-size:.92rem;font-weight:600;color:var(--text-strong)}
 .sm-cl{display:grid;gap:2px}
@@ -625,6 +628,10 @@ function renderTable() {
     const p = getProgress(s);
     const st = getStatus(s);
     const dots = CHECKS.map(c=>`<div class="dot ${isChecked(s[c.k])?'on':'off'}" title="${c.l}"></div>`).join('');
+    const dk1 = s.status_k1 === 'DONE';
+    const dhp = s.status_hp === 'DONE';
+    const dk2 = s.status_k2 === 'DONE';
+    const dk3 = s.status_k3 === 'DONE';
     const subjBadge = s.subject === '研究者'
       ? '<span class="badge" style="background:var(--panel3);color:var(--green)">研究者</span>'
       : s.subject === '倫理審査委員会委員'
@@ -637,10 +644,10 @@ function renderTable() {
       <td>${subjBadge}</td>
       <td style="color:var(--muted);white-space:nowrap;font-size:.68rem">${s.site||'—'}</td>
       <td><div class="pw"><div class="pb"><div class="pf ${p===100?'full':''}" style="width:${p}%"></div></div><span class="pp">${p}%</span></div></td>
-      <td>${s.kian1?`<div class="dtg">📋${s.kian1}</div>`:''}</td>
-      <td>${s.hp?`<div class="dtg">🌐${s.hp}</div>`:''}</td>
-      <td>${s.kian2?`<div class="dtg">📄${s.kian2}</div>`:''}</td>
-      <td>${s.kian3?`<div class="dtg">🏅${s.kian3}</div>`:''}</td>
+      <td>${s.kian1?`<div class="dtg ${dk1?'done':''}">📋${s.kian1}</div>`:''}</td>
+      <td>${s.hp?`<div class="dtg ${dhp?'done':''}">🌐${s.hp}</div>`:''}</td>
+      <td>${s.kian2?`<div class="dtg ${dk2?'done':''}">📄${s.kian2}</div>`:''}</td>
+      <td>${s.kian3?`<div class="dtg ${dk3?'done':''}">🏅${s.kian3}</div>`:''}</td>
       <td><div class="dots">${dots}</div></td>
     </tr>`;
   }).join('');
@@ -675,10 +682,10 @@ function openPanel(no) {
     <div class="sm-ps">
       <h3>マイルストーン</h3>
       <div class="sm-ig">
-        <div class="sm-ii"><label>📋 起案1（開催）</label><span>${s.kian1||'—'}</span></div>
-        <div class="sm-ii"><label>🌐 HP案内・チラシ</label><span>${s.hp||'—'}</span></div>
-        <div class="sm-ii"><label>📄 起案2（資料）</label><span>${s.kian2||'—'}</span></div>
-        <div class="sm-ii"><label>🏅 起案3（受講証）</label><span>${s.kian3||'—'}</span></div>
+        <div class="sm-ii ${s.status_k1==='DONE'?'done':''}"><label>📋 起案1（開催）</label><span>${s.kian1||'—'}</span></div>
+        <div class="sm-ii ${s.status_hp==='DONE'?'done':''}"><label>🌐 HP案内・チラシ</label><span>${s.hp||'—'}</span></div>
+        <div class="sm-ii ${s.status_k2==='DONE'?'done':''}"><label>📄 起案2（資料）</label><span>${s.kian2||'—'}</span></div>
+        <div class="sm-ii ${s.status_k3==='DONE'?'done':''}"><label>🏅 起案3（受講証）</label><span>${s.kian3||'—'}</span></div>
       </div>
     </div>
     <div class="sm-ps">

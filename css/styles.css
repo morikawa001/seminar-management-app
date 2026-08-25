@@ -1643,6 +1643,7 @@ html{scroll-behavior:smooth}
 #masterTableSection .pf.full{background:var(--success)}
 #masterTableSection .pp{font-size:.7rem;color:var(--muted);width:28px;text-align:right;font-weight:600}
 #masterTableSection .dtg{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;background:var(--panel3);border-radius:12px;font-size:.7rem;color:var(--muted);white-space:nowrap;font-weight:600;max-width:140px;overflow:hidden;text-overflow:ellipsis}
+#masterTableSection .dtg.done{background:color-mix(in srgb, var(--green) 14%, var(--panel3));color:var(--muted);text-decoration:line-through;text-decoration-thickness:2px}
 #masterTableSection .tc-site{max-width:160px;word-break:break-word;white-space:normal;line-height:1.4}
 .section-toggle-btn{
   background:none;border:none;color:var(--muted);cursor:pointer;

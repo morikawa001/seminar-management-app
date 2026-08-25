@@ -1257,6 +1257,10 @@ function renderTable(){
     const k3=r[fullKeys.k3]||'';
     const doneCount=[fullKeys.checkK1,fullKeys.checkHp,fullKeys.checkK2,fullKeys.checkK3].filter(k=>isCheckedValue(r[k])).length;
     const pct=Math.round(doneCount/4*100);
+    const dk1=isCheckedValue(r[fullKeys.checkK1])||String(r['STATUS_K1']||'').trim().toUpperCase()==='DONE';
+    const dhp=isCheckedValue(r[fullKeys.checkHp])||String(r['STATUS_HP']||'').trim().toUpperCase()==='DONE';
+    const dk2=isCheckedValue(r[fullKeys.checkK2])||String(r['STATUS_K2']||'').trim().toUpperCase()==='DONE';
+    const dk3=isCheckedValue(r[fullKeys.checkK3])||String(r['STATUS_K3']||'').trim().toUpperCase()==='DONE';
     const pri=priIndex?priIndex.get(String(no).trim()):null;
     const priBadge=pri?`<span class="pri-badge pri-${pri.level.toLowerCase()}" title="${esc(pri.reasons.map(x=>x.text).join(' / '))}"><span class="pri-lvl">${pri.level}</span><span class="pri-score">${pri.score}</span></span>`:'';
     const moveBtns=sortDir===0?`<button class="btn small" style="min-height:26px;padding:0 6px;font-size:.65rem;border-color:var(--primary);color:var(--primary)" onclick="moveRow('${esc(no)}',-1);event.stopPropagation()" title="上に移動">▲</button>
@@ -1272,10 +1276,10 @@ function renderTable(){
       <td class="tc-site" style="color:var(--muted);font-size:.68rem">${esc(site)||'—'}</td>
       <td><div class="pw"><div class="pb"><div class="pf ${pct===100?'full':''}" style="width:${pct}%"></div></div><span class="pp">${pct}%</span></div></td>
       <td>${priBadge}</td>
-      <td>${k1?`<div class="dtg">📋${esc(k1)}</div>`:''}</td>
-      <td>${hp?`<div class="dtg">🌐${esc(hp)}</div>`:''}</td>
-      <td>${k2?`<div class="dtg">📄${esc(k2)}</div>`:''}</td>
-      <td>${k3?`<div class="dtg">🏅${esc(k3)}</div>`:''}</td>
+      <td>${k1?`<div class="dtg ${dk1?'done':''}">📋${esc(k1)}</div>`:''}</td>
+      <td>${hp?`<div class="dtg ${dhp?'done':''}">🌐${esc(hp)}</div>`:''}</td>
+      <td>${k2?`<div class="dtg ${dk2?'done':''}">📄${esc(k2)}</div>`:''}</td>
+      <td>${k3?`<div class="dtg ${dk3?'done':''}">🏅${esc(k3)}</div>`:''}</td>
       <td class="tc-site" style="color:var(--muted);font-size:.68rem">${esc(r[fullKeys.qrStorageLoc]||'')||'—'}</td>
       <td style="white-space:nowrap">
         ${moveBtns}
