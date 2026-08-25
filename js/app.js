@@ -1366,17 +1366,15 @@ function collectDeadlineAlerts(){
 
     const pushItem=(label,dateObj,raw)=>{
       if(!dateObj) return;
-      const csvKey=labelToCsvKey[label]||'checkK1';
-      if(isCheckedValue(r[fullKeys[csvKey]])) return;
       const diff=daysBetween(baseToday,dateObj);
-      if(diff>7) return;
+      if(diff<0||diff>7) return;
       items.push({
         no,
         title,
         label,
         raw:raw||fmtDate(dateObj),
         diff,
-        csvKey
+        csvKey:labelToCsvKey[label]||'checkK1'
       });
     };
 
@@ -1418,7 +1416,7 @@ function renderAlerts(){
   } else {
     els.alertList.innerHTML = alerts.map((a,i)=>{
       const aid = `alert-item-${i}`;
-      const tag = a.diff === 0 ? 'TODAY' : a.diff === 1 ? 'TOMORROW' : a.diff < 0 ? 'OVERDUE' : `${a.diff}D`;
+      const tag = a.diff <= 0 ? 'TODAY' : a.diff === 1 ? 'TOMORROW' : `${a.diff}D`;
 
       const row = dataRows.find(r => String(r[fullKeys.no] || '').trim() === String(a.no || '').trim());
       const checkHeader = fullKeys[a.csvKey] || fullKeys.checkK1;
@@ -1825,40 +1823,44 @@ function buildTodayCommands(rows){
     const intro3=row[fullKeys.intro3]||'';
     const taskDone=countTasksDone(row);
 
-    const hasZoom=zoomUrl&&zoomUrl!=='https://zoom.us/';
-    const dk1=isCheckedValue(row[fullKeys.checkK1]);
-    const dhp=isCheckedValue(row[fullKeys.checkHp]);
-    const dk2=isCheckedValue(row[fullKeys.checkK2]);
-
-    // 起案1（開催35日前〜チェック完了まで表示継続）
-    if(days<=35&&!dk1){
+    // 開催当日
+    if(days===0){
+      cmds.push({no, title, urgency:'critical', csvKey:'task22',
+  action:'本日開催です。当日準備を確認してください。',reason:`Task完了: ${taskDone}/${TASK_IDS.length}`,buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no},{label:'メール作成',recipient:'attendee',purpose:'reminder',no}]});
+      if(!zoomUrl||zoomUrl==='https://zoom.us/'){
+        cmds.push({no,title,urgency:'critical',csvKey:'checkK3',action:'Zoom URLが未入力です。今すぐ登録してください。',reason:'当日前にZoom URLが必要です',buttons:[{label:'Entry Consoleで補完',href:'#entryConsoleSection',no}]});
+      }
+    }
+    // 1-3日前
+    else if(days>0&&days<=3){
+      cmds.push({no,title,urgency:'critical',csvKey:'checkK2',action:`開催まで${days}日です。直前リマインドを送信してください。`,reason:`開催日: ${row[fullKeys.date]||'-'}`,buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no},{label:'メール作成(講師)',recipient:'speaker',purpose:'reminder',no},{label:'メール作成(参加者)',recipient:'attendee',purpose:'reminder',no}]});
+      if(!zoomUrl||zoomUrl==='https://zoom.us/'){
+        cmds.push({no,title,urgency:'critical',csvKey:'checkK2',action:'Zoom URLが未設定です。至急入力してください。',reason:`開催${days}日前`,buttons:[{label:'Entry Consoleで補完',href:'#entryConsoleSection',no}]});
+      }
+    }
+    // 4-7日前
+    else if(days>3&&days<=7){
+      cmds.push({no,title,urgency:'high',csvKey:'checkK2',action:`開催${days}日前です。起案2・資料の準備を確認してください。`,reason:`開催日: ${row[fullKeys.date]||'-'}`,buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no},{label:'メール作成',recipient:'speaker',purpose:'data_request',no}]});
+      if(!zoomUrl||zoomUrl==='https://zoom.us/'){
+        cmds.push({no,title,urgency:'high',csvKey:'checkK2',action:'Zoom URLが未設定です。入力してください。',reason:'開催1週間前',buttons:[{label:'Entry Consoleで補完',href:'#entryConsoleSection',no},{label:'Zoom情報メール',recipient:'attendee',purpose:'zoom_info',no}]});
+      }
+    }
+    // 8-14日前
+    else if(days>7&&days<=14){
+      const hasZoom=zoomUrl&&zoomUrl!=='https://zoom.us/';
+      cmds.push({no,title,urgency:'normal',csvKey:'checkHp',action:`開催${days}日前です。参加者への開催案内を確認してください。`,reason:`HP/Zoom設定確認を推奨`,buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no},{label:'メール作成',recipient:'attendee',purpose:'announce',no}]});
+    }
+    // 15-35日前（準備フェーズ）
+    else if(days>14&&days<=35){
       if(!speaker||speaker.trim()===''){
-        cmds.push({no,title,urgency:'high',csvKey:'checkK1',action:'講師名が未入力です。登壇依頼を進めてください。',reason:days>=0?`開催${days}日前`:'起案1未完了',buttons:[{label:'Entry Consoleで補完',href:'#entryConsoleSection',no},{label:'登壇依頼メール',recipient:'speaker',purpose:'invitation',no}]});
+        cmds.push({no,title,urgency:'high',csvKey:'checkK1',action:'講師名が未入力です。登壇依頼を進めてください。',reason:`開催${days}日前`,buttons:[{label:'Entry Consoleで補完',href:'#entryConsoleSection',no},{label:'登壇依頼メール',recipient:'speaker',purpose:'invitation',no}]});
       }
-      cmds.push({no,title,urgency:'normal',csvKey:'checkK1',action:days>=0?`起案1がまだです。開催${days}日前なので起案1を進めてください。`:'起案1が未完了です。起案1チェックを完了してください。',reason:'起案1は開催35日前が目安',buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no}]});
-    }
-    // 起案2・資料（開催7日前〜チェック完了まで表示継続）
-    if(days<=7&&!dk2){
-      cmds.push({no,title,urgency:days>0&&days<=3?'critical':'high',csvKey:'checkK2',action:days>0?(days<=3?`開催まで${days}日です。直前リマインドを送信してください。`:`開催${days}日前です。起案2・資料の準備を確認してください。`):'起案2・資料が未完了です。起案2チェックを完了してください。',reason:`開催日: ${row[fullKeys.date]||'-'}`,buttons:days>0&&days<=3?[{label:'詳細を見る',href:'#entryConsoleSection',no},{label:'メール作成(講師)',recipient:'speaker',purpose:'reminder',no},{label:'メール作成(参加者)',recipient:'attendee',purpose:'reminder',no}]:[{label:'詳細を見る',href:'#entryConsoleSection',no},{label:'メール作成',recipient:'speaker',purpose:'data_request',no}]});
-      if(days>0&&!hasZoom){
-        cmds.push({no,title,urgency:days>0&&days<=3?'critical':'high',csvKey:'checkK2',action:days>0?'Zoom URLが未設定です。至急入力してください。':'Zoom URLが未設定です。入力してください。',reason:days>0?`開催${days}日前`:'開催1週間前',buttons:[{label:'Entry Consoleで補完',href:'#entryConsoleSection',no},{label:'Zoom情報メール',recipient:'attendee',purpose:'zoom_info',no}]});
+      if(!isCheckedValue(row[fullKeys.checkK1])){
+        cmds.push({no,title,urgency:'normal',csvKey:'checkK1',action:`起案1がまだです。開催${days}日前なので起案1を進めてください。`,reason:'起案1は開催35日前が目安',buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no}]});
       }
     }
-    // HP案内（開催14日前〜チェック完了まで表示継続）
-    if(days<=14&&!dhp){
-      cmds.push({no,title,urgency:'normal',csvKey:'checkHp',action:days>=0?`開催${days}日前です。参加者への開催案内を確認してください。`:'HP公開・開催案内が未完了です。HPチェックを完了してください。',reason:'HP/Zoom設定確認を推奨',buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no},{label:'メール作成',recipient:'attendee',purpose:'announce',no}]});
-    }
-    // 当日（開催当日〜当日タスク完了まで表示継続）
-    if(days<=0){
-      if(!isCheckedValue(row[fullKeys.task22])){
-        cmds.push({no,title,urgency:'critical',csvKey:'task22',action:days===0?'本日開催です。当日準備を確認してください。':'開催済みです。当日準備タスクが未完了です。',reason:`Task完了: ${taskDone}/${TASK_IDS.length}`,buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no},{label:'メール作成',recipient:'attendee',purpose:'reminder',no}]});
-      }
-      if(!hasZoom){
-        cmds.push({no,title,urgency:'critical',csvKey:'checkK3',action:days===0?'Zoom URLが未入力です。今すぐ登録してください。':'Zoom URLが未入力のままです。確認してください。',reason:'当日前にZoom URLが必要です',buttons:[{label:'Entry Consoleで補完',href:'#entryConsoleSection',no}]});
-      }
-    }
-    // 開催後（事後処理・チェック完了まで無期限で表示継続）
-    if(days<0){
+    // 開催後（事後処理）
+    else if(days<0&&days>=-30){
       const postTask26=isCheckedValue(row[fullKeys.task26]);
       const postTask29=isCheckedValue(row[fullKeys.task29]);
       const postTask30=isCheckedValue(row[fullKeys.task30]);
