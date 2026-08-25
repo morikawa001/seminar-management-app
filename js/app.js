@@ -1266,7 +1266,7 @@ function renderTable(){
     const moveBtns=sortDir===0?`<button class="btn small" style="min-height:26px;padding:0 6px;font-size:.65rem;border-color:var(--primary);color:var(--primary)" onclick="moveRow('${esc(no)}',-1);event.stopPropagation()" title="上に移動">▲</button>
         <button class="btn small" style="min-height:26px;padding:0 6px;font-size:.65rem;border-color:var(--primary);color:var(--primary)" onclick="moveRow('${esc(no)}',1);event.stopPropagation()" title="下に移動">▼</button>`:'';
     const subjBadge=subject==='研究者'?'<span class="badge bb">研究者</span>'
-      :subject==='倫理審査委員会委員'?'<span class="badge be">倫理委員</span>'
+      :subject==='倫理審査委員会委員'?'<span class="badge be">委員会</span>'
       :'<span class="badge bo">支援者</span>';
     return `<tr data-no="${esc(no)}" style="cursor:pointer" onclick="clickTableRow('${esc(no)}')">
       <td style="color:var(--muted);font-weight:600">${esc(no)}</td>
