@@ -33,10 +33,10 @@
 .sm-fbar select{width:auto;cursor:pointer}
 
 .sm-tw{background:var(--panel2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.sm-ts{overflow-x:auto}
+.sm-ts{max-height:min(560px,65vh);overflow:auto}
 
 .sm-table{min-width:960px;border-collapse:collapse;width:100%}
-.sm-table thead th{background:var(--panel3);padding:8px 12px;font-size:.76rem;font-weight:700;color:var(--text-strong);text-align:left;white-space:nowrap;border-bottom:2px solid var(--line);cursor:pointer;user-select:none;letter-spacing:.02em}
+.sm-table thead th{background:var(--panel3);padding:8px 12px;font-size:.76rem;font-weight:700;color:var(--text-strong);text-align:left;white-space:nowrap;border-bottom:2px solid var(--line);cursor:pointer;user-select:none;letter-spacing:.02em;position:sticky;top:0;z-index:2}
 .sm-table thead th:hover{color:var(--green)}
 .sm-table thead th.srt{color:var(--green)}
 .sm-table thead th .si{color:var(--faint);font-size:.72rem;margin-left:2px}
