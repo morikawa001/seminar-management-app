@@ -50,6 +50,25 @@ function parseShortJapaneseDate(v,yearText){
   const mm=m[1]||m[3],dd=m[2]||m[4];
   return new Date(`${y[1]}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}T00:00:00`);
 }
+function parseCautionDate(raw, yearText){
+  const s=String(raw||'').trim();
+  if(!s) return null;
+  let y=0,mo=0,d=0;
+  let m=s.match(/(\d{4})[年\/\-](\d{1,2})[月\/\-](\d{1,2})日?/);
+  if(m){ y=+m[1]; mo=+m[2]; d=+m[3]; }
+  else{
+    m=s.match(/(\d{1,2})月\s*(\d{1,2})日/);
+    if(m){ mo=+m[1]; d=+m[2]; }
+    else{
+      m=s.match(/(\d{1,2})\/(\d{1,2})/);
+      if(m){ mo=+m[1]; d=+m[2]; }
+    }
+    const yt=String(yearText||'').match(/(\d{4})/);
+    if(mo&&d&&yt) y=+yt[1]+(mo<=3?1:0);
+  }
+  if(!mo||!d||mo>12||d>31) return null;
+  return new Date(y,mo-1,d);
+}
 function toIsoDateFromShortDate(v,yearText){
   const d=parseShortJapaneseDate(v,yearText);
   return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`:'';

@@ -1399,7 +1399,6 @@ function buildCautionItems(){
     const year=r[fullKeys.year]||fields.year.value||'';
     const title=r[fullKeys.title]||'無題';
     const no=r[fullKeys.no]||'-';
-    const eventDateRaw=r[fullKeys.date];
 
     const pushItem=(label,dateObj,raw)=>{
       if(!dateObj) return;
@@ -1410,13 +1409,13 @@ function buildCautionItems(){
       items.push({no,title,label,raw:raw||fmtDate(dateObj),diff,csvKey});
     };
 
-    pushItem('起案1', parseAlertDateByEvent(r[fullKeys.k1], eventDateRaw, year), r[fullKeys.k1]);
-    pushItem('HP案内・チラシ', parseAlertDateByEvent(r[fullKeys.hp], eventDateRaw, year), r[fullKeys.hp]);
-    pushItem('起案2', parseAlertDateByEvent(r[fullKeys.k2], eventDateRaw, year), r[fullKeys.k2]);
-    pushItem('起案3', parseAlertDateByEvent(r[fullKeys.k3], eventDateRaw, year), r[fullKeys.k3]);
-    pushItem('院外締切', parseAlertDateByEvent(String(r[fullKeys.deadline1]||'').replace(/\s*\d{1,2}:\d{2}.*/, ''), eventDateRaw, year), r[fullKeys.deadline1]);
-    pushItem('資料締切', parseAlertDateByEvent(r[fullKeys.dataDeadline], eventDateRaw, year), r[fullKeys.dataDeadline]);
-    pushItem('配布資料DL締切', parseAlertDateByEvent(r[fullKeys.deadline3], eventDateRaw, year), r[fullKeys.deadline3]);
+    pushItem('起案1', parseCautionDate(r[fullKeys.k1], year), r[fullKeys.k1]);
+    pushItem('HP案内・チラシ', parseCautionDate(r[fullKeys.hp], year), r[fullKeys.hp]);
+    pushItem('起案2', parseCautionDate(r[fullKeys.k2], year), r[fullKeys.k2]);
+    pushItem('起案3', parseCautionDate(r[fullKeys.k3], year), r[fullKeys.k3]);
+    pushItem('院外締切', parseCautionDate(r[fullKeys.deadline1], year), r[fullKeys.deadline1]);
+    pushItem('資料締切', parseCautionDate(r[fullKeys.dataDeadline], year), r[fullKeys.dataDeadline]);
+    pushItem('配布資料DL締切', parseCautionDate(r[fullKeys.deadline3], year), r[fullKeys.deadline3]);
   });
 
   items.sort((a,b)=>a.diff-b.diff||Number(a.no)-Number(b.no));
