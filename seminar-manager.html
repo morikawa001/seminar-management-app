@@ -514,6 +514,7 @@ const CHECKS = [
 ];
 
 function isChecked(v) { return v === '1' || v === 1 || v === true; }
+function subjectLabel(v) { return v === '研究支援者' ? '支援者' : v; }
 function getProgress(s) {
   const vals = CHECKS.map(c => isChecked(s[c.k]) ? 1 : 0);
   return Math.round(vals.reduce((a,b)=>a+b,0) / vals.length * 100);
@@ -671,7 +672,7 @@ function openPanel(no) {
       <div class="sm-ig">
         <div class="sm-ii"><label>開催日</label><span>${s.year} ${s.date}（${s.day}）</span></div>
         <div class="sm-ii"><label>時間</label><span>${s.start}〜${s.end}</span></div>
-        <div class="sm-ii"><label>対象</label><span>${s.subject}</span></div>
+        <div class="sm-ii"><label>対象</label><span>${subjectLabel(s.subject)}</span></div>
         <div class="sm-ii"><label>会場</label><span>${s.site||'—'}</span></div>
         <div class="sm-ii"><label>共催</label><span>${s.cohost||'—'}</span></div>
         ${s.zoom_id?`<div class="sm-ii"><label>Zoom ID</label><span>****${s.zoom_id.slice(-4)}</span></div>`:''}
