@@ -378,6 +378,8 @@ function buildTemplateData(row){
   map['zoom_url_zoom_url']=String(row?.[fullKeys.zoomUrl] ?? '');
   map['zoom_url']=String(row?.[fullKeys.zoomUrl] ?? '');
   map['ZOOM_URL']=String(row?.[fullKeys.zoomUrl] ?? '');
+  map['{{zoom_url}}']=String(row?.[fullKeys.zoomUrl] ?? '');
+  map['{{ZOOM_URL}}']=String(row?.[fullKeys.zoomUrl] ?? '');
 
   map[fullKeys.passcode]=String(row?.[fullKeys.passcode] ?? '');
   map['Zoom_パスコード_PASSCODE']=String(row?.[fullKeys.passcode] ?? '');
