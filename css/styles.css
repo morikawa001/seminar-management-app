@@ -530,6 +530,7 @@ label[for="templateFiles"] {
   font-size:.79rem;
   font-weight:800;
   letter-spacing:.05em;
+  white-space:nowrap;
 }
 .alert-tag,.badge{
   background:var(--panel3);
