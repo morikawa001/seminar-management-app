@@ -82,6 +82,12 @@ input[readonly],textarea[readonly]{
   background:none;
   opacity:0;
 }
+#cautionSection.panel{
+  border:8px solid transparent;
+  background:
+    linear-gradient(var(--panel),var(--panel)) padding-box,
+    repeating-linear-gradient(-45deg, #ffd21f 0 12px, #151515 12px 24px) border-box;
+}
 .hero-grid{
   display:grid;
   grid-template-columns:1.35fr .95fr;
