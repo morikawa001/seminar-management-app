@@ -814,6 +814,7 @@ function resetScheduleChecks(){
   if(els.ckK3Saved) els.ckK3Saved.checked=false;
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=false;}
   updateTaskProgress();
+  updateScheduleDone();
 }
 
 // 研修会全体の進捗バーを更新（Master Tableの進捗100%のみを終了とカウント）
@@ -990,9 +991,19 @@ function recalcDraft(){
   els.dK2.textContent=fmtDate(auto.k2);
   els.dHp.textContent=fmtDate(auto.hp);
   els.dK3.textContent=fmtDate(auto.k3);
+  updateScheduleDone();
   renderConfirm(validateDraft());
   renderResult();
   renderStats();
+}
+
+function updateScheduleDone(){
+  const pairs=[['ckK1','dK1'],['ckHp','dHp'],['ckK2','dK2'],['ckK3','dK3']];
+  pairs.forEach(function(p){
+    const cb=els[p[0]];
+    const card=cb?cb.closest('.schedule-card'):null;
+    if(card)card.classList.toggle('done',cb.checked);
+  });
 }
 
 function calcDerivedFields(){
@@ -1252,7 +1263,7 @@ function renderTable(){
         <button class="btn small" style="min-height:26px;padding:0 6px;font-size:.65rem;border-color:var(--primary);color:var(--primary)" onclick="moveRow('${esc(no)}',1);event.stopPropagation()" title="下に移動">▼</button>`:'';
     const subjBadge=subject==='研究者'?'<span class="badge bb">研究者</span>'
       :subject==='倫理審査委員会委員'?'<span class="badge be">倫理委員</span>'
-      :'<span class="badge bo">研究支援者</span>';
+      :'<span class="badge bo">支援者</span>';
     return `<tr data-no="${esc(no)}" style="cursor:pointer" onclick="clickTableRow('${esc(no)}')">
       <td style="color:var(--muted);font-weight:600">${esc(no)}</td>
       <td style="white-space:nowrap;font-weight:500">${esc(date)}${day?'（'+esc(day)+'）':''}</td>

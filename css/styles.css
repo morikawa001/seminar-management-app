@@ -740,6 +740,15 @@ label[for="templateFiles"] {
   text-decoration:line-through;
   color:var(--muted);
 }
+#computedScheduleSection .schedule-card.done{
+  background:color-mix(in srgb, var(--green) 10%, var(--panel2));
+  border-color:var(--green);
+}
+#computedScheduleSection .schedule-card.done strong{
+  text-decoration:line-through;
+  text-decoration-thickness:2px;
+  color:var(--muted);
+}
 
 /* ── Task + Commit/Export レイアウト ── */
 /* Task Checklist 全幅 */

@@ -227,7 +227,7 @@
       <div class="sm-stats" id="statsRow"></div>
       <div class="sm-fbar">
         <input class="fi" id="srch" placeholder="🔍 テーマ・講師名で検索…" type="text">
-        <select class="fs" id="fsubj"><option value="">全対象</option><option>研究者</option><option>研究支援者</option><option>倫理審査委員会委員</option></select>
+        <select class="fs" id="fsubj"><option value="">全対象</option><option>研究者</option><option value="研究支援者">支援者</option><option>倫理審査委員会委員</option></select>
         <select class="fs" id="fstat"><option value="">全ステータス</option><option value="done">完了</option><option value="wip">進行中</option><option value="todo">未着手</option></select>
         <select class="fs" id="fmon"><option value="">全月</option></select>
       </div>
@@ -261,7 +261,7 @@
         </div>
         <div class="sm-fbar" style="margin:0">
           <select class="fs" id="gfy"><option value="all">全期間</option><option value="2026">2026年</option><option value="2027">2027年</option></select>
-          <select class="fs" id="gfs"><option value="">全対象</option><option>研究者</option><option>研究支援者</option><option>倫理審査委員会委員</option></select>
+          <select class="fs" id="gfs"><option value="">全対象</option><option>研究者</option><option value="研究支援者">支援者</option><option>倫理審査委員会委員</option></select>
         </div>
       </div>
       <div class="sm-gw">
@@ -629,7 +629,7 @@ function renderTable() {
       ? '<span class="badge" style="background:var(--panel3);color:var(--green)">研究者</span>'
       : s.subject === '倫理審査委員会委員'
       ? '<span class="badge" style="background:var(--panel3);color:var(--danger)">倫理委員</span>'
-      : '<span class="badge" style="background:var(--panel3);color:var(--warn)">研究支援者</span>';
+      : '<span class="badge" style="background:var(--panel3);color:var(--warn)">支援者</span>';
     return `<tr data-no="${s.no}">
       <td style="font-weight:600">${s.no}</td>
       <td style="white-space:nowrap;font-weight:500">${s.date}（${s.day}）</td>
