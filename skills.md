@@ -136,3 +136,18 @@ body
 - HTML ID: キャメルケースまたはケバブケース
 - JS 関数: キャメルケース
 - カスタムデータ属性: `data-section`, `data-collapsed`
+
+## デプロイ（GitHub Pages）同期
+
+- **GitHub Pages は `morikawa001/seminar` リポジトリ（`main` ブランチ）から配信**されている
+  - URL例: `https://morikawa001.github.io/seminar/attend.html`
+- 本リポジトリ（`seminar-management-app` / origin）への push だけでは**デプロイに反映されない**
+- `seminar` リポジトリ側の `main` ブランチに同期が必要。手順:
+  1. `git worktree add --detach ../seminar-publish seminar/main`
+  2. 変更ファイル（例: `attend.html` / `kenshukai-notion-csv-generator.html` 等）を `../seminar-publish/` へコピー
+  3. `git -C ../seminar-publish add ファイル && git -C ../seminar-publish commit -m "..."`
+  4. `git -C ../seminar-publish push seminar HEAD:main`
+  5. `git worktree remove ../seminar-publish --force`（OneDrive ロックで失敗時は `rm -rf ../seminar-publish` + `git worktree prune`、さらに `.git/worktrees/seminar-publish*` の残留フォルダも削除）
+- `seminar/main` 収録ファイル: `index.html` / `attend.html` / `seminar.html` / `seminar-manager.html` / `license.html` / `live_session.html` / `qr_maker.html` / `kenshukai-notion-csv-generator.html` / `SilenceCutPro.html` ＋ `css/`（styles.css / theme-base.css）`js/`（theme-toggle / firebase-config / app-effects / matrix-rain / qrcode）
+- 公開対象ページ（姓フィルタ・姓名入れ替えリストを含む）: `attend.html` / `kenshukai-notion-csv-generator.html`
+- 変更後は公開URL（`https://morikawa001.github.io/seminar/...`）でデプロイ反映を確認すること（例: `grep -c "杉村"` でローカルと件数一致を確認）
