@@ -1661,15 +1661,30 @@ html{scroll-behavior:smooth}
 .section-toggle-btn:hover{color:var(--text-strong)}
 .section-toggle-btn .arrow{display:inline-block;transition:transform 200ms ease}
 .section-collapsible.open .section-toggle-btn .arrow{transform:rotate(180deg)}
-@media(max-width:640px){
-  .v2-layout{flex-direction:column;padding-left:0}
-  .v2-sidebar{width:100%!important;height:auto;position:static;display:flex;gap:0;overflow-x:auto;overflow-y:hidden;padding:4px 0;border-right:none;border-bottom:1px solid var(--line)}
+@media(max-width:900px){
+  .v2-layout{padding-left:0;align-items:stretch}
+  .v2-sidebar{position:static;top:auto;height:auto;width:150px;flex:0 0 150px;overflow-y:visible;border-bottom:none}
   .win-titlebar{display:none}
+  .v2-sidebar-btn{padding:6px 10px;font-size:.72rem}
+  .v2-main{min-width:0}
+}
+@media(max-width:640px){
+  .v2-layout{padding-left:0;gap:0}
+  .v2-sidebar{width:120px;flex-basis:120px;flex-grow:0;flex-shrink:0}
   .v2-sidebar-lbl{display:none}
-  .v2-sidebar-btn{white-space:nowrap;padding:5px 8px;font-size:.72rem;flex-shrink:0;border-left:none!important}
+  .v2-sidebar-btn{padding:8px 8px;font-size:.66rem;white-space:normal;word-break:break-word;border-left:3px solid transparent}
+  .v2-sidebar-btn i{width:14px;font-size:.8rem}
   .v2-sidebar-btn span{display:inline}
-  .v2-sidebar-btn.active{border-left:none!important;border-bottom:2px solid var(--green)}
+  .v2-sidebar-btn.active{border-left-color:var(--green)}
   .v2-main{padding:0}
+  .wrap{padding:12px;gap:12px}
+  .panel,.hero-panel,.command-panel{padding:12px;gap:12px}
+  .hero-btn-grid{grid-template-columns:repeat(3,1fr)}
+  input,select,textarea{max-width:100%}
+  .field{min-width:0}
+  .eq-item,.mail-controls,.param-side{grid-template-columns:1fr !important}
+  .no-search-row{flex-direction:column;align-items:stretch}
+  .no-search-row .btn,.no-search-row select.btn{width:100%}
 }
 
 /* ── Login Screen ── */
