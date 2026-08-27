@@ -1661,18 +1661,10 @@ html{scroll-behavior:smooth}
 .section-toggle-btn:hover{color:var(--text-strong)}
 .section-toggle-btn .arrow{display:inline-block;transition:transform 200ms ease}
 .section-collapsible.open .section-toggle-btn .arrow{transform:rotate(180deg)}
-@media(max-width:900px){
-  .v2-sidebar{width:44px}
-  .v2-sidebar-btn span{display:none}
-  .v2-sidebar-lbl{display:none}
-  .win-titlebar{display:none}
-  .v2-sidebar-btn{justify-content:center;padding:7px 4px}
-  .v2-sidebar-btn i{margin:0}
-  .v2-layout{padding-left:44px}
-}
 @media(max-width:640px){
   .v2-layout{flex-direction:column;padding-left:0}
-  .v2-sidebar{width:100%!important;height:auto;position:fixed;top:48px;left:0;display:flex;gap:0;overflow-x:auto;padding:4px 0;border-right:none;border-bottom:1px solid var(--line)}
+  .v2-sidebar{width:100%!important;height:auto;position:static;display:flex;gap:0;overflow-x:auto;overflow-y:hidden;padding:4px 0;border-right:none;border-bottom:1px solid var(--line)}
+  .win-titlebar{display:none}
   .v2-sidebar-lbl{display:none}
   .v2-sidebar-btn{white-space:nowrap;padding:5px 8px;font-size:.72rem;flex-shrink:0;border-left:none!important}
   .v2-sidebar-btn span{display:inline}
