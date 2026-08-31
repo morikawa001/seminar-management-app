@@ -2140,7 +2140,7 @@ function openTaskMail(taskId){
   if(!no){ alert('先に研修会Noを選択してください。'); return; }
   var map={
     '02':{recipient:'speaker',purpose:'ishi_req'},
-    '03':{recipient:'cohost',purpose:'hp_upload_req'},
+    '03':{recipient:'cohost',purpose:'branch_req'},
     '05':{recipient:'speaker',purpose:'ishi_req'},
     '07':{recipient:'cohost',purpose:'hp_upload_req'},
     '08':{recipient:'speaker',purpose:'hp_report_speaker'},
@@ -2576,6 +2576,11 @@ function generateMailTemplate(){
     // 1: HP掲載1週間前 予約投稿依頼
     subj=`【研修会】アップロード設定（予約投稿）のお願い`;
     body=`マネジメントセンター○○ 様\n\nいつも大変お世話になっております。${senderOrg}　研修会担当の${senderName}でございます。以下について予約投稿設定をお願いいたします。\n\n＜予約投稿日＞\nXX月XX日（XX）13時〜\n\n＜タイトル＞\n＜研修会＞臨床研究研修会「${title}」${dateStr}（${day}）${start}〜開催のお知らせ\n\n＜研修会ページ＞\n${hpUrl}\n\nよろしくお願いいたします。${sigBlock}`;
+  }
+  else if(purpose==='branch_req'){
+    // 3: マネジメントセンターへHP個別ページブランチ作成依頼
+    subj=`【研修会】ブランチページ作成のお願い`;
+    body=`マネジメントセンター○○ 様\n\nいつも大変お世話になっております。${senderOrg}　研修会担当の${senderName}でございます。\n以下についてブランチページの作成をお願いいたします。\n\n\n＜タイトル＞\n＜研修会＞臨床研究研修会「${title}」${dateStr}（${day}）${start}〜開催のお知らせ\n\n\nよろしくお願いいたします。${sigBlock}`;
   }
   else if(purpose==='hp_done_report'){
     // 2: HP掲載1週間前 掲載完了報告（関係者）
