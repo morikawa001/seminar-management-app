@@ -88,6 +88,7 @@
           var data = doc.data();
           var row = {};
           (headers || []).forEach(function(h){ row[h] = data[h] || ''; });
+          Object.keys(data || {}).forEach(function(k){ if(row[k]===undefined) row[k] = data[k]; });
           row.__docId = doc.id;
           row._order = data._order;
           row.updatedAt = data.updatedAt || '';

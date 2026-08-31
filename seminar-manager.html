@@ -182,6 +182,7 @@
   </div>
   <div class="v2-topbar-actions">
     <button class="btn small" id="exportBtn" title="CSV出力（Excel用）">📥 CSV出力</button>
+    <button class="btn small" id="refreshBtn" title="DBから最新データを再読み込み">🔄 再読込</button>
     <button class="btn small" id="themeBtn" onclick="SharedTheme.toggleTheme()" title="テーマ切替">◐</button>
     <button class="btn small" style="border-color:var(--danger);color:var(--danger)" onclick="logout()" title="ログアウト">🚪</button>
   </div>
@@ -513,6 +514,43 @@ const CHECKS = [
   {k:'c_cert',     l:'受講証修了証メール交付'},
 ];
 
+const CHECK_HEADER = {
+  c_create:'研修会演題と目的案を作成_CHECK',
+  c_mail_lec:'講師にメールで確認_CHECK',
+  c_hp_branch:'HPブランチ作成依頼_CHECK',
+  c_wp:'WordPress設定予約投稿_CHECK',
+  c_k1:'起案1_開催_CHECK',
+  c_hp_set:'HP公開設定依頼_CHECK',
+  c_lec_req:'講師依頼状兼業依頼提出CHECK',
+  c_hp_open:'HP公開受付開始_CHECK',
+  c_hp_mail:'HP公開開始案内メール_CHECK',
+  c_echart:'電子カルテ掲示板掲載確認_CHECK',
+  c_flyer1:'院内チラシ1回目配布_CHECK',
+  c_flyer2:'院内チラシ2回目配布_CHECK',
+  c_remind_lec:'講師リマインドメール_CHECK',
+  c_slide:'講師スライド入手_CHECK',
+  c_cohost:'共催企画人材班協力要請_CHECK',
+  c_prelist:'事前受付終了Webリスト書出し_CHECK',
+  c_k2:'起案2_資料_CHECK',
+  c_addmat:'追加資料有無確認_CHECK',
+  c_matshare:'企画人材班配布資料共有_CHECK',
+  c_bousai:'防災センター報告_CHECK',
+  c_remind1:'講師受講者リマインド1_CHECK',
+  c_dayprep:'研修会当日準備_CHECK',
+  c_remind2:'講師受講者リマインド2_CHECK',
+  c_pc:'PCシステム更新確認_CHECK',
+  c_event:'研修会本番_CHECK',
+  c_zoom_dl:'Zoomレポートダウンロード_CHECK',
+  c_venue:'会場参加者データ企画人材班_CHECK',
+  c_list:'出席者受講者リスト入力_CHECK',
+  c_k3:'起案3_受講証_CHECK',
+  c_thanks:'講師へお礼連絡_CHECK',
+  c_report:'受講者数内訳報告_CHECK',
+  c_fee:'謝金支払い_CHECK',
+  c_fee_mail:'謝金講師メール_CHECK',
+  c_cert:'受講証修了証メール交付_CHECK',
+};
+
 function isChecked(v) { return v === '1' || v === 1 || v === true; }
 function subjectLabel(v) { if(v==='研究支援者') return '支援者'; if(v==='倫理審査委員会委員') return '委員会'; return v; }
 function getProgress(s) {
@@ -526,6 +564,7 @@ function getStatus(s) {
 
 // ===================== STATE =====================
 let seminars = [];
+let rawDocs = [];
 let sortCol = 'no', sortDir = 1;
 let panelNo = null;
 let importBuf = null;
@@ -538,6 +577,18 @@ function dedupeByNo(items) {
     if (!s.no || seen.has(s.no)) return;
     seen.add(s.no);
     out.push(s);
+  });
+  return out;
+}
+
+function dedupeRawRows(rows) {
+  const seen = new Set();
+  const out = [];
+  rows.forEach(r => {
+    const no = String(r['起案行No'] || '').trim();
+    if (!no || seen.has(no)) return;
+    seen.add(no);
+    out.push(r);
   });
   return out;
 }
@@ -720,6 +771,14 @@ function openPanel(no) {
         document.getElementById('pct').textContent = np + '%';
         renderStats();
         renderTable();
+        if (typeof FirebaseApp !== 'undefined' && FirebaseApp.getCurrentUser()) {
+          const header = CHECK_HEADER[key];
+          const raw = rawDocs.find(r => String(r['起案行No']||'').trim() === String(panelNo).trim());
+          if (header && raw) {
+            raw[header] = e.target.checked ? '1' : '0';
+            saveDocToDb(raw);
+          }
+        }
       }
     });
   });
@@ -962,37 +1021,69 @@ document.getElementById('applyBtn').addEventListener('click', () => {
 document.getElementById('exportBtn').addEventListener('click', exportCSV);
 
 // ===================== FIREBASE INTEGRATION =====================
-function applyRows(rows) {
+function saveDocToDb(raw) {
+  if (!raw || !raw.__docId) return;
+  const keys = Object.keys(raw).filter(k => !['__docId','_order','createdAt','updatedAt','createdBy'].includes(k));
+  FirebaseApp.saveToFirestore(raw, keys).catch(function(err){
+    console.error('Firestore save error:', err);
+  });
+}
+
+function syncSortIndicator() {
+  document.querySelectorAll('.sm-table th[data-s]').forEach(t => {
+    t.classList.remove('srt');
+    const si = t.querySelector('.si');
+    if (si) si.textContent = (t.dataset.s === sortCol) ? (sortDir === 1 ? '↑' : '↓') : '↕';
+  });
+}
+
+function applyRows(rows, reopen) {
+  rawDocs = dedupeRawRows(rows);
   seminars = dedupeByNo(rows.map(rowToSeminar).filter(s => s.no !== ''));
-  resetSort();
+  syncSortIndicator();
   buildMonthFilter();
   renderStats();
   renderTable();
+  if (reopen && panelNo) openPanel(panelNo);
+}
+
+function loadDb(opts) {
+  opts = opts || {};
+  if (typeof FirebaseApp === 'undefined') return;
+  const dbText = document.getElementById('miniDbText');
+  const ganttEl = document.getElementById('vgantt');
+  function renderIfGanttVisible() {
+    if (ganttEl && ganttEl.style.display !== 'none') renderGantt();
+  }
+  FirebaseApp.loadFromFirestore(SM_HEADERS, function(rows){
+    if(!rows.length){
+      seminars = [];
+      rawDocs = [];
+      buildMonthFilter();
+      renderStats();
+      renderTable();
+      renderIfGanttVisible();
+      if(dbText) dbText.textContent = '空';
+      if(!opts.silent) toast('🔒 DBにデータがありません。CSVインポートをご利用ください。');
+      return;
+    }
+    applyRows(rows, !!opts.reopen);
+    renderIfGanttVisible();
+    if(dbText) dbText.textContent = seminars.length + '件';
+    if(!opts.silent) toast('✅ DBから' + seminars.length + '件の最新データを読み込みました');
+  });
 }
 
 window.onFirebaseLogin = function(user){
   if(typeof FirebaseApp === 'undefined') return;
   const m = document.getElementById('loginMessage');
   if(m) m.style.display = 'none';
-  const dbText = document.getElementById('miniDbText');
-  FirebaseApp.loadFromFirestore(SM_HEADERS, function(rows){
-    if(!rows.length){
-      seminars = [];
-      buildMonthFilter();
-      renderStats();
-      renderTable();
-      if(dbText) dbText.textContent = '空';
-      toast('🔒 DBにデータがありません。CSVインポートをご利用ください。');
-      return;
-    }
-    applyRows(rows);
-    if(dbText) dbText.textContent = seminars.length + '件';
-    toast('✅ DBから' + seminars.length + '件のデータを読み込みました');
-  });
+  loadDb({silent:true, reopen:true});
 };
 
 window.onFirebaseLogout = function(){
   seminars = [];
+  rawDocs = [];
   sortCol = 'no'; sortDir = 1;
   panelNo = null;
   importBuf = null;
@@ -1004,6 +1095,27 @@ window.onFirebaseLogout = function(){
   const m = document.getElementById('loginMessage');
   if(m) m.style.display = 'none';
 };
+
+// ===================== AUTO / MANUAL REFRESH =====================
+(function(){
+  const refreshBtn = document.getElementById('refreshBtn');
+  if (refreshBtn) refreshBtn.addEventListener('click', function(){ loadDb({silent:false, reopen:true}); });
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden && typeof FirebaseApp !== 'undefined' && FirebaseApp.getCurrentUser()) {
+      loadDb({silent:true, reopen:true});
+    }
+  });
+  window.addEventListener('focus', function(){
+    if (typeof FirebaseApp !== 'undefined' && FirebaseApp.getCurrentUser()) {
+      loadDb({silent:true, reopen:true});
+    }
+  });
+  setInterval(function(){
+    if (typeof FirebaseApp !== 'undefined' && FirebaseApp.getCurrentUser()) {
+      loadDb({silent:true});
+    }
+  }, 60000);
+})();
 
 // ===================== INIT — 空の状態で起動、CSVインポートを促す =====================
 function init() {
