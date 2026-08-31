@@ -17,6 +17,15 @@
   var currentUser = null;
   var authRetryTimer = null;
   var authDispatched = false;
+  var syncChannel = null;
+
+  function broadcastSync(){
+    try{
+      if(typeof BroadcastChannel === 'undefined') return;
+      if(!syncChannel) syncChannel = new BroadcastChannel('sm-sync-v1');
+      syncChannel.postMessage('sync');
+    }catch(e){}
+  }
 
   auth.onAuthStateChanged(function(user){
     currentUser = user;
@@ -109,17 +118,22 @@
     data.createdBy = currentUser.uid;
     data.updatedAt = new Date().toISOString();
     if(row._order!==undefined)data._order=Number(row._order);
+    var p;
     if(row.__docId){
-      return db.collection(DB_COLLECTION).doc(row.__docId).set(data);
+      p = db.collection(DB_COLLECTION).doc(row.__docId).set(data);
     } else {
       data.createdAt = new Date().toISOString();
-      return db.collection(DB_COLLECTION).add(data);
+      p = db.collection(DB_COLLECTION).add(data);
     }
+    p.then(function(){ broadcastSync(); });
+    return p;
   }
 
   function deleteFromFirestore(docId){
     if(!currentUser || !docId) return Promise.reject('Invalid params');
-    return db.collection(DB_COLLECTION).doc(docId).delete();
+    var p = db.collection(DB_COLLECTION).doc(docId).delete();
+    p.then(function(){ broadcastSync(); });
+    return p;
   }
 
   window.FirebaseApp = {

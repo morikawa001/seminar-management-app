@@ -1104,6 +1104,16 @@ window.onFirebaseLogout = function(){
 
 // ===================== AUTO / MANUAL REFRESH =====================
 (function(){
+  try{
+    if (typeof BroadcastChannel !== 'undefined') {
+      const ch = new BroadcastChannel('sm-sync-v1');
+      ch.onmessage = function(){
+        if (typeof FirebaseApp !== 'undefined' && FirebaseApp.getCurrentUser()) {
+          loadDb({silent:true, reopen:true});
+        }
+      };
+    }
+  }catch(e){}
   const refreshBtn = document.getElementById('refreshBtn');
   if (refreshBtn) refreshBtn.addEventListener('click', function(){ loadDb({silent:false, reopen:true}); });
   document.addEventListener('visibilitychange', function(){
@@ -1120,7 +1130,7 @@ window.onFirebaseLogout = function(){
     if (typeof FirebaseApp !== 'undefined' && FirebaseApp.getCurrentUser()) {
       loadDb({silent:true});
     }
-  }, 60000);
+  }, 20000);
 })();
 
 // ===================== INIT — 空の状態で起動、CSVインポートを促す =====================
