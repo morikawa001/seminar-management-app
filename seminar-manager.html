@@ -582,13 +582,19 @@ function dedupeByNo(items) {
 }
 
 function dedupeRawRows(rows) {
-  const seen = new Set();
-  const out = [];
+  const map = {}, out = [];
   rows.forEach(r => {
     const no = String(r['起案行No'] || '').trim();
-    if (!no || seen.has(no)) return;
-    seen.add(no);
-    out.push(r);
+    if (!no) return;
+    if (map[no] === undefined) {
+      map[no] = out.length;
+      out.push(r);
+    } else {
+      const idx = map[no];
+      const curT = String(r.updatedAt || '');
+      const prevT = String(out[idx].updatedAt || '');
+      if (curT && curT > prevT) out[idx] = r;
+    }
   });
   return out;
 }
@@ -1039,7 +1045,7 @@ function syncSortIndicator() {
 
 function applyRows(rows, reopen) {
   rawDocs = dedupeRawRows(rows);
-  seminars = dedupeByNo(rows.map(rowToSeminar).filter(s => s.no !== ''));
+  seminars = dedupeByNo(rawDocs.map(rowToSeminar).filter(s => s.no !== ''));
   syncSortIndicator();
   buildMonthFilter();
   renderStats();
