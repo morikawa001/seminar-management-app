@@ -2015,7 +2015,7 @@ function renderTodayCommand(){
     const hintText = isDone ? '▼ 展開' : '';
 
     const btns=(cmd.buttons||[]).map(b=>{
-      if(b.label==='確認する'&&b.no){
+      if((b.label==='確認する'||b.label==='詳細を見る')&&b.no){
         return `<a class="tc-btn" href="#taskChecklistPanel" onclick="loadRowAndOpenTaskChecklist('${esc(b.no)}','${esc(cmd.csvKey||'')}');return false;">${esc(b.label)}</a>`;
       }
       if(b.href){
@@ -2451,9 +2451,11 @@ function loadRowAndOpenTaskChecklist(no, taskKey){
   if(typeof selectRecordByNo==='function') selectRecordByNo(no);
   if(typeof loadSelectedIntoForm==='function') loadSelectedIntoForm();
   openTaskBody();
+  const CSV_KEY_TASK_MAP={checkK1:'task04', checkHp:'task08', checkK2:'task17', checkK3:'task29'};
+  const resolvedKey=CSV_KEY_TASK_MAP[taskKey]||taskKey;
   let target='taskChecklistPanel';
-  if(taskKey && String(taskKey).indexOf('task')===0 && document.getElementById('taskcard_'+taskKey)){
-    target='taskcard_'+taskKey;
+  if(resolvedKey && String(resolvedKey).indexOf('task')===0 && document.getElementById('taskcard_'+resolvedKey)){
+    target='taskcard_'+resolvedKey;
   }
   setTimeout(function(){ scrollToSection(target); }, 420);
 }
