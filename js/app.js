@@ -2453,9 +2453,11 @@ function loadRowAndOpenTaskChecklist(no, taskKey){
   openTaskBody();
   const CSV_KEY_TASK_MAP={checkK1:'task04', checkHp:'task08', checkK2:'task17', checkK3:'task29'};
   const resolvedKey=CSV_KEY_TASK_MAP[taskKey]||taskKey;
+  document.querySelectorAll('.schedule-card.task-highlight').forEach(function(c){ c.classList.remove('task-highlight'); });
   let target='taskChecklistPanel';
   if(resolvedKey && String(resolvedKey).indexOf('task')===0 && document.getElementById('taskcard_'+resolvedKey)){
     target='taskcard_'+resolvedKey;
+    document.getElementById('taskcard_'+resolvedKey).classList.add('task-highlight');
   }
   setTimeout(function(){ scrollToSection(target); }, 420);
 }

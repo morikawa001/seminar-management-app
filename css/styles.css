@@ -740,6 +740,10 @@ label[for="templateFiles"] {
   letter-spacing:.18em;
   color:var(--cyan);
 }
+#taskChecklistPanel .schedule-card.task-highlight{
+  border-color:var(--danger);
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--danger) 40%, transparent);
+}
 #taskChecklistPanel .schedule-card.done{
   opacity:.55;
 }
