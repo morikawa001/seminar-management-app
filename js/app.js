@@ -1910,7 +1910,7 @@ function buildTodayCommands(rows){
     }
     // 1-3日前
     else if(days>0&&days<=3){
-      cmds.push({no,title,urgency:'critical',csvKey:'checkK2',action:`開催まで${days}日です。直前リマインドを送信してください。`,reason:`開催日: ${row[fullKeys.date]||'-'}`,buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no},{label:'メール作成(講師)',recipient:'speaker',purpose:'reminder',no},{label:'メール作成(参加者)',recipient:'attendee',purpose:'reminder',no}]});
+      cmds.push({no,title,urgency:'critical',csvKey:'checkK2',taskKey:'task23',action:`開催まで${days}日です。直前リマインドを送信してください。`,reason:`開催日: ${row[fullKeys.date]||'-'}`,buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no},{label:'メール作成(講師)',recipient:'speaker',purpose:'reminder',no},{label:'メール作成(参加者)',recipient:'attendee',purpose:'reminder',no}]});
       if(!zoomUrl||zoomUrl==='https://zoom.us/'){
         cmds.push({no,title,urgency:'critical',csvKey:'checkK2',action:'Zoom URLが未設定です。至急入力してください。',reason:`開催${days}日前`,buttons:[{label:'Entry Consoleで補完',href:'#entryConsoleSection',no}]});
       }
@@ -2016,7 +2016,7 @@ function renderTodayCommand(){
 
     const btns=(cmd.buttons||[]).map(b=>{
       if((b.label==='確認する'||b.label==='詳細を見る')&&b.no){
-        return `<a class="tc-btn" href="#taskChecklistPanel" onclick="loadRowAndOpenTaskChecklist('${esc(b.no)}','${esc(cmd.csvKey||'')}');return false;">${esc(b.label)}</a>`;
+        return `<a class="tc-btn" href="#taskChecklistPanel" onclick="loadRowAndOpenTaskChecklist('${esc(b.no)}','${esc(cmd.taskKey||cmd.csvKey||'')}');return false;">${esc(b.label)}</a>`;
       }
       if(b.href){
         const secId = b.href.replace('#','');
