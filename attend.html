@@ -35,6 +35,7 @@ input[type=file]{display:none;}
 .file-label{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:44px;padding:0 16px;background:var(--panel2);border:1px solid var(--green);border-radius:var(--radius);color:var(--green);font-family:var(--font-mono);font-size:.88em;font-weight:700;letter-spacing:.08em;cursor:pointer;transition:background .15s,box-shadow .15s;}
 .file-label:hover{background:var(--panel3);box-shadow:0 0 0 2px rgba(56,182,255,.25);}
 .file-label.drop-over{background:var(--panel3);box-shadow:0 0 0 2px rgba(56,182,255,.45);}
+.file-drop-hint{margin-top:4px;font-size:.72em;color:var(--text-dim);letter-spacing:.04em;}
 .file-name{margin-top:5px;font-size:.78em;color:var(--accent);font-family:var(--font-mono);word-break:break-all;min-height:1.3em;}
 .btn{min-height:44px;padding:0 18px;background:var(--panel2);border:1px solid var(--line2);border-radius:var(--radius);color:var(--text-strong);font-family:'Noto Sans JP',sans-serif;font-size:.88em;font-weight:700;letter-spacing:.06em;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s;width:100%;}
 .btn:hover{background:var(--panel3);border-color:var(--green);box-shadow:0 0 0 1px rgba(56,182,255,.2);}
@@ -101,11 +102,13 @@ td.ok{color:var(--accent);}
     <div>
       <label class="file-label" for="fileInput"><span>📂</span><span id="fileLabelText">出席者レポートを選択</span></label>
       <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+      <div class="file-drop-hint">📥 クリック選択 または ここにドラッグ＆ドロップ</div>
       <div class="file-name" id="fileName"></div>
     </div>
     <div>
       <label class="file-label" for="surveyFileInput"><span>📝</span><span id="surveyLabelText">アンケート結果読み込み</span></label>
       <input type="file" id="surveyFileInput" accept=".xlsx,.xls,.csv">
+      <div class="file-drop-hint">📥 クリック選択 または ここにドラッグ＆ドロップ</div>
       <div class="file-name" id="surveyFileName"></div>
     </div>
   </div>

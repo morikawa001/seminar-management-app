@@ -298,6 +298,13 @@
             border-color: var(--green2);
             box-shadow: 0 0 0 2px color-mix(in srgb, var(--green) 40%, transparent);
         }
+        .file-drop-hint {
+            margin-top: 6px;
+            font-size: .78em;
+            color: var(--muted);
+            letter-spacing: .04em;
+            padding-left: 4px;
+        }
         .file-label-icon { font-size: 1.1em; flex-shrink: 0; }
         .file-label-text { flex: 1; }
         .file-name-display {
@@ -618,6 +625,7 @@
                     <span class="file-label-text" id="fileLabelText">Excel/CSVファイルを選択</span>
                 </label>
                 <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" onchange="updateFileLabel(this)" />
+                <div class="file-drop-hint">📥 クリック選択、またはこのボタンにファイルをドラッグ＆ドロップ</div>
                 <div class="file-name-display" id="fileNameDisplay"></div>
             </div>
             <div class="input-group">
