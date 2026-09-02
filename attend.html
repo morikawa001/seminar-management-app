@@ -34,6 +34,7 @@ input[type=file]{display:none;}
 @media(max-width:640px){.file-row{grid-template-columns:1fr;}}
 .file-label{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:44px;padding:0 16px;background:var(--panel2);border:1px solid var(--green);border-radius:var(--radius);color:var(--green);font-family:var(--font-mono);font-size:.88em;font-weight:700;letter-spacing:.08em;cursor:pointer;transition:background .15s,box-shadow .15s;}
 .file-label:hover{background:var(--panel3);box-shadow:0 0 0 2px rgba(56,182,255,.25);}
+.file-label.drop-over{background:var(--panel3);box-shadow:0 0 0 2px rgba(56,182,255,.45);}
 .file-name{margin-top:5px;font-size:.78em;color:var(--accent);font-family:var(--font-mono);word-break:break-all;min-height:1.3em;}
 .btn{min-height:44px;padding:0 18px;background:var(--panel2);border:1px solid var(--line2);border-radius:var(--radius);color:var(--text-strong);font-family:'Noto Sans JP',sans-serif;font-size:.88em;font-weight:700;letter-spacing:.06em;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s;width:100%;}
 .btn:hover{background:var(--panel3);border-color:var(--green);box-shadow:0 0 0 1px rgba(56,182,255,.2);}
@@ -811,6 +812,27 @@ function mergeSurveyData(){
 
 document.getElementById('inputStart').addEventListener('change',calcTimeInfo);
 document.getElementById('inputEnd').addEventListener('change',calcTimeInfo);
+
+function setupFileDrop(input, dropZone){
+  if(!input||!dropZone) return;
+  ['dragenter','dragover'].forEach(type=>{
+    dropZone.addEventListener(type,e=>{e.preventDefault();e.stopPropagation();dropZone.classList.add('drop-over');});
+  });
+  ['dragleave','drop'].forEach(type=>{
+    dropZone.addEventListener(type,e=>{e.preventDefault();e.stopPropagation();if(type!=='drop')dropZone.classList.remove('drop-over');});
+  });
+  dropZone.addEventListener('drop',e=>{
+    dropZone.classList.remove('drop-over');
+    const file=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+    if(!file) return;
+    const dt=new DataTransfer();
+    dt.items.add(file);
+    input.files=dt.files;
+    input.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+}
+setupFileDrop(document.getElementById('fileInput'),document.querySelector('.file-label[for="fileInput"]'));
+setupFileDrop(document.getElementById('surveyFileInput'),document.querySelector('.file-label[for="surveyFileInput"]'));
 
 document.getElementById('fileInput').addEventListener('change',e=>{
   const file=e.target.files?.[0];

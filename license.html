@@ -119,6 +119,7 @@
 
     /* Fields */
     .field { display:block; margin-bottom:20px; }
+    .field.drop-over input[type="file"] { border-color:var(--accent-strong); box-shadow:0 0 0 3px rgba(56,182,255,0.25); }
     .field:last-child { margin-bottom:0; }
     .field > span {
       display:block; margin-bottom:8px;
@@ -415,6 +416,32 @@ const previewHost   = document.getElementById('previewHost');
 /* ── State ── */
 let parsedHeaders = [];
 let parsedRows    = [];
+
+function setupFileDrop(input, dropZone) {
+  if (!input || !dropZone) return;
+  ['dragenter','dragover'].forEach(type => {
+    dropZone.addEventListener(type, e => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('drop-over'); });
+  });
+  ['dragleave','drop'].forEach(type => {
+    dropZone.addEventListener(type, e => { e.preventDefault(); e.stopPropagation(); if (type !== 'drop') dropZone.classList.remove('drop-over'); });
+  });
+  dropZone.addEventListener('drop', e => {
+    dropZone.classList.remove('drop-over');
+    const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!file) return;
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    input.files = dt.files;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+}
+setupFileDrop(docxInput, document.querySelector('label.field') && docxInput.closest('label.field'));
+setupFileDrop(csvInput,  csvInput.closest('label.field'));
+
+docxInput.addEventListener('change', () => {
+  const file = docxInput.files && docxInput.files[0];
+  if (file) setStatus(`Wordテンプレート: ${file.name} を選択しました。`);
+});
 
 /* ── 出力形式ラジオ切替 ── */
 document.querySelectorAll('input[name="outputFmt"]').forEach(r => {

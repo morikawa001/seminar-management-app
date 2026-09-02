@@ -293,6 +293,11 @@
             border-color: var(--green);
             box-shadow: 0 0 0 2px color-mix(in srgb, var(--green) 25%, transparent);
         }
+        .file-label.drop-over {
+            background: var(--panel3);
+            border-color: var(--green2);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--green) 40%, transparent);
+        }
         .file-label-icon { font-size: 1.1em; flex-shrink: 0; }
         .file-label-text { flex: 1; }
         .file-name-display {
@@ -1360,6 +1365,31 @@ clean[newKey] = v;
                 display.textContent = '';
             }
         }
+
+        function setupFileDrop(input, dropZone){
+            if(!input || !dropZone) return;
+            ['dragenter','dragover'].forEach(type=>{
+                dropZone.addEventListener(type, e=>{ e.preventDefault(); e.stopPropagation(); dropZone.classList.add('drop-over'); });
+            });
+            ['dragleave','drop'].forEach(type=>{
+                dropZone.addEventListener(type, e=>{ e.preventDefault(); e.stopPropagation(); if(type!=='drop') dropZone.classList.remove('drop-over'); });
+            });
+            dropZone.addEventListener('drop', e=>{
+                dropZone.classList.remove('drop-over');
+                const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+                if(!file) return;
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                input.files = dt.files;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+        }
+
+        (function(){
+            const input = document.getElementById('excelFile');
+            const dropZone = document.querySelector('.file-label[for="excelFile"]');
+            setupFileDrop(input, dropZone);
+        })();
 
         window.addEventListener('load', () => {
             addLog('システムの初期化が完了しました','success');
