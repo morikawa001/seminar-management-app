@@ -7,9 +7,10 @@
   const clean=v=>String(v==null?'':v).trim();
   const esc=v=>clean(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   function keyOf(obj,list){const keys=Object.keys(obj);for(const a of list){const k=keys.find(x=>clean(x).toLowerCase()===a.toLowerCase());if(k)return k}return ''}
-  function val(row,list){const k=keyOf(row,list);return k?clean(row[k]):''}
+  function val(row,list){let k=keyOf(row,list);if(!k&&list===aliases.certificate){const headers=Object.keys(row);const attendKey=keyOf(row,aliases.attend);const attendIndex=headers.indexOf(attendKey);k=attendIndex>=0?headers[attendIndex+1]:''}return k?clean(row[k]):''}
   function isAttended(row){const attendance=val(row,aliases.attend);return attendance==='1'||attendance==='１'}
-  function formatDateValue(value){const text=clean(value);if(!text)return '';let match=text.match(/^(\d{4})[年\/-](\d{1,2})[月\/-](\d{1,2})日?/);if(!match&&/^\d{8}$/.test(text))match=text.match(/^(\d{4})(\d{2})(\d{2})$/);return match?`${match[1]}年${Number(match[2])}月${Number(match[3])}日`:text}
+  function certificateValue(row){const direct=val(row,aliases.certificate);if(direct)return direct;const headers=Object.keys(row);const attendKey=keyOf(row,aliases.attend);const attendIndex=headers.indexOf(attendKey);return attendIndex>=0&&headers[attendIndex+1]?clean(row[headers[attendIndex+1]]):''}
+  function formatDateValue(value){const text=clean(value);if(!text)return '';let match=text.match(/^(\d{4})[年\/-](\d{1,2})[月\/-](\d{1,2})日?/);if(!match&&/^\d{8}$/.test(text))match=text.match(/^(\d{4})(\d{2})(\d{2})$/);if(!match&&/^\d{6}$/.test(text))match=text.match(/^(\d{2})(\d{2})(\d{2})$/);return match?`${match[1].length===2?'20'+match[1]:match[1]}年${Number(match[2])}月${Number(match[3])}日`:text}
   function isYes(v){const text=clean(v);if(!text)return false;return /^(1|true|yes|y|有|済|交付|発行|完了|○|〇|あり)$/i.test(text)||/交付|発行|修了/.test(text)||/^(?:\d{4}[年\/-]\d{1,2}[月\/-]\d{1,2}日?|\d{1,2}[年\/-]\d{1,2}[月\/-]\d{1,2}日?)(?:\s+\d{1,2}:\d{2}(?::\d{2})?)?$/.test(text)}
   function normalize(headers,values){return headers.reduce((o,h,i)=>{if(clean(h))o[clean(h)]=values[i]==null?'':values[i];return o},{});} 
   function setStatus(message,type){$('loadStatus').textContent=message;$('statusDot').className='status-dot '+(type||'')}
