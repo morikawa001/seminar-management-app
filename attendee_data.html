@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ja" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="研修会の受講者データを可視化・検索する管理画面">
+  <title>受講者データ — SIBYL SYSTEM</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23081430'/%3E%3Ctext x='8' y='12' font-size='10' text-anchor='middle' fill='%2338b6ff'%3ES%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/theme-base.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/attendee-data.css">
+  <script src="js/theme-toggle.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="v2-topbar">
+    <div class="v2-topbar-title">SIBYL SYSTEM <span>ATTENDEE DATA</span></div>
+    <div class="v2-topbar-stats"><span class="v2-topbar-stat">Records <b id="topRecords">0</b></span><span class="v2-topbar-stat">People <b id="topPeople">0</b></span></div>
+    <div class="v2-topbar-actions"><button class="btn small" id="themeButton" type="button">☾ テーマ切替</button><a class="btn small" href="index.html">管理コンソールへ</a></div>
+  </header>
+  <div class="v2-layout attendee-layout">
+    <nav class="v2-sidebar">
+      <div class="win-titlebar"><span class="win-title">SIBYL SYSTEM · ナビゲーション</span></div>
+      <a class="v2-sidebar-btn" href="index.html"><i>◉</i><span>管理コンソール</span></a>
+      <div class="v2-sidebar-lbl">受講者データ</div>
+      <button class="v2-sidebar-btn active" data-scroll="dataImport"><i>⇩</i><span>データ読込</span></button>
+      <button class="v2-sidebar-btn" data-scroll="overview"><i>◉</i><span>全体概要</span></button>
+      <button class="v2-sidebar-btn" data-scroll="charts"><i>▥</i><span>分類グラフ</span></button>
+      <button class="v2-sidebar-btn" data-scroll="personSearch"><i>⌕</i><span>氏名検索</span></button>
+      <div class="v2-sidebar-lbl">関連システム</div>
+      <a class="v2-sidebar-btn" href="attend.html" target="_blank"><i>◈</i><span>受講者管理</span></a>
+      <a class="v2-sidebar-btn" href="license.html" target="_blank"><i>◎</i><span>受講証交付</span></a>
+    </nav>
+    <main class="v2-main attendee-main">
+      <div class="wrap attendee-wrap">
+        <section class="hero-panel wide attendee-hero" id="dataImport">
+          <div class="corner-label">SIBYL SYSTEM // ATTENDEE DATABASE</div>
+          <div class="hero-head"><div class="id-block top-hero-copy">
+            <div class="kicker">Public Safety Bureau · Training Records</div>
+            <h1>▌ 受講者データ分析パネル ▌</h1>
+            <p class="project-line">施設・職種・役割別の受講状況と修了証書交付状況</p>
+            <p class="hero-desc">00_database_attends.xlsxと同じ形式のファイルを読み込むと、集計・グラフ・個人の受講歴を確認できます。</p>
+          </div></div>
+          <div class="import-bar">
+            <label class="file-drop" for="attendeeFile"><span class="drop-icon">⇩</span><span><b>受講者データを読み込む</b><small>.xlsx / .xls / .csv　クリックまたはファイルをドロップ</small></span></label>
+            <input id="attendeeFile" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv">
+            <div class="import-state"><span class="status-dot" id="statusDot"></span><span id="loadStatus">サンプルデータを確認中…</span></div>
+          </div>
+        </section>
+
+        <section class="panel" id="overview">
+          <div class="corner-label">Overview</div><div class="panel-head"><div><h2>全体概要</h2><p>読み込んだ記録を重複を含む受講記録として集計します。</p></div></div>
+          <div class="attendee-kpis"><div class="attendee-kpi"><span>受講記録</span><b id="kpiRecords">0</b><small>読み込み行数</small></div><div class="attendee-kpi"><span>受講者数</span><b id="kpiPeople">0</b><small>氏名のユニーク数</small></div><div class="attendee-kpi"><span>施設数</span><b id="kpiFacilities">0</b><small>施設のユニーク数</small></div><div class="attendee-kpi certificate"><span>修了証書交付あり</span><b id="kpiCertificates">0</b><small id="kpiCertificateRate">—</small></div></div>
+        </section>
+
+        <section class="panel" id="charts">
+          <div class="corner-label">Classification</div><div class="panel-head"><div><h2>分類別の受講状況</h2><p>表示件数の多い順。セレクトボックスで切り替えると、グラフと一覧を同時に絞り込めます。</p></div></div>
+          <div class="filter-row"><label>施設<select id="facilityFilter"><option value="">すべて</option></select></label><label>職種<select id="jobFilter"><option value="">すべて</option></select></label><label>役割<select id="roleFilter"><option value="">すべて</option></select></label><button class="btn small" id="clearFilters" type="button">条件をクリア</button></div>
+          <div class="chart-grid"><div class="chart-card"><h3>施設別</h3><div class="chart-box"><canvas id="facilityChart"></canvas></div></div><div class="chart-card"><h3>職種別</h3><div class="chart-box"><canvas id="jobChart"></canvas></div></div><div class="chart-card"><h3>役割別</h3><div class="chart-box"><canvas id="roleChart"></canvas></div></div></div>
+        </section>
+
+        <section class="panel" id="personSearch">
+          <div class="corner-label">Person Lookup</div><div class="panel-head"><div><h2>氏名検索</h2><p>氏名・施設・職種で検索できます。個人を選ぶと受講歴と修了証書の交付状況を表示します。</p></div></div>
+          <div class="search-line"><label class="search-field"><span>氏名を検索</span><input id="nameSearch" type="search" placeholder="例：山田 太郎、施設名、職種"></label><span class="result-count" id="searchCount">0件</span></div>
+          <div id="peopleResults" class="people-results"><div class="empty-state">データを読み込むと、ここに受講者一覧が表示されます。</div></div>
+          <div id="personDetail" class="person-detail" hidden></div>
+        </section>
+        <p class="data-note">データはこのブラウザ内でのみ処理します。自動読込は同じフォルダにある00_database_attends.xlsxが公開・配置されている場合に利用できます。</p>
+      </div>
+    </main>
+  </div>
+  <script src="js/attendee-data.js"></script>
+</body>
+</html>
