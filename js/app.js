@@ -1467,7 +1467,13 @@ function renderCaution(){
 }
 const deadlineAlertCheckState = new Map();
 function deadlineAlertStateKey(a){
-  return `${a.rowIndex}|${a.label}`;
+  return `${String(a.no).trim()}|${a.label}`;
+}
+try {
+  const saved = JSON.parse(localStorage.getItem('seminarManagementDeadlineAlerts') || '{}');
+  Object.entries(saved).forEach(([key, value]) => deadlineAlertCheckState.set(key, Boolean(value)));
+} catch (e) {
+  console.warn('[CHECK] Deadline Alert状態の復元に失敗しました', e);
 }
 function renderAlerts(){
   if(!currentHeaders.length){
@@ -2373,12 +2379,21 @@ function alertCheckDone(aid, checked){
   const no=item.dataset.no || '';
   const rowIndex=item.dataset.rowIndex === undefined ? undefined : Number(item.dataset.rowIndex);
   const csvKeyName=item.dataset.csvkey || 'checkK1';
-  const stateKey = `${rowIndex}|${item.dataset.label || aid}`;
+  const stateKey = `${String(no).trim()}|${item.dataset.label || aid}`;
   deadlineAlertCheckState.set(stateKey, checked);
+  try {
+    localStorage.setItem('seminarManagementDeadlineAlerts', JSON.stringify(Object.fromEntries(deadlineAlertCheckState)));
+  } catch (e) {
+    console.warn('[CHECK] Deadline Alert状態の保存に失敗しました', e);
+  }
 
   if(no && csvKeyName){
     writeCheckToRaw(no, csvKeyName, checked, rowIndex);
     dataRows = buildDisplayRowsFromRaw(rawRows);
+    const rawRow = rawRows[rowIndex];
+    if(rawRow && typeof FirebaseApp !== 'undefined' && FirebaseApp.getCurrentUser()){
+      FirebaseApp.saveToFirestore(rawRow, currentHeaders).catch(err => console.error('Firestore deadline alert save error:', err));
+    }
     renderTodayCommand();
     renderExceptionQueue();
     renderAlerts();
