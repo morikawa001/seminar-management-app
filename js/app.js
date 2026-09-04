@@ -1355,7 +1355,7 @@ function collectDeadlineAlerts(){
   const baseToday=new Date(today.getFullYear(),today.getMonth(),today.getDate());
   const items=[];
 
-  dataRows.forEach(r=>{
+  dataRows.forEach((r,rowIndex)=>{
     const year=r[fullKeys.year]||fields.year.value||'';
     const title=r[fullKeys.title]||'無題';
     const no=r[fullKeys.no]||'-';
@@ -1370,6 +1370,7 @@ function collectDeadlineAlerts(){
       if(diff<0||diff>7) return;
       items.push({
         no,
+        rowIndex,
         title,
         label,
         raw:raw||fmtDate(dateObj),
@@ -1395,7 +1396,7 @@ function buildCautionItems(){
   const items=[];
   const labelToCsvKey={'起案1':'checkK1','HP案内・チラシ':'checkHp','起案2':'checkK2','起案3':'checkK3','院外締切':'checkK1','資料締切':'checkK2','配布資料DL締切':'checkK2'};
 
-  dataRows.forEach(r=>{
+  dataRows.forEach((r,rowIndex)=>{
     const year=r[fullKeys.year]||fields.year.value||'';
     const title=r[fullKeys.title]||'無題';
     const no=r[fullKeys.no]||'-';
@@ -1406,7 +1407,7 @@ function buildCautionItems(){
       if(isCheckedValue(r[fullKeys[csvKey]])) return;
       const diff=daysBetween(baseToday,dateObj);
       if(diff>=0) return;
-      items.push({no,title,label,raw:raw||fmtDate(dateObj),diff,csvKey});
+      items.push({no,title,label,raw:raw||fmtDate(dateObj),diff,csvKey,rowIndex});
     };
 
     pushItem('起案1', parseCautionDate(r[fullKeys.k1], year), r[fullKeys.k1]);
@@ -1449,7 +1450,7 @@ function renderCaution(){
     const aid=`caution-item-${i}`;
     const tag=`${Math.abs(a.diff)}D経過`;
     return `
-      <div class="alert-item" id="${aid}" data-no="${esc(a.no)}" data-csvkey="${esc(a.csvKey||'checkK1')}">
+      <div class="alert-item" id="${aid}" data-no="${esc(a.no)}" data-row-index="${a.rowIndex}" data-csvkey="${esc(a.csvKey||'checkK1')}">
         <div class="alert-item-tag-wrap">
           <input type="checkbox" class="alert-check"
             onclick="event.stopPropagation();cautionCheckDone('${aid}',this.checked)" title="完了">
@@ -1463,6 +1464,10 @@ function renderCaution(){
       </div>
     `;
   }).join('');
+}
+const deadlineAlertCheckState = new Map();
+function deadlineAlertStateKey(a){
+  return `${a.rowIndex}|${a.label}`;
 }
 function renderAlerts(){
   if(!currentHeaders.length){
@@ -1494,9 +1499,12 @@ function renderAlerts(){
       const aid = `alert-item-${i}`;
       const tag = a.diff <= 0 ? 'TODAY' : a.diff === 1 ? 'TOMORROW' : `${a.diff}D`;
 
-      const row = dataRows.find(r => String(r[fullKeys.no] || '').trim() === String(a.no || '').trim());
+      const row = dataRows[a.rowIndex];
       const checkHeader = fullKeys[a.csvKey] || fullKeys.checkK1;
-      const isDone = row ? isCheckedValue(row[checkHeader]) : false;
+      const stateKey = deadlineAlertStateKey(a);
+      const isDone = deadlineAlertCheckState.has(stateKey)
+        ? deadlineAlertCheckState.get(stateKey)
+        : (row ? isCheckedValue(row[checkHeader]) : false);
       const doneClass = isDone ? ' done' : '';
       const checkedAttr = isDone ? ' checked' : '';
       const bodyStyle = '';
@@ -1504,7 +1512,7 @@ function renderAlerts(){
       const clickAttr = isDone ? ` onclick="alertToggleExpand('${aid}')" title="クリックで展開/折りたたみ"` : '';
 
       return `
-        <div class="alert-item${doneClass}" id="${aid}" data-no="${esc(a.no)}" data-csvkey="${esc(a.csvKey || 'checkK1')}"${clickAttr}>
+        <div class="alert-item${doneClass}" id="${aid}" data-no="${esc(a.no)}" data-row-index="${a.rowIndex}" data-label="${esc(a.label)}" data-csvkey="${esc(a.csvKey || 'checkK1')}"${clickAttr}>
           <div class="alert-item-tag-wrap">
             <input type="checkbox" class="alert-check"${checkedAttr}
               onclick="event.stopPropagation();alertCheckDone('${aid}',this.checked)" title="完了">
@@ -2242,7 +2250,7 @@ function tcCheckDone(cardId, checked){
   }
 }
 // rawRowsの該当行にCHECK値を書き込む（画面再描画なし）
-function writeCheckToRaw(no, csvKeyName, checked){
+function writeCheckToRaw(no, csvKeyName, checked, rowIndex){
   if(!no || !csvKeyName){
     console.warn('[CHECK] no or csvKeyName empty', no, csvKeyName);
     return;
@@ -2270,7 +2278,7 @@ function writeCheckToRaw(no, csvKeyName, checked){
     ensureHeader(`HISTORY_${phase}`);
   }
 
-  const row = rawRows.find(r =>
+  const row = Number.isInteger(rowIndex) ? rawRows[rowIndex] : rawRows.find(r =>
     String(r[fullKeys.no] || '').trim() === String(no).trim()
   );
   if(!row){
@@ -2363,10 +2371,13 @@ function alertCheckDone(aid, checked){
   }
 
   const no=item.dataset.no || '';
+  const rowIndex=item.dataset.rowIndex === undefined ? undefined : Number(item.dataset.rowIndex);
   const csvKeyName=item.dataset.csvkey || 'checkK1';
+  const stateKey = `${rowIndex}|${item.dataset.label || aid}`;
+  deadlineAlertCheckState.set(stateKey, checked);
 
   if(no && csvKeyName){
-    writeCheckToRaw(no, csvKeyName, checked);
+    writeCheckToRaw(no, csvKeyName, checked, rowIndex);
     dataRows = buildDisplayRowsFromRaw(rawRows);
     renderTodayCommand();
     renderExceptionQueue();
@@ -2391,9 +2402,10 @@ function cautionCheckDone(aid, checked){
   const item=document.getElementById(aid);
   if(!item) return;
   const no=item.dataset.no || '';
+  const rowIndex=item.dataset.rowIndex === undefined ? undefined : Number(item.dataset.rowIndex);
   const csvKeyName=item.dataset.csvkey || 'checkK1';
   if(no && csvKeyName){
-    writeCheckToRaw(no, csvKeyName, checked);
+    writeCheckToRaw(no, csvKeyName, checked, rowIndex);
     dataRows = buildDisplayRowsFromRaw(rawRows);
     renderTodayCommand();
     renderExceptionQueue();
