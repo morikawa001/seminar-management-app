@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="css/theme-base.css">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/attendee-data.css">
+  <link rel="stylesheet" href="css/facility-group-chart.css">
   <script src="js/theme-toggle.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
@@ -60,6 +61,13 @@
           <div class="chart-grid"><div class="chart-card"><h3>施設別</h3><div class="chart-box"><canvas id="facilityChart"></canvas></div></div><div class="chart-card"><h3>職種別</h3><div class="chart-box"><canvas id="jobChart"></canvas></div></div><div class="chart-card"><h3>役割別</h3><div class="chart-box"><canvas id="roleChart"></canvas></div></div></div>
         </section>
 
+        <section class="panel" id="facilityGroupChartPanel">
+          <div class="corner-label">Facility Group</div>
+          <div class="panel-head"><div><h2>施設グループ別の参加状況</h2><p>Excelの <code>facility_group</code> 列で集計し、グループ名順または件数順で表示できます。</p></div></div>
+          <div class="facility-group-chart-tools"><label>並び順<select id="facilityGroupSort"><option value="name">グループ名順</option><option value="count">件数順</option></select></label><span id="facilityGroupChartStatus">データを読み込み中…</span></div>
+          <div class="chart-card facility-group-chart-card"><div class="chart-box"><canvas id="facilityGroupChartStandalone"></canvas></div></div>
+        </section>
+
         <section class="panel" id="personSearch">
           <div class="corner-label">Person Lookup</div><div class="panel-head"><div><h2>氏名検索</h2><p>氏名・施設・職種で検索できます。個人を選ぶと受講歴と修了証書の交付状況を表示します。</p></div></div>
           <div class="search-line"><label class="search-field"><span>氏名を検索</span><input id="nameSearch" type="search" placeholder="例：山田 太郎、施設名、職種"></label><span class="result-count" id="searchCount">0件</span></div>
@@ -71,5 +79,6 @@
     </main>
   </div>
   <script src="js/attendee-data.js"></script>
+  <script src="js/facility-group-chart.js"></script>
 </body>
 </html>
