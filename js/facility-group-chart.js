@@ -30,9 +30,7 @@
     state.chart=new Chart($('facilityGroupChartStandalone').getContext('2d'),{type:'bar',data:{labels:items.map(item=>item[0]),datasets:[{label:'参加件数',data:items.map(item=>item[1]),backgroundColor:'#35e0b2',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0,color:styles.getPropertyValue('--muted')},grid:{color:styles.getPropertyValue('--line')}},y:{ticks:{color:styles.getPropertyValue('--text')},grid:{display:false}}}}});
     $('facilityGroupChartStatus').textContent=`attend=1の${state.rows.filter(isAttended).length.toLocaleString()}件をfacility_group別に集計`;
   }
-  function readFile(file){const reader=new FileReader();reader.onload=event=>parse(event.target.result);reader.readAsArrayBuffer(file);}
   document.addEventListener('DOMContentLoaded',()=>{
-    $('attendeeFile').addEventListener('change',event=>{if(event.target.files[0])readFile(event.target.files[0]);});
-    fetch('00_database_attends.xlsx').then(response=>{if(!response.ok)throw new Error('not found');return response.arrayBuffer();}).then(parse).catch(()=>{$('facilityGroupChartStatus').textContent='Excelファイルを選択してください';});
+    document.addEventListener('attendeeDataLoaded',event=>{state.rows=event.detail.rows||[];render();});
   });
 })();
