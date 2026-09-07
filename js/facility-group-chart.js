@@ -3,6 +3,7 @@
   'use strict';
   const state={rows:[],chart:null};
   const GROUP_ORDER=['scc','other'];
+  const GROUP_COLORS={scc:'#38b6ff',other:'#ff9f43'};
   const $=id=>document.getElementById(id);
   const clean=value=>String(value==null?'':value).trim();
   const normalizeKey=value=>clean(value).replace(/^\uFEFF/,'').toLowerCase().replace(/[\s_]+/g,'');
@@ -27,7 +28,7 @@
     const items=sortedCounts();
     if(state.chart)state.chart.destroy();
     const styles=getComputedStyle(document.documentElement);
-    state.chart=new Chart($('facilityGroupChartStandalone').getContext('2d'),{type:'bar',data:{labels:items.map(item=>item[0]),datasets:[{label:'参加件数',data:items.map(item=>item[1]),backgroundColor:'#35e0b2',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0,color:styles.getPropertyValue('--muted')},grid:{color:styles.getPropertyValue('--line')}},y:{ticks:{color:styles.getPropertyValue('--text')},grid:{display:false}}}}});
+    state.chart=new Chart($('facilityGroupChartStandalone').getContext('2d'),{type:'bar',data:{labels:items.map(item=>item[0]),datasets:[{label:'参加件数',data:items.map(item=>item[1]),backgroundColor:items.map(item=>GROUP_COLORS[item[0]]),borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0,color:styles.getPropertyValue('--muted')},grid:{color:styles.getPropertyValue('--line')}},y:{ticks:{color:styles.getPropertyValue('--text')},grid:{display:false}}}}});
     $('facilityGroupChartStatus').textContent=`attend=1の${state.rows.filter(isAttended).length.toLocaleString()}件をfacility_group別に集計`;
   }
   document.addEventListener('DOMContentLoaded',()=>{
