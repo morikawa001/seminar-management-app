@@ -5,8 +5,9 @@
   const GROUP_ORDER=['scc','other'];
   const $=id=>document.getElementById(id);
   const clean=value=>String(value==null?'':value).trim();
-  const valueOf=(row,key)=>{const actualKey=Object.keys(row).find(name=>name.toLowerCase()===key.toLowerCase());return actualKey?clean(row[actualKey]):'';};
-  const isAttended=row=>valueOf(row,'attend')==='1';
+  const normalizeKey=value=>clean(value).replace(/^\uFEFF/,'').toLowerCase().replace(/[\s_]+/g,'');
+  const valueOf=(row,key)=>{const actualKey=Object.keys(row).find(name=>normalizeKey(name)===normalizeKey(key));return actualKey?clean(row[actualKey]):'';};
+  const isAttended=row=>Number(valueOf(row,'attend'))===1;
   function parse(data){
     try{
       const workbook=XLSX.read(data,{type:'array',cellDates:true});
@@ -17,7 +18,7 @@
   }
   function sortedCounts(){
     const counts={scc:0,other:0};
-    state.rows.filter(isAttended).forEach(row=>{const group=valueOf(row,'facility_group').toLowerCase();if(Object.prototype.hasOwnProperty.call(counts,group))counts[group]++;});
+    state.rows.filter(isAttended).forEach(row=>{const group=clean(valueOf(row,'facility_group')).toLowerCase();if(Object.prototype.hasOwnProperty.call(counts,group))counts[group]++;});
     const items=GROUP_ORDER.map(group=>[group,counts[group]]);
     return items;
   }
