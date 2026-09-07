@@ -31,4 +31,35 @@
   function readFile(file){const reader=new FileReader();reader.onload=e=>parseWorkbook(e.target.result,file.name);reader.onerror=()=>setStatus('ファイルを読み込めませんでした。','error');reader.readAsArrayBuffer(file)}
   async function autoLoad(){try{const res=await fetch('00_database_attends.xlsx');if(!res.ok)throw new Error('not found');parseWorkbook(await res.arrayBuffer(),'00_database_attends.xlsx')}catch(e){setStatus('xlsxを選択してください。','')}}
   document.addEventListener('DOMContentLoaded',()=>{if(window.SharedTheme)$('themeButton').addEventListener('click',SharedTheme.toggleTheme);$('attendeeFile').addEventListener('change',e=>{if(e.target.files[0])readFile(e.target.files[0])});const drop=document.querySelector('.file-drop');['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('dragover')}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('dragover')}));drop.addEventListener('drop',e=>{if(e.dataTransfer.files[0])readFile(e.dataTransfer.files[0])});['facilityFilter','jobFilter','roleFilter'].forEach(id=>$(id).addEventListener('change',render));$('clearFilters').addEventListener('click',()=>{['facilityFilter','jobFilter','roleFilter'].forEach(id=>$(id).value='');render()});$('nameSearch').addEventListener('input',()=>renderPeople(filteredRows()));document.querySelectorAll('[data-scroll]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.scroll).scrollIntoView({behavior:'smooth'})));autoLoad()});
+  // 氏名検索パネルの並び替えを一覧カードへ反映
+  function setupPersonSort(){
+    const searchLine=document.querySelector('.search-line');
+    const results=$('peopleResults');
+    if(!searchLine||!results||$('personSort'))return;
+    const label=document.createElement('label');
+    label.className='search-sort';
+    label.innerHTML='<span>並び順</span><select id="personSort"><option value="name">氏名順</option><option value="facility">施設名称順</option><option value="count">受講回数順</option><option value="certificate">終了証書の交付の有無</option><option value="target">対象順</option></select>';
+    searchLine.insertBefore(label,$('searchCount'));
+    const sortCards=()=>{
+      const mode=$('personSort').value;
+      const sourceRows=filteredRows();
+      const cards=[...results.querySelectorAll('[data-person]')];
+      cards.sort((a,b)=>{
+        const aRows=sourceRows.filter(r=>val(r,aliases.name)===a.dataset.person);
+        const bRows=sourceRows.filter(r=>val(r,aliases.name)===b.dataset.person);
+        let result=0;
+        if(mode==='facility')result=val(aRows[0]||{},aliases.facility).localeCompare(val(bRows[0]||{},aliases.facility),'ja');
+        else if(mode==='count')result=bRows.length-aRows.length;
+        else if(mode==='certificate')result=Number(bRows.some(isCertificateIssued))-Number(aRows.some(isCertificateIssued));
+        else if(mode==='target')result=val(aRows[0]||{},aliases.target).localeCompare(val(bRows[0]||{},aliases.target),'ja');
+        return result||a.dataset.person.localeCompare(b.dataset.person,'ja');
+      });
+      const current=[...results.querySelectorAll('[data-person]')];
+      if(cards.some((card,index)=>card!==current[index]))cards.forEach(card=>results.appendChild(card));
+    };
+    $('personSort').addEventListener('change',sortCards);
+    let sorting=false;
+    new MutationObserver(()=>{if(!sorting){sorting=true;sortCards();sorting=false;}}).observe(results,{childList:true});
+  }
+  document.addEventListener('DOMContentLoaded',setupPersonSort);
 })();
