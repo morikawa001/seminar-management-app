@@ -63,8 +63,8 @@
 
         <section class="panel" id="facilityGroupChartPanel">
           <div class="corner-label">Facility Group</div>
-          <div class="panel-head"><div><h2>施設グループ別の参加状況</h2><p>Excelの <code>facility_group</code> 列で集計し、グループ名順または件数順で表示できます。</p></div></div>
-          <div class="facility-group-chart-tools"><label>並び順<select id="facilityGroupSort"><option value="name">グループ名順</option><option value="count">件数順</option></select></label><span id="facilityGroupChartStatus">データを読み込み中…</span></div>
+          <div class="panel-head"><div><h2>施設グループ別の参加状況</h2><p><code>attend</code> 列が1の行を対象に、Excelの <code>facility_group</code> 列のscc・otherを集計します。</p></div></div>
+          <div class="facility-group-chart-tools"><span id="facilityGroupChartStatus">データを読み込み中…</span></div>
           <div class="chart-card facility-group-chart-card"><div class="chart-box"><canvas id="facilityGroupChartStandalone"></canvas></div></div>
         </section>
 
