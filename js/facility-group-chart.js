@@ -4,8 +4,8 @@
   const state={rows:[],chart:null};
   const $=id=>document.getElementById(id);
   const clean=value=>String(value==null?'':value).trim();
-  const valueOf=(row,key)=>clean(row[key]);
-  const isAttended=row=>{const value=valueOf(row,'attend_2026')||valueOf(row,'attend')||valueOf(row,'attendance');return value==='1'||value==='○'||value==='〇'||value.toLowerCase()==='yes'||value.toLowerCase()==='true';};
+  const valueOf=(row,key)=>{const actualKey=Object.keys(row).find(name=>name.toLowerCase()===key.toLowerCase());return actualKey?clean(row[actualKey]):'';};
+  const isAttended=row=>{const value=(valueOf(row,'participation')||valueOf(row,'attend_2026')||valueOf(row,'attend')||valueOf(row,'attendance')).toLowerCase();return ['1','yes','true','attend','参加','出席','○','〇'].includes(value);};
   function parse(data){
     try{
       const workbook=XLSX.read(data,{type:'array',cellDates:true});
