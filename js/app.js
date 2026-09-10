@@ -2261,6 +2261,9 @@ function buildExceptions(rows){
     const title=row[fullKeys.title]||'（無題）';
     const days=calcDaysUntilEvent(row);
 
+    // 開催済みの研修会は、Exception Queueの対象外にする。
+    if(days!==null&&days<0) return;
+
     const push=(sev,label,detail,taskKey)=>exceptions.push({no,title,sev,label,detail,taskKey});
 
     // 必須フィールド欠落
