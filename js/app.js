@@ -2102,11 +2102,8 @@ function buildDeadlineCommands(rows){
     const no=row[fullKeys.no]||'?';
     const title=row[fullKeys.title]||'（無題）';
     SeminarDomain.taskSnapshot(row,fullKeys).forEach(task=>{
-      if(task.daysUntil===null||task.daysUntil>7)return;
-      if(task.complete){
-        const doneDays=task.doneAt?(-SeminarDomain.daysUntil(task.doneAt.slice(0,10))):null;
-        if(doneDays===null||doneDays>1)return;
-      }
+      // Today Command は未実施の期限タスクだけを表示する
+      if(task.complete||task.daysUntil===null||task.daysUntil>7)return;
       const diff=task.daysUntil;
       const urgency=diff<0?'critical':diff===0?'critical':diff<=3?'high':'normal';
       const label=diff<0?`期限超過（${Math.abs(diff)}日）`:diff===0?'本日期限':`${diff}日以内`;
@@ -2134,7 +2131,7 @@ function buildTodayCommands(rows){
     const taskDone=countTasksDone(row);
 
     // 開催当日
-    if(days===0){
+    if(days===0&&taskDone<TASK_IDS.length){
       cmds.push({no, title, urgency:'critical', csvKey:'task22',
   action:'本日開催です。当日準備を確認してください。',reason:`Task完了: ${taskDone}/${TASK_IDS.length}`,buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no},{label:'メール作成',recipient:'attendee',purpose:'reminder',no}]});
       if(!zoomUrl||zoomUrl==='https://zoom.us/'){
