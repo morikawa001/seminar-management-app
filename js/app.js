@@ -2368,7 +2368,7 @@ function renderExceptionQueue(){
     return `<div class="eq-item sev-${ex.sev}">
       <div><span class="eq-tag ${tagClass}">${tagLabel}</span><div class="eq-no" style="margin-top:4px">No.${esc(ex.no)}</div></div>
       <div class="eq-item-body"><strong>${esc(ex.label)}</strong><p>${esc(ex.title)} ─ ${esc(ex.detail)}</p></div>
-      <div><a class="btn small" href="#taskChecklistPanel" onclick="loadRowAndOpenTaskChecklist('${esc(ex.no)}','${esc(ex.taskKey||'')}');return false;">確認する</a></div>
+      <div><a class="btn small" href="#entryConsoleSection" onclick="openTodayCommandRecord('${esc(ex.no)}');return false;">確認する</a></div>
     </div>`;
   }).join('');
 }
