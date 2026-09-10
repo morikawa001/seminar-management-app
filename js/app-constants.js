@@ -173,7 +173,22 @@ const fullKeys={
   qrK1Saved:'qr_saved_k1',
   qrK2Saved:'qr_saved_k2',
   qrK3Saved:'qr_saved_k3',
-  qrStorageLoc:'qr_storage_loc'
+  qrStorageLoc:'qr_storage_loc',
+  speakerAffiliation:'講師所属_AFFILIATION',
+  speakerRole:'講師役職_ROLE',
+  speakerEmail:'講師メール_EMAIL',
+  hpStatus:'HP公開状況_HP_STATUS',
+  materialReceivedDate:'講師資料受領日_MATERIAL_RECEIVED_DATE',
+  distributionPermission:'資料配布可否_DISTRIBUTION_PERMISSION',
+  zoomStatus:'Zoom設定状況_ZOOM_STATUS',
+  speakerConnection:'講師接続確認_SPEAKER_CONNECTION',
+  questions:'質問案_QUESTIONS',
+  survey:'アンケート_SURVEY',
+  postProcessing:'開催後処理_POST_PROCESSING',
+  memo:'管理メモ_MEMO',
+  taskDueDates:'TASK_DUE_DATES_JSON',
+  taskDoneAt:'TASK_DONE_AT_JSON',
+  taskNotes:'TASK_NOTES_JSON'
 };
 
 const HEAD_TEXT_DEFAULT='2026年度　臨床研究研修会';

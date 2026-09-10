@@ -128,10 +128,10 @@
       <div class="hero-head">
         <div class="id-block top-hero-copy">
           <div class="kicker">Public Safety Bureau · Operations Division</div>
-          <h1>▌ SIBYL SYSTEM — 研修会計画管制コンソール ▌</h1>
+          <h1>▌ SIBYL SYSTEM — 研修会管理コンソール ▌</h1>
           <p class="project-line">20XX年_臨床研究研修会計画_project_2501</p>
-          <p class="hero-desc">基幹システム「SIBYL SYSTEM」の管制下で研修会開催計画を一元管理する統合オペレーション・プラットフォーム</p>
-          <p class="hero-desc jp">公安局・統合運用端末として研修会開催計画を一元管理</p>
+          <p class="hero-desc">基幹システム「SIBYL SYSTEM」の管制下で研修会の準備・進捗・タスクを一元管理する統合オペレーション・プラットフォーム</p>
+          <p class="hero-desc jp">公安局・統合運用端末として研修会業務の次の一手を提示</p>
           <p class="sibyl-status"><i></i> SIBYL SYSTEM ONLINE <span class="sibyl-code">// SECURE CHANNEL · CODING TERMINAL LINKED</span></p>
         </div>
         <div class="hero-stats" style="display:none">
@@ -189,6 +189,12 @@
           <span class="label">進捗率</span>
           <strong id="trainingProgressPct">0%</strong>
         </div>
+      </div>
+      <div class="global-task-summary">
+        <div><span>全タスク数</span><strong id="allTaskCount">0</strong></div>
+        <div><span>完了タスク</span><strong id="allTaskDone">0</strong></div>
+        <div><span>未完了タスク</span><strong id="allTaskRemain">0</strong></div>
+        <div><span>タスク進捗</span><strong id="allTaskProgress">0%</strong></div>
       </div>
       <div class="training-pie-container">
         <div class="training-pie" id="trainingPie">
@@ -413,6 +419,9 @@
         <div class="field"><label>名前_NAME</label><input id="fName" value=""></div>
         <div class="field"><label>研修会タイトル_TITLE</label><input id="fTitle" value="臨床研究データ管理実務"></div>
         <div class="field"><label>講師名_SPEAKER</label><input id="fSpeaker" value="サンプル 講師"></div>
+        <div class="field"><label>講師所属_AFFILIATION</label><input id="fSpeakerAffiliation" value=""></div>
+        <div class="field"><label>講師役職_ROLE</label><input id="fSpeakerRole" value=""></div>
+        <div class="field"><label>講師メール_EMAIL</label><input id="fSpeakerEmail" type="email" value=""></div>
 
         <div class="field"><label>研修会開始_START_1</label><input id="fStart" type="time" value="17:30" oninput="autoFillPreMeeting()"></div>
         <div class="field"><label>終了_END_1</label><input id="fEnd" type="time" value="19:00"></div>
@@ -456,10 +465,31 @@
         <div class="field"><label>パスコード_PASSCODE</label><input id="fPasscode" value=""></div>
         <div class="field full"><label>Zoom URL</label><input id="fZoomUrl" value="https://zoom.us/"></div>
         <div class="field full"><label>HP_URL_url_1</label><input id="fHpUrl" value=""></div>
+        <div class="field"><label>HP公開状況_HP_STATUS</label>
+          <select id="fHpStatus"><option value="">未確認</option><option>未公開</option><option>公開準備中</option><option>公開済み</option></select>
+        </div>
+        <div class="field"><label>講師資料受領日</label><input id="fMaterialReceivedDate" type="date"></div>
+        <div class="field"><label>資料配布可否</label>
+          <select id="fDistributionPermission"><option value="">未確認</option><option>配布可</option><option>配布不可</option><option>講師確認中</option></select>
+        </div>
+        <div class="field"><label>Zoom設定状況</label>
+          <select id="fZoomStatus"><option value="">未設定</option><option>設定中</option><option>設定済み</option></select>
+        </div>
+        <div class="field"><label>講師接続確認</label>
+          <select id="fSpeakerConnection"><option value="">未確認</option><option>確認依頼中</option><option>確認済み</option></select>
+        </div>
+        <div class="field"><label>アンケート</label>
+          <select id="fSurvey"><option value="">未確認</option><option>作成中</option><option>準備済み</option><option>実施済み</option></select>
+        </div>
+        <div class="field"><label>開催後処理</label>
+          <select id="fPostProcessing"><option value="">未確認</option><option>未着手</option><option>処理中</option><option>完了</option></select>
+        </div>
         <div class="field full"><label>目的_PURPOSE</label><textarea id="fPurpose">本研修会では、臨床研究に必要な実務の基本をわかりやすく学びます。</textarea></div>
         <div class="field full"><label>進行表導入_INTRO_1</label><textarea id="fIntro1">本日は臨床研究研修会にご参加いただきありがとうございます。</textarea></div>
         <div class="field full"><label>趣旨説明_INTRO_2</label><textarea id="fIntro2">本研修会では、臨床研究を進めるうえで必要となる基本事項と実務上のポイントを共有します。</textarea></div>
         <div class="field full"><label>講師紹介_INTRO_3</label><textarea id="fIntro3">本日の講師は、臨床研究支援に関する実務経験を有する専門家です。</textarea></div>
+        <div class="field full"><label>質問案_QUESTIONS</label><textarea id="fQuestions" placeholder="講師への確認事項・当日の質問案"></textarea></div>
+        <div class="field full"><label>管理メモ_MEMO</label><textarea id="fMemo" placeholder="例外・引継ぎ・開催後メモ"></textarea></div>
       </div>
 
       <div class="control-row">
@@ -629,7 +659,7 @@
       </div>
         <div class="mini-grid" style="margin-bottom:4px">
           <div class="mini-box"><span>完了タスク</span><b id="taskDoneCount">0</b></div>
-          <div class="mini-box"><span>残りタスク</span><b id="taskRemainCount">33</b></div>
+          <div class="mini-box"><span>残りタスク</span><b id="taskRemainCount">34</b></div>
           <div class="mini-box"><span>進捗</span><b id="taskProgressPct">0%</b></div>
         </div>
         <div class="progress-shell" style="margin-bottom:8px"><div class="progress-bar" id="taskProgressBar"></div></div>
@@ -944,6 +974,10 @@
           </div>
         </div>
         <div class="hint-box">各タスクを完了したらチェックを入れてください。CSV保存時に状態が保持されます。</div>
+        <div class="task-meta-panel">
+          <div class="task-meta-head"><strong>タスク詳細（期限・完了日・備考）</strong><span>選択中の研修会のタスク情報を編集します。</span></div>
+          <div id="taskMetaList" class="task-meta-list"><div class="tc-empty">研修会を選択するとタスク詳細を編集できます。</div></div>
+        </div>
         </div>
   </section><!-- /taskChecklistPanel -->
 
@@ -1142,6 +1176,7 @@
 <script src="js/app-constants.js"></script>
 <script src="js/app-utils.js"></script>
 <script src="js/app-effects.js"></script>
+<script src="js/seminar-domain.js"></script>
 <script src="js/app.js"></script>
 <script src="js/priority-engine.js"></script>
 </body>

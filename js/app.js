@@ -1,7 +1,11 @@
 function updateTaskProgress(){
   const total=TASK_IDS.length;
   let done=0;
-  for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el&&el.checked)done++;}
+  const selectedTaskRow=selectedRow||rawRows.find(r=>String(r?.[fullKeys.no]||'').trim()===String(fields.no.value||'').trim());
+  for(const id of TASK_IDS){
+    const el=document.getElementById('ck_task'+id);
+    if(selectedTaskRow?isCheckedValue(selectedTaskRow[fullKeys['task'+id]]):(el&&el.checked))done++;
+  }
   const remain=total-done;
   const pct=Math.round(done/total*100);
   const doneEl=document.getElementById('taskDoneCount');
@@ -12,16 +16,25 @@ function updateTaskProgress(){
   if(remEl)remEl.textContent=String(remain);
   if(pctEl)pctEl.textContent=pct+'%';
   if(barEl)barEl.style.width=pct+'%';
-  for(const id of TASK_IDS){const tc=document.getElementById('taskcard_task'+id);const cb=document.getElementById('ck_task'+id);if(tc)tc.classList.toggle('done',cb?.checked||false);}
+  for(const id of TASK_IDS){const tc=document.getElementById('taskcard_task'+id);const cb=document.getElementById('ck_task'+id);if(tc)tc.classList.toggle('done',selectedTaskRow?isCheckedValue(selectedTaskRow[fullKeys['task'+id]]):cb?.checked||false);}
   const no=String(fields.no.value||'').trim();
   if(!no)return;
   const rawIdx=getRawRowIndexByNo(no);
   if(rawIdx<0)return;
   const rawRow=rawRows[rawIdx];
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);rawRow[fullKeys['task'+id]]=boolToCsv(el?.checked||false);}
+  dataRows=buildDisplayRowsFromRaw(rawRows);
+  selectedRow=dataRows.find(r=>String(r[fullKeys.no]||'').trim()===no)||selectedRow;
   if(typeof FirebaseApp!=='undefined'&&FirebaseApp.getCurrentUser()){
     FirebaseApp.saveToFirestore(rawRow,currentHeaders).catch(function(err){console.error('Firestore task save error:',err)});
   }
+  updateTrainingProgressFromRows(rawRows);
+  renderTodayCommand();
+  renderExceptionQueue();
+  renderAlerts();
+  renderTable();
+  renderStats();
+  renderTaskMetaList();
 }
 function resetAllTasks(){
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=false;}
@@ -89,6 +102,14 @@ document.addEventListener('DOMContentLoaded',function(){
     const el = document.getElementById(id);
     if(el) observer.observe(el);
   });
+  const priorityWrap=document.querySelector('.wrap');
+  const priorityAnchor=document.querySelector('#quickOperationSection')?.closest('.two-col-grid');
+  if(priorityWrap&&priorityAnchor){
+    ['todayCommandSection','cautionSection','deadlineAlertSection','exceptionQueueSection'].forEach(id=>{
+      const section=document.getElementById(id);
+      if(section)priorityWrap.insertBefore(section,priorityAnchor);
+    });
+  }
 });
 
 const themeBtnEl=document.getElementById('themeBtn');
@@ -171,7 +192,8 @@ const els={
   paramYearCount:document.getElementById('paramYearCount'),
   paramDoneCount:document.getElementById('paramDoneCount'),
   paramSoonCount:document.getElementById('paramSoonCount'),
-  paramDraftCount:document.getElementById('paramDraftCount')
+  paramDraftCount:document.getElementById('paramDraftCount'),
+  taskMetaList:document.getElementById('taskMetaList')
 };
 
 const fields={
@@ -183,6 +205,9 @@ const fields={
   name:document.getElementById('fName'),
   title:document.getElementById('fTitle'),
   speaker:document.getElementById('fSpeaker'),
+  speakerAffiliation:document.getElementById('fSpeakerAffiliation'),
+  speakerRole:document.getElementById('fSpeakerRole'),
+  speakerEmail:document.getElementById('fSpeakerEmail'),
   lectureStart:document.getElementById('fLectureStart'),
   start:document.getElementById('fStart'),
   end:document.getElementById('fEnd'),
@@ -205,13 +230,23 @@ const fields={
   passcode:document.getElementById('fPasscode'),
   zoomUrl:document.getElementById('fZoomUrl'),
   hpUrl:document.getElementById('fHpUrl'),
+  hpStatus:document.getElementById('fHpStatus'),
+  materialReceivedDate:document.getElementById('fMaterialReceivedDate'),
+  distributionPermission:document.getElementById('fDistributionPermission'),
+  zoomStatus:document.getElementById('fZoomStatus'),
+  speakerConnection:document.getElementById('fSpeakerConnection'),
+  survey:document.getElementById('fSurvey'),
+  postProcessing:document.getElementById('fPostProcessing'),
   purpose:document.getElementById('fPurpose'),
   intro1:document.getElementById('fIntro1'),
   intro2:document.getElementById('fIntro2'),
-  intro3:document.getElementById('fIntro3')
+  intro3:document.getElementById('fIntro3'),
+  questions:document.getElementById('fQuestions'),
+  memo:document.getElementById('fMemo')
 };
 
 let currentHeaders=[], rawRows=[], dataRows=[], selectedRow=null, stagedRow=null, lastSaveMode='', selectedTemplates=[];
+let taskMetaDraft={dueDates:{},doneAt:{},notes:{}};
 // チェック時に即時 rawRows へ書き込む方式を使用（pendingChecks廃止）
 
 els.csvFile.addEventListener('change',loadCsv);
@@ -274,9 +309,11 @@ fields.subject.addEventListener('change',recalcDraft);
   fields.no,fields.date,fields.name,fields.start,fields.end,fields.lectureStart,
   fields.preMeeting,fields.qaDeadline,fields.qaTime,
   fields.title,fields.speaker,fields.cost,fields.zoomId,fields.passcode,fields.zoomUrl,fields.hpUrl,
+  fields.speakerAffiliation,fields.speakerRole,fields.speakerEmail,
+  fields.materialReceivedDate,fields.questions,fields.memo,
   fields.purpose,fields.intro1,fields.intro2,fields.intro3
 ].forEach(el=>el.addEventListener('input',recalcDraft));
-[fields.site].forEach(el=>el.addEventListener('change',recalcDraft));
+[fields.site,fields.hpStatus,fields.distributionPermission,fields.zoomStatus,fields.speakerConnection,fields.survey,fields.postProcessing].forEach(el=>el.addEventListener('change',recalcDraft));
 [els.ckK1,els.ckHp,els.ckK2,els.ckK3].forEach(el=>el.addEventListener('change',recalcDraft));
 fields.title.addEventListener('input',function(){if(selectedRow){selectedRow[fullKeys.title]=this.value;renderRecordOptions()}});
 fields.no.addEventListener('input',function(){els.deleteEntryBtn.disabled=!dataRows.length||!String(this.value||'').trim()});
@@ -316,6 +353,62 @@ function handleTemplateFiles(e){
   setMergeStatus(selectedTemplates.length?`${selectedTemplates.length}件のテンプレートを登録しました。`:'テンプレートファイルが未選択です。');
 }
 function getRowByNo(no){return dataRows.find(r=>String(r[fullKeys.no]||'').trim()===String(no||'').trim())||null}
+
+function setTaskMetaDraft(row){
+  taskMetaDraft=SeminarDomain.serializeMeta(SeminarDomain.taskMetaFromRow(row||{},fullKeys));
+}
+function taskMetaBaseRow(){
+  const row=selectedRow||buildRow();
+  return SeminarDomain.applyMetaToRow(row,fullKeys,taskMetaDraft);
+}
+function taskLabel(id){
+  const el=document.querySelector('#taskcard_task'+id+' .schedule-left strong');
+  return el?el.textContent:'Task '+id;
+}
+function renderTaskMetaList(){
+  if(!els.taskMetaList)return;
+  if(!currentHeaders.length){els.taskMetaList.innerHTML='<div class="tc-empty">研修会を選択するとタスク詳細を編集できます。</div>';return}
+  const row=taskMetaBaseRow();
+  const snapshot=SeminarDomain.taskSnapshot(row,fullKeys);
+  els.taskMetaList.innerHTML=snapshot.map(task=>{
+    const dateClass=task.complete?'done':task.band==='overdue'?'overdue':task.band==='today'?'today':task.band==='within-3'?'within-3':task.band==='within-7'?'within-7':'';
+    const status=task.complete?'完了':task.daysUntil===null?'期限未設定':task.band==='overdue'?'期限超過':task.band==='today'?'本日期限':task.band==='within-3'?'3日以内':task.band==='within-7'?'7日以内':'通常';
+    return `<div class="task-meta-row ${dateClass}">
+      <div class="task-meta-name"><span class="small-label">Task ${task.id}</span><strong>${esc(taskLabel(task.id))}</strong><span class="task-meta-status">${status}</span></div>
+      <label>期限<input type="date" value="${esc(task.dueDate)}" onchange="updateTaskMetaField('${task.id}','dueDates',this.value)"></label>
+      <label>完了日<input type="date" value="${esc(task.doneAt.slice(0,10))}" onchange="updateTaskMetaField('${task.id}','doneAt',this.value)"></label>
+      <label class="task-meta-note">備考<input type="text" value="${esc(task.note)}" placeholder="備考" onchange="updateTaskMetaField('${task.id}','notes',this.value)"></label>
+    </div>`;
+  }).join('');
+}
+function updateTaskMetaField(id,group,value){
+  if(!taskMetaDraft[group])taskMetaDraft[group]={};
+  if(String(value||'').trim())taskMetaDraft[group][id]=String(value).trim();
+  else delete taskMetaDraft[group][id];
+  const no=String(fields.no.value||'').trim();
+  const rawIdx=getRawRowIndexByNo(no);
+  if(rawIdx>=0){
+    ensureHeader(fullKeys.taskDueDates);ensureHeader(fullKeys.taskDoneAt);ensureHeader(fullKeys.taskNotes);
+    SeminarDomain.applyMetaToRow(rawRows[rawIdx],fullKeys,taskMetaDraft);
+    selectedRow=rawRows[rawIdx];
+    dataRows=buildDisplayRowsFromRaw(rawRows);
+    renderTodayCommand();renderExceptionQueue();renderAlerts();renderTable();renderStats();
+    if(typeof FirebaseApp!=='undefined'&&FirebaseApp.getCurrentUser())FirebaseApp.saveToFirestore(rawRows[rawIdx],currentHeaders).catch(e=>console.error('Firestore task metadata save error:',e));
+  }
+  renderTaskMetaList();
+}
+window.updateTaskMetaField=updateTaskMetaField;
+function handleTaskChange(id,checked){
+  const today=new Date();
+  const value=checked?today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'):'';
+  updateTaskMetaField(id,'doneAt',value);
+}
+document.addEventListener('DOMContentLoaded',function(){
+  TASK_IDS.forEach(id=>{
+    const checkbox=document.getElementById('ck_task'+id);
+    if(checkbox)checkbox.addEventListener('change',function(){handleTaskChange(id,this.checked)});
+  });
+});
 
 function buildTemplateData(row){
   const map={};
@@ -642,6 +735,18 @@ function createNewDatabase(){
   lastSaveMode='';
   currentHeaders = ensureAdditionalHeaders(currentHeaders);
   fields.no.value='1';
+  fields.speakerAffiliation.value='';
+  fields.speakerRole.value='';
+  fields.speakerEmail.value='';
+  fields.hpStatus.value='';
+  fields.materialReceivedDate.value='';
+  fields.distributionPermission.value='';
+  fields.zoomStatus.value='';
+  fields.speakerConnection.value='';
+  fields.survey.value='';
+  fields.postProcessing.value='';
+  fields.questions.value='';
+  fields.memo.value='';
   fields.cohost.value=COHOST_OPTION_NONE;
   syncCohostFields();
   resetScheduleChecks();
@@ -753,7 +858,11 @@ function ensureAdditionalHeaders(headers){
     'DONEAT_K1','DONEAT_HP','DONEAT_K2','DONEAT_K3',
     'UPDATEDAT_K1','UPDATEDAT_HP','UPDATEDAT_K2','UPDATEDAT_K3',
     'HISTORY_K1','HISTORY_HP','HISTORY_K2','HISTORY_K3',
-    fullKeys.qrK1Saved, fullKeys.qrK2Saved, fullKeys.qrK3Saved, fullKeys.qrStorageLoc
+    fullKeys.qrK1Saved, fullKeys.qrK2Saved, fullKeys.qrK3Saved, fullKeys.qrStorageLoc,
+    fullKeys.speakerAffiliation,fullKeys.speakerRole,fullKeys.speakerEmail,
+    fullKeys.hpStatus,fullKeys.materialReceivedDate,fullKeys.distributionPermission,
+    fullKeys.zoomStatus,fullKeys.speakerConnection,fullKeys.questions,fullKeys.survey,
+    fullKeys.postProcessing,fullKeys.memo,fullKeys.taskDueDates,fullKeys.taskDoneAt,fullKeys.taskNotes
   ];
 
   const set = new Set((headers || []).map(h => String(h || '').trim()).filter(Boolean));
@@ -813,6 +922,7 @@ function resetScheduleChecks(){
   if(els.ckK2Saved) els.ckK2Saved.checked=false;
   if(els.ckK3Saved) els.ckK3Saved.checked=false;
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=false;}
+  taskMetaDraft={dueDates:{},doneAt:{},notes:{}};
   updateTaskProgress();
   updateScheduleDone();
 }
@@ -826,6 +936,10 @@ function updateTrainingProgressFromRows() {
   }).length;
   const remain = total - done;
   const pct = total > 0 ? Math.round(done / total * 100) : 0;
+  const allTaskCount=dataRows.length*TASK_IDS.length;
+  const allTaskDone=dataRows.reduce((sum,row)=>sum+countTasksDone(row),0);
+  const allTaskRemain=allTaskCount-allTaskDone;
+  const allTaskPct=allTaskCount?Math.round(allTaskDone/allTaskCount*100):0;
 
   const totalEl = document.getElementById('trainingTotalCount');
   const doneEl = document.getElementById('trainingDoneCount');
@@ -835,6 +949,10 @@ function updateTrainingProgressFromRows() {
   const pieTextEl = document.getElementById('trainingPieText');
   const doneEl2 = document.getElementById('trainingDoneCount2');
   const remainEl2 = document.getElementById('trainingRemainCount2');
+  const allTaskCountEl=document.getElementById('allTaskCount');
+  const allTaskDoneEl=document.getElementById('allTaskDone');
+  const allTaskRemainEl=document.getElementById('allTaskRemain');
+  const allTaskProgressEl=document.getElementById('allTaskProgress');
 
   if (totalEl) totalEl.textContent = String(total);
   if (doneEl) doneEl.textContent = String(done);
@@ -844,6 +962,10 @@ function updateTrainingProgressFromRows() {
   if (pieTextEl) pieTextEl.textContent = pct + '%';
   if (doneEl2) doneEl2.textContent = String(done);
   if (remainEl2) remainEl2.textContent = String(remain);
+  if(allTaskCountEl)allTaskCountEl.textContent=String(allTaskCount);
+  if(allTaskDoneEl)allTaskDoneEl.textContent=String(allTaskDone);
+  if(allTaskRemainEl)allTaskRemainEl.textContent=String(allTaskRemain);
+  if(allTaskProgressEl)allTaskProgressEl.textContent=allTaskPct+'%';
 }
   
 function applyScheduleChecksFromRow(row){
@@ -854,6 +976,7 @@ function applyScheduleChecksFromRow(row){
   if(els.ckK1Saved) els.ckK1Saved.checked = !!(row?.[fullKeys.qrK1Saved] && String(row[fullKeys.qrK1Saved]).trim());
   if(els.ckK2Saved) els.ckK2Saved.checked = !!(row?.[fullKeys.qrK2Saved] && String(row[fullKeys.qrK2Saved]).trim());
   if(els.ckK3Saved) els.ckK3Saved.checked = !!(row?.[fullKeys.qrK3Saved] && String(row[fullKeys.qrK3Saved]).trim());
+  setTaskMetaDraft(row||{});
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=isCheckedValue(row?.[fullKeys['task'+id]]);}
   updateTaskProgress();
 }
@@ -864,6 +987,9 @@ function prefillFromLast(){
   fields.no.value=String(Number(last[fullKeys.no]||0)+1);
   fields.year.value=(last[fullKeys.year]||'2026年').replace(/\s+/g,'');
   fields.name.value=last[fullKeys.name]||'';
+  fields.speakerAffiliation.value=last[fullKeys.speakerAffiliation]||'';
+  fields.speakerRole.value=last[fullKeys.speakerRole]||'';
+  fields.speakerEmail.value=last[fullKeys.speakerEmail]||'';
   fields.lectureStart.value=normTime(last[fullKeys.lectureStart])||normTime(last[fullKeys.start])||'17:30';
   fields.start.value=normTime(last[fullKeys.start])||'17:30';
   fields.end.value=normTime(last[fullKeys.end])||'19:00';
@@ -880,11 +1006,21 @@ function prefillFromLast(){
   fields.passcode.value=last[fullKeys.passcode]||'';
   fields.zoomUrl.value=last[fullKeys.zoomUrl]||'https://zoom.us/';
   fields.hpUrl.value=last[fullKeys.hpUrl]||'';
+  fields.hpStatus.value=last[fullKeys.hpStatus]||'';
+  fields.materialReceivedDate.value=last[fullKeys.materialReceivedDate]||'';
+  fields.distributionPermission.value=last[fullKeys.distributionPermission]||'';
+  fields.zoomStatus.value=last[fullKeys.zoomStatus]||'';
+  fields.speakerConnection.value=last[fullKeys.speakerConnection]||'';
+  fields.survey.value=last[fullKeys.survey]||'';
+  fields.postProcessing.value=last[fullKeys.postProcessing]||'';
   fields.cost.value=last[fullKeys.cost]||'';
   fields.purpose.value=last[fullKeys.purpose]||'本研修会では、臨床研究に必要な実務の基本をわかりやすく学びます。';
   fields.intro1.value=last[fullKeys.intro1]||'本日は臨床研究研修会にご参加いただきありがとうございます。';
   fields.intro2.value=last[fullKeys.intro2]||'本研修会では、臨床研究を進めるうえで必要となる基本事項と実務上のポイントを共有します。';
   fields.intro3.value=last[fullKeys.intro3]||'本日の講師は、臨床研究支援に関する実務経験を有する専門家です。';
+  fields.questions.value=last[fullKeys.questions]||'';
+  fields.memo.value=last[fullKeys.memo]||'';
+  taskMetaDraft={dueDates:{},doneAt:{},notes:{}};
   resetScheduleChecks();
   recalcDraft();
 }
@@ -944,6 +1080,9 @@ function loadSelectedIntoForm(){
   fields.name.value=selectedRow[fullKeys.name]||'';
   fields.title.value=selectedRow[fullKeys.title]||'';
   fields.speaker.value=selectedRow[fullKeys.speaker]||'';
+  fields.speakerAffiliation.value=selectedRow[fullKeys.speakerAffiliation]||'';
+  fields.speakerRole.value=selectedRow[fullKeys.speakerRole]||'';
+  fields.speakerEmail.value=selectedRow[fullKeys.speakerEmail]||'';
   fields.lectureStart.value=normTime(selectedRow[fullKeys.lectureStart])||'';
   fields.start.value=normTime(selectedRow[fullKeys.start])||'';
   fields.end.value=normTime(selectedRow[fullKeys.end])||'';
@@ -967,10 +1106,19 @@ function loadSelectedIntoForm(){
   fields.passcode.value=selectedRow[fullKeys.passcode]||'';
   fields.zoomUrl.value=selectedRow[fullKeys.zoomUrl]||'';
   fields.hpUrl.value=selectedRow[fullKeys.hpUrl]||'';
+  fields.hpStatus.value=selectedRow[fullKeys.hpStatus]||'';
+  fields.materialReceivedDate.value=selectedRow[fullKeys.materialReceivedDate]||'';
+  fields.distributionPermission.value=selectedRow[fullKeys.distributionPermission]||'';
+  fields.zoomStatus.value=selectedRow[fullKeys.zoomStatus]||'';
+  fields.speakerConnection.value=selectedRow[fullKeys.speakerConnection]||'';
+  fields.survey.value=selectedRow[fullKeys.survey]||'';
+  fields.postProcessing.value=selectedRow[fullKeys.postProcessing]||'';
   fields.purpose.value=selectedRow[fullKeys.purpose]||'';
   fields.intro1.value=selectedRow[fullKeys.intro1]||'';
   fields.intro2.value=selectedRow[fullKeys.intro2]||'';
   fields.intro3.value=selectedRow[fullKeys.intro3]||'';
+  fields.questions.value=selectedRow[fullKeys.questions]||'';
+  fields.memo.value=selectedRow[fullKeys.memo]||'';
   document.getElementById('senderOrg').value=selectedRow[fullKeys.senderOrg]||'';
   document.getElementById('senderName').value=selectedRow[fullKeys.senderName]||'';
   document.getElementById('senderSignature').value=selectedRow[fullKeys.senderSig]||'';
@@ -995,6 +1143,7 @@ function recalcDraft(){
   renderConfirm(validateDraft());
   renderResult();
   renderStats();
+  renderTaskMetaList();
 }
 
 function updateScheduleDone(){
@@ -1046,8 +1195,8 @@ function calcDerivedFields(){
 }
 
 function calcAutoDates(base){return{k1:base?addDays(base,-35):null,hp:base?addDays(base,-28):null,k2:base?addDays(base,-7):null,k3:nextBusinessMondayRule(base)}}
-function nextBusinessMondayRule(base){if(!base)return null;const nextDay=addDays(base,1);const day=nextDay.getDay();if(day===6)return addDays(base,3);if(day===0)return addDays(base,2);return nextDay}
-function nextBusinessDate(date){let d=new Date(date);while(isHolidayOrWeekend(d))d=addDays(d,1);return d}
+function nextBusinessMondayRule(base){return base?nextBusinessDate(addDays(base,1)):null}
+function nextBusinessDate(date){return SeminarDomain.nextBusinessDay(date)}
 function isHolidayOrWeekend(d){const day=d.getDay();return day===0||day===6||isJapaneseHoliday(d)}
 function isJapaneseHoliday(date){
   const y=date.getFullYear(),m=date.getMonth()+1,d=date.getDate();
@@ -1109,6 +1258,9 @@ function buildRow(){
   row[fullKeys.deadline3]=fields.deadline3.value;
   row[fullKeys.title]=fields.title.value;
   row[fullKeys.speaker]=fields.speaker.value;
+  row[fullKeys.speakerAffiliation]=fields.speakerAffiliation.value;
+  row[fullKeys.speakerRole]=fields.speakerRole.value;
+  row[fullKeys.speakerEmail]=fields.speakerEmail.value;
   row[fullKeys.subject]=fields.subject.value;
   row[fullKeys.subject2]=fields.subject2.value;
   row[fullKeys.site]=fields.site.value;
@@ -1127,10 +1279,19 @@ function buildRow(){
   row[fullKeys.zoomId]=fields.zoomId.value;
   row[fullKeys.zoomUrl]=fields.zoomUrl.value;
   row[fullKeys.hpUrl]=fields.hpUrl.value;
+  row[fullKeys.hpStatus]=fields.hpStatus.value;
+  row[fullKeys.materialReceivedDate]=fields.materialReceivedDate.value;
+  row[fullKeys.distributionPermission]=fields.distributionPermission.value;
+  row[fullKeys.zoomStatus]=fields.zoomStatus.value;
+  row[fullKeys.speakerConnection]=fields.speakerConnection.value;
+  row[fullKeys.survey]=fields.survey.value;
+  row[fullKeys.postProcessing]=fields.postProcessing.value;
   row[fullKeys.passcode]=fields.passcode.value;
   row[fullKeys.intro1]=fields.intro1.value;
   row[fullKeys.intro2]=fields.intro2.value;
   row[fullKeys.intro3]=fields.intro3.value;
+  row[fullKeys.questions]=fields.questions.value;
+  row[fullKeys.memo]=fields.memo.value;
   row[fullKeys.dataDeadline]=fields.dataDeadline.value;
   row[fullKeys.senderOrg]=(document.getElementById('senderOrg')||{value:''}).value;
   row[fullKeys.senderName]=(document.getElementById('senderName')||{value:''}).value;
@@ -1144,6 +1305,7 @@ function buildRow(){
   row['STATUS_K2'] = els.ckK2.checked ? 'DONE' : '';
   row['STATUS_K3'] = els.ckK3.checked ? 'DONE' : '';
   for(const id of TASK_IDS){row[fullKeys['task'+id]]=boolToCsv(document.getElementById('ck_task'+id)?.checked||false);}
+  SeminarDomain.applyMetaToRow(row,fullKeys,taskMetaDraft);
   return row;
 }
 
@@ -1360,6 +1522,8 @@ function collectDeadlineAlerts(){
     const title=r[fullKeys.title]||'無題';
     const no=r[fullKeys.no]||'-';
     const eventDateRaw=r[fullKeys.date];
+    const eventDate=SeminarDomain.parseDate(eventDateRaw,year);
+    const autoDates=eventDate?{k1:addDays(eventDate,-35),hp:addDays(eventDate,-28),k2:addDays(eventDate,-7),k3:nextBusinessDate(addDays(eventDate,1))}:{};
 
     // label→csvKey マッピング
     const labelToCsvKey={'起案1':'checkK1','起案2':'checkK2','起案3':'checkK3','院外締切':'checkK1','資料締切':'checkK2','配布資料DL締切':'checkK2'};
@@ -1375,13 +1539,14 @@ function collectDeadlineAlerts(){
         label,
         raw:raw||fmtDate(dateObj),
         diff,
+        band:SeminarDomain.deadlineBand(diff),
         csvKey:labelToCsvKey[label]||'checkK1'
       });
     };
 
-    pushItem('起案1', parseAlertDateByEvent(r[fullKeys.k1], eventDateRaw, year), r[fullKeys.k1]);
-    pushItem('起案2', parseAlertDateByEvent(r[fullKeys.k2], eventDateRaw, year), r[fullKeys.k2]);
-    pushItem('起案3', parseAlertDateByEvent(r[fullKeys.k3], eventDateRaw, year), r[fullKeys.k3]);
+    pushItem('起案1', parseAlertDateByEvent(r[fullKeys.k1], eventDateRaw, year)||autoDates.k1, r[fullKeys.k1]);
+    pushItem('起案2', parseAlertDateByEvent(r[fullKeys.k2], eventDateRaw, year)||autoDates.k2, r[fullKeys.k2]);
+    pushItem('起案3', parseAlertDateByEvent(r[fullKeys.k3], eventDateRaw, year)||autoDates.k3, r[fullKeys.k3]);
     pushItem('院外締切', parseAlertDateByEvent(String(r[fullKeys.deadline1]||'').replace(/\s*\d{1,2}:\d{2}.*/, ''), eventDateRaw, year), r[fullKeys.deadline1]);
     pushItem('資料締切', parseAlertDateByEvent(r[fullKeys.dataDeadline], eventDateRaw, year), r[fullKeys.dataDeadline]);
     pushItem('配布資料DL締切', parseAlertDateByEvent(r[fullKeys.deadline3], eventDateRaw, year), r[fullKeys.deadline3]);
@@ -1400,6 +1565,8 @@ function buildCautionItems(){
     const year=r[fullKeys.year]||fields.year.value||'';
     const title=r[fullKeys.title]||'無題';
     const no=r[fullKeys.no]||'-';
+    const eventDate=SeminarDomain.parseDate(r[fullKeys.date],year);
+    const autoDates=eventDate?{k1:addDays(eventDate,-35),hp:addDays(eventDate,-28),k2:addDays(eventDate,-7),k3:nextBusinessDate(addDays(eventDate,1))}:{};
 
     const pushItem=(label,dateObj,raw)=>{
       if(!dateObj) return;
@@ -1410,10 +1577,10 @@ function buildCautionItems(){
       items.push({no,title,label,raw:raw||fmtDate(dateObj),diff,csvKey,rowIndex});
     };
 
-    pushItem('起案1', parseCautionDate(r[fullKeys.k1], year), r[fullKeys.k1]);
-    pushItem('HP案内・チラシ', parseCautionDate(r[fullKeys.hp], year), r[fullKeys.hp]);
-    pushItem('起案2', parseCautionDate(r[fullKeys.k2], year), r[fullKeys.k2]);
-    pushItem('起案3', parseCautionDate(r[fullKeys.k3], year), r[fullKeys.k3]);
+    pushItem('起案1', parseCautionDate(r[fullKeys.k1], year)||autoDates.k1, r[fullKeys.k1]);
+    pushItem('HP案内・チラシ', parseCautionDate(r[fullKeys.hp], year)||autoDates.hp, r[fullKeys.hp]);
+    pushItem('起案2', parseCautionDate(r[fullKeys.k2], year)||autoDates.k2, r[fullKeys.k2]);
+    pushItem('起案3', parseCautionDate(r[fullKeys.k3], year)||autoDates.k3, r[fullKeys.k3]);
     pushItem('院外締切', parseCautionDate(r[fullKeys.deadline1], year), r[fullKeys.deadline1]);
     pushItem('資料締切', parseCautionDate(r[fullKeys.dataDeadline], year), r[fullKeys.dataDeadline]);
     pushItem('配布資料DL締切', parseCautionDate(r[fullKeys.deadline3], year), r[fullKeys.deadline3]);
@@ -1503,7 +1670,7 @@ function renderAlerts(){
   } else {
     els.alertList.innerHTML = alerts.map((a,i)=>{
       const aid = `alert-item-${i}`;
-      const tag = a.diff <= 0 ? 'TODAY' : a.diff === 1 ? 'TOMORROW' : `${a.diff}D`;
+      const tag = a.diff === 0 ? '本日期限' : a.diff <= 3 ? `${a.diff}日以内` : '7日以内';
 
       const row = dataRows[a.rowIndex];
       const checkHeader = fullKeys[a.csvKey] || fullKeys.checkK1;
@@ -1518,7 +1685,7 @@ function renderAlerts(){
       const clickAttr = isDone ? ` onclick="alertToggleExpand('${aid}')" title="クリックで展開/折りたたみ"` : '';
 
       return `
-        <div class="alert-item${doneClass}" id="${aid}" data-no="${esc(a.no)}" data-row-index="${a.rowIndex}" data-label="${esc(a.label)}" data-csvkey="${esc(a.csvKey || 'checkK1')}"${clickAttr}>
+        <div class="alert-item deadline-band-${esc(a.band||'normal')}${doneClass}" id="${aid}" data-no="${esc(a.no)}" data-row-index="${a.rowIndex}" data-label="${esc(a.label)}" data-csvkey="${esc(a.csvKey || 'checkK1')}"${clickAttr}>
           <div class="alert-item-tag-wrap">
             <input type="checkbox" class="alert-check"${checkedAttr}
               onclick="event.stopPropagation();alertCheckDone('${aid}',this.checked)" title="完了">
@@ -1897,9 +2064,25 @@ function countTasksDone(row){
   return done;
 }
 
+function buildDeadlineCommands(rows){
+  const commands=[];
+  rows.forEach(row=>{
+    const no=row[fullKeys.no]||'?';
+    const title=row[fullKeys.title]||'（無題）';
+    SeminarDomain.taskSnapshot(row,fullKeys).forEach(task=>{
+      if(task.complete||task.daysUntil===null||task.daysUntil>7)return;
+      const diff=task.daysUntil;
+      const urgency=diff<0?'critical':diff===0?'critical':diff<=3?'high':'normal';
+      const label=diff<0?`期限超過（${Math.abs(diff)}日）`:diff===0?'本日期限':`${diff}日以内`;
+      commands.push({no,title,urgency,priorityRank:diff<0?0:diff===0?1:2,csvKey:'task'+task.id,taskKey:'task'+task.id,action:`${label}：${taskLabel(task.id)}`,reason:task.dueDate?`期限: ${task.dueDate}`:'期限未設定',buttons:[{label:'タスクを開く',href:'#taskChecklistPanel',no},{label:'詳細を見る',href:'#entryConsoleSection',no}]});
+    });
+  });
+  return commands;
+}
+
 function buildTodayCommands(rows){
   const today=new Date(); const t0=new Date(today.getFullYear(),today.getMonth(),today.getDate());
-  const cmds=[];
+  const cmds=buildDeadlineCommands(rows);
   rows.forEach(row=>{
     const days=calcDaysUntilEvent(row);
     if(days===null) return;
@@ -1975,10 +2158,14 @@ function buildTodayCommands(rows){
     }
   });
 
+  buildExceptions(rows).slice(0,8).forEach(ex=>{
+    cmds.push({no:ex.no,title:ex.title,urgency:ex.sev==='critical'?'critical':ex.sev==='warning'?'high':'info',priorityRank:5,csvKey:ex.taskKey||'task01',taskKey:ex.taskKey||'',action:`要確認：${ex.label}`,reason:ex.detail,buttons:[{label:'例外を確認',href:'#exceptionQueueSection',no},{label:'詳細を見る',href:'#entryConsoleSection',no}]});
+  });
+
   // 緊急度順ソート
   const order={critical:0,high:1,normal:2,info:3};
-  cmds.sort((a,b)=>order[a.urgency]-order[b.urgency]);
-  return cmds.slice(0,6); // 最大6件
+  cmds.sort((a,b)=>(a.priorityRank??3)-(b.priorityRank??3)||order[a.urgency]-order[b.urgency]||Number(a.no)-Number(b.no));
+  return cmds.slice(0,12);
 }
 
 function renderTodayCommand(){
@@ -2003,8 +2190,8 @@ function renderTodayCommand(){
   const decorated=cmds.map(cmd=>{
     const pri=priIndex?priIndex.get(String(cmd.no||'').trim()):null;
     return Object.assign({},cmd,{pri:pri||{score:0,level:'STABLE',reasons:[]}});
-  }).sort((a,b)=>b.pri.score-a.pri.score||order[a.urgency]-order[b.urgency]||Number(a.no)-Number(b.no));
-  const top3=decorated.slice(0,3);
+  }).sort((a,b)=>(a.priorityRank??3)-(b.priorityRank??3)||order[a.urgency]-order[b.urgency]||b.pri.score-a.pri.score||Number(a.no)-Number(b.no));
+  const top3=decorated.slice(0,8);
 
   el.innerHTML=top3.map((cmd,idx)=>{
     const urgClass={
@@ -2080,6 +2267,19 @@ function buildExceptions(rows){
     if(!String(row[fullKeys.title]||'').trim()) push('critical','タイトル未入力','テーマ(標題)_TITLEが空です');
     if(!String(row[fullKeys.speaker]||'').trim()) push('critical','講師未入力','担当講師_SPEAKERが空です');
     if(!String(row[fullKeys.date]||'').trim()) push('critical','開催日未入力','開催日_DATE_1が空です');
+    if(String(row[fullKeys.speaker]||'').trim()&&!String(row[fullKeys.speakerAffiliation]||'').trim()) push('warning','講師所属未入力','講師所属_AFFILIATIONが空です');
+
+    if(days!==null&&days<=28&&days>=0&&!String(row[fullKeys.hpStatus]||'').trim()&&!String(row[fullKeys.hpUrl]||'').trim()) push('warning','HP掲載内容未確定','HP公開状況またはHP URLが未設定です');
+    if(days!==null&&days<=7&&days>=0&&!String(row[fullKeys.materialReceivedDate]||'').trim()&&!isCheckedValue(row[fullKeys.task14])) push('warning','資料未受領','講師資料受領日がなく、Task 14も未完了です','task14');
+    if(days!==null&&days<=7&&days>=0&&!String(row[fullKeys.distributionPermission]||'').trim()) push('warning','配布可否未確認','資料配布可否が未確認です','task18');
+    if(days!==null&&days<=14&&days>=0&&!String(row[fullKeys.zoomStatus]||'').trim()&&!String(row[fullKeys.zoomUrl]||'').trim()) push('critical','Zoom情報未設定','Zoom設定状況とZoom URLが未設定です','task24');
+    if(days!==null&&days<=3&&days>=0&&!String(row[fullKeys.speakerConnection]||'').trim()) push('warning','講師接続確認未完','講師接続確認が未設定です','task22');
+    if(days!==null&&days<=7&&days>=0&&!String(row[fullKeys.survey]||'').trim()) push('info','アンケート未確認','アンケートの準備状況が未設定です','task24');
+
+    const taskMeta=SeminarDomain.taskMetaFromRow(row,fullKeys);
+    TASK_IDS.forEach(id=>{
+      if(isCheckedValue(row[fullKeys['task'+id]])&&!String(taskMeta.doneAt[id]||'').trim()) push('info',`Task ${id} 完了日なし`,'完了扱いですが完了日が記録されていません',`task${id}`);
+    });
 
     // Zoom関連（開催14日前以内）
     if(days!==null&&days<=14&&days>=0){
@@ -2103,6 +2303,7 @@ function buildExceptions(rows){
       if(!isCheckedValue(row[fullKeys.checkK3])) push('warning','起案3未完','起案3チェック_CHECK_K3が未チェックです','task29');
       if(!isCheckedValue(row[fullKeys.task30])) push('info','講師へお礼未完','講師へお礼連絡_CHECKが未チェックです','task30');
       if(!isCheckedValue(row[fullKeys.task34])) push('info','受講証交付未完','受講証修了証メール交付_CHECKが未チェックです','task34');
+      if(String(row[fullKeys.postProcessing]||'').trim()!=='完了') push('warning','開催後処理未完','開催後処理が完了になっていません');
     }
     if(days!==null&&days<=0&&days>=-1){
       if(!isCheckedValue(row[fullKeys.checkK1])) push('warning','起案1未チェック','起案1チェック_CHECK_K1が未チェックです','task04');
