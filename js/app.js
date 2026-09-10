@@ -2268,7 +2268,7 @@ function renderTodayCommand(){
               onclick="event.stopPropagation();tcCheckDone('${cardId}',this.checked)">
             <span class="tc-no-badge">No.${esc(cmd.no)}</span>
             <span class="tc-urgency-tag ${urgClass}">${urgLabel}</span>
-            <span class="tc-title">${esc(cmd.title)}</span>
+            <span class="tc-title tc-title-link" role="link" tabindex="0" onclick="event.stopPropagation();openTodayCommandRecord('${esc(cmd.no)}');" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();openTodayCommandRecord('${esc(cmd.no)}');}">${esc(cmd.title)}</span>
             <span class="tc-done-label">完了済み</span>
             <span class="tc-expand-hint">${hintText}</span>
           </div>
@@ -2700,6 +2700,15 @@ function selectRecordByNo(no){
   updateStorageLocation();
 }
 window.selectRecordByNo=selectRecordByNo;
+
+// Today Commandの演題から該当レコードをEntry Consoleで開く
+function openTodayCommandRecord(no){
+  if(!String(no||'').trim())return;
+  selectRecordByNo(no);
+  if(typeof loadSelectedIntoForm==='function')loadSelectedIntoForm();
+  scrollToSection('entryConsoleSection');
+}
+window.openTodayCommandRecord=openTodayCommandRecord;
 
 function openTaskBody(){
   const body=document.getElementById('taskBody');

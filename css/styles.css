@@ -1181,6 +1181,8 @@ label[for="templateFiles"] {
 [data-theme="light"] .tc-urgency-tag.normal{background:#eef7f3;color:var(--success);border:1px solid #d7eee5}
 [data-theme="light"] .tc-urgency-tag.info{background:#eef5fb;color:#0f7b6c;border:1px solid #d7e8f7}
 .tc-title{font-weight:700;color:var(--text-strong);font-size:1rem}
+.tc-title-link{cursor:pointer;text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:3px}
+.tc-title-link:hover,.tc-title-link:focus{color:var(--cyan);text-decoration-color:var(--cyan);outline:none}
 .tc-action{
   display:flex;
   align-items:center;
