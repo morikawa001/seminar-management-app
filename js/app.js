@@ -207,7 +207,6 @@ const fields={
   speaker:document.getElementById('fSpeaker'),
   speakerAffiliation:document.getElementById('fSpeakerAffiliation'),
   speakerRole:document.getElementById('fSpeakerRole'),
-  speakerEmail:document.getElementById('fSpeakerEmail'),
   lectureStart:document.getElementById('fLectureStart'),
   start:document.getElementById('fStart'),
   end:document.getElementById('fEnd'),
@@ -309,7 +308,7 @@ fields.subject.addEventListener('change',recalcDraft);
   fields.no,fields.date,fields.name,fields.start,fields.end,fields.lectureStart,
   fields.preMeeting,fields.qaDeadline,fields.qaTime,
   fields.title,fields.speaker,fields.cost,fields.zoomId,fields.passcode,fields.zoomUrl,fields.hpUrl,
-  fields.speakerAffiliation,fields.speakerRole,fields.speakerEmail,
+  fields.speakerAffiliation,fields.speakerRole,
   fields.materialReceivedDate,fields.questions,fields.memo,
   fields.purpose,fields.intro1,fields.intro2,fields.intro3
 ].forEach(el=>el.addEventListener('input',recalcDraft));
@@ -769,7 +768,6 @@ function createNewDatabase(){
   fields.no.value='1';
   fields.speakerAffiliation.value='';
   fields.speakerRole.value='';
-  fields.speakerEmail.value='';
   fields.hpStatus.value='';
   fields.materialReceivedDate.value='';
   fields.distributionPermission.value='';
@@ -891,13 +889,14 @@ function ensureAdditionalHeaders(headers){
     'UPDATEDAT_K1','UPDATEDAT_HP','UPDATEDAT_K2','UPDATEDAT_K3',
     'HISTORY_K1','HISTORY_HP','HISTORY_K2','HISTORY_K3',
     fullKeys.qrK1Saved, fullKeys.qrK2Saved, fullKeys.qrK3Saved, fullKeys.qrStorageLoc,
-    fullKeys.speakerAffiliation,fullKeys.speakerRole,fullKeys.speakerEmail,
+    fullKeys.speakerAffiliation,fullKeys.speakerRole,
     fullKeys.hpStatus,fullKeys.materialReceivedDate,fullKeys.distributionPermission,
     fullKeys.zoomStatus,fullKeys.speakerConnection,fullKeys.questions,fullKeys.survey,
     fullKeys.postProcessing,fullKeys.memo,fullKeys.taskDueDates,fullKeys.taskDoneAt,fullKeys.taskNotes
   ];
 
-  const set = new Set((headers || []).map(h => String(h || '').trim()).filter(Boolean));
+  // 個人情報保護のため、旧CSVに残る講師メール列も読み込み対象から除外する
+  const set = new Set((headers || []).map(h => String(h || '').trim()).filter(h => h && h !== '講師メール_EMAIL'));
   extraHeaders.forEach(h => set.add(h));
   return Array.from(set);
 }
@@ -1021,7 +1020,6 @@ function prefillFromLast(){
   fields.name.value=last[fullKeys.name]||'';
   fields.speakerAffiliation.value=last[fullKeys.speakerAffiliation]||'';
   fields.speakerRole.value=last[fullKeys.speakerRole]||'';
-  fields.speakerEmail.value=last[fullKeys.speakerEmail]||'';
   fields.lectureStart.value=normTime(last[fullKeys.lectureStart])||normTime(last[fullKeys.start])||'17:30';
   fields.start.value=normTime(last[fullKeys.start])||'17:30';
   fields.end.value=normTime(last[fullKeys.end])||'19:00';
@@ -1114,7 +1112,6 @@ function loadSelectedIntoForm(){
   fields.speaker.value=selectedRow[fullKeys.speaker]||'';
   fields.speakerAffiliation.value=selectedRow[fullKeys.speakerAffiliation]||'';
   fields.speakerRole.value=selectedRow[fullKeys.speakerRole]||'';
-  fields.speakerEmail.value=selectedRow[fullKeys.speakerEmail]||'';
   fields.lectureStart.value=normTime(selectedRow[fullKeys.lectureStart])||'';
   fields.start.value=normTime(selectedRow[fullKeys.start])||'';
   fields.end.value=normTime(selectedRow[fullKeys.end])||'';
@@ -1292,7 +1289,6 @@ function buildRow(){
   row[fullKeys.speaker]=fields.speaker.value;
   row[fullKeys.speakerAffiliation]=fields.speakerAffiliation.value;
   row[fullKeys.speakerRole]=fields.speakerRole.value;
-  row[fullKeys.speakerEmail]=fields.speakerEmail.value;
   row[fullKeys.subject]=fields.subject.value;
   row[fullKeys.subject2]=fields.subject2.value;
   row[fullKeys.site]=fields.site.value;

@@ -176,7 +176,6 @@ const fullKeys={
   qrStorageLoc:'qr_storage_loc',
   speakerAffiliation:'講師所属_AFFILIATION',
   speakerRole:'講師役職_ROLE',
-  speakerEmail:'講師メール_EMAIL',
   hpStatus:'HP公開状況_HP_STATUS',
   materialReceivedDate:'講師資料受領日_MATERIAL_RECEIVED_DATE',
   distributionPermission:'資料配布可否_DISTRIBUTION_PERMISSION',
