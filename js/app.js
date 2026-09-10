@@ -2102,7 +2102,11 @@ function buildDeadlineCommands(rows){
     const no=row[fullKeys.no]||'?';
     const title=row[fullKeys.title]||'（無題）';
     SeminarDomain.taskSnapshot(row,fullKeys).forEach(task=>{
-      if(task.complete||task.daysUntil===null||task.daysUntil>7)return;
+      if(task.daysUntil===null||task.daysUntil>7)return;
+      if(task.complete){
+        const doneDays=task.doneAt?(-SeminarDomain.daysUntil(task.doneAt.slice(0,10))):null;
+        if(doneDays===null||doneDays>1)return;
+      }
       const diff=task.daysUntil;
       const urgency=diff<0?'critical':diff===0?'critical':diff<=3?'high':'normal';
       const label=diff<0?`期限超過（${Math.abs(diff)}日）`:diff===0?'本日期限':`${diff}日以内`;
@@ -2481,6 +2485,21 @@ function tcCheckDone(cardId, checked){
 
   if(no && csvKeyName){
     writeCheckToRaw(no, csvKeyName, checked);
+    if(/^task\d+$/.test(csvKeyName)){
+      const rawRow=rawRows.find(r=>String(r[fullKeys.no]||'').trim()===String(no).trim());
+      if(rawRow){
+        ensureHeader(fullKeys.taskDueDates);ensureHeader(fullKeys.taskDoneAt);ensureHeader(fullKeys.taskNotes);
+        const meta=SeminarDomain.taskMetaFromRow(rawRow,fullKeys);
+        const taskId=csvKeyName.replace('task','');
+        if(checked){
+          const now=new Date();
+          meta.doneAt[taskId]=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+        }else{
+          delete meta.doneAt[taskId];
+        }
+        SeminarDomain.applyMetaToRow(rawRow,fullKeys,meta);
+      }
+    }
     dataRows = buildDisplayRowsFromRaw(rawRows);
     renderTodayCommand();
     renderExceptionQueue();
@@ -2571,7 +2590,7 @@ function showCsvSavedToast(){
 function tcToggleExpand(cardId){
   const card=document.getElementById(cardId);
   if(!card) return;
-  if(!card.classList.contains('done')) return; // 未完了時は無効
+  if(card.classList.contains('done')) return;
   // done状態でクリック→一時展開トグル
   const isExpanded=card.classList.contains('tc-temp-expand');
   card.classList.toggle('tc-temp-expand', !isExpanded);

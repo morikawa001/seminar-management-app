@@ -1480,6 +1480,7 @@ label[for="templateFiles"] {
   opacity:.65;
 }
 .tc-card.done .tc-action,.tc-card.done .tc-reason,.tc-card.done .tc-btns{display:none}
+.tc-card.done .tc-no-badge,.tc-card.done .tc-urgency-tag,.tc-card.done .tc-done-label,.tc-card.done .tc-expand-hint{display:none !important}
 .tc-card-check-row{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
 .tc-check{
   width:18px;height:18px;border-radius:4px;
