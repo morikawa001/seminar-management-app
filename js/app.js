@@ -2357,7 +2357,7 @@ function renderExceptionQueue(){
     el.innerHTML='<div class="alert-item"><div><span class="alert-tag">WAIT</span></div><div><strong>例外検出待機中</strong><p>CSVを読み込むか、新規DBを作成すると例外がここに表示されます。</p></div><div class="mono">No data</div></div>';
     return;
   }
-  const exceptions=buildExceptions(dataRows);
+  const exceptions=buildExceptions(dataRows).filter(ex=>ex.sev!=='info');
   if(!exceptions.length){
     el.innerHTML='<div class="alert-item"><div><span class="alert-tag">CLEAR</span></div><div><strong>例外なし</strong><p>検出された不備・例外はありません。</p></div><div class="mono">OK</div></div>';
     return;
