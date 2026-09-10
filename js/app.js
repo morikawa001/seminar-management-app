@@ -2159,7 +2159,7 @@ function buildTodayCommands(rows){
   });
 
   buildExceptions(rows).slice(0,8).forEach(ex=>{
-    cmds.push({no:ex.no,title:ex.title,urgency:ex.sev==='critical'?'critical':ex.sev==='warning'?'high':'info',priorityRank:5,csvKey:ex.taskKey||'task01',taskKey:ex.taskKey||'',action:`要確認：${ex.label}`,reason:ex.detail,buttons:[{label:'例外を確認',href:'#exceptionQueueSection',no},{label:'詳細を見る',href:'#entryConsoleSection',no}]});
+    cmds.push({no:ex.no,title:ex.title,urgency:ex.sev==='critical'?'critical':ex.sev==='warning'?'high':'info',priorityRank:5,csvKey:ex.taskKey||'task01',taskKey:ex.taskKey||'',action:`要確認：${ex.label}`,reason:ex.detail,buttons:[{label:'例外を確認',href:'#exceptionQueueSection',no:ex.no},{label:'詳細を見る',href:'#entryConsoleSection',no:ex.no}]});
   });
 
   // 緊急度順ソート
