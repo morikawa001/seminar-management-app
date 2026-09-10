@@ -365,7 +365,7 @@ function taskLabel(id){
   const el=document.querySelector('#taskcard_task'+id+' .schedule-left strong');
   return el?el.textContent:'Task '+id;
 }
-function renderTaskMetaList(){
+function renderTaskMetaListLegacy(){
   if(!els.taskMetaList)return;
   if(!currentHeaders.length){els.taskMetaList.innerHTML='<div class="tc-empty">研修会を選択するとタスク詳細を編集できます。</div>';return}
   const row=taskMetaBaseRow();
@@ -381,7 +381,39 @@ function renderTaskMetaList(){
     </div>`;
   }).join('');
 }
-function updateTaskMetaField(id,group,value){
+// Checklistと詳細情報を同じタスクカード内に表示する
+function renderTaskMetaList(){
+  const list=document.getElementById('taskCheckList');
+  if(!list)return;
+  const row=taskMetaBaseRow();
+  const snapshot=currentHeaders.length?SeminarDomain.taskSnapshot(row,fullKeys):[];
+  TASK_IDS.forEach(id=>{
+    const card=document.getElementById('taskcard_task'+id);
+    if(!card)return;
+    let inline=card.querySelector('.task-meta-inline');
+    if(!inline){
+      inline=document.createElement('div');
+      inline.className='task-meta-inline';
+      card.appendChild(inline);
+    }
+    const task=snapshot.find(item=>item.id===id);
+    if(!task){
+      inline.className='task-meta-inline';
+      inline.innerHTML='<span class="task-meta-empty">研修会を選択すると詳細を編集できます。</span>';
+      return;
+    }
+    const dateClass=task.complete?'done':task.band==='overdue'?'overdue':task.band==='today'?'today':task.band==='within-3'?'within-3':task.band==='within-7'?'within-7':'';
+    const status=task.complete?'完了':task.daysUntil===null?'期限未設定':task.band==='overdue'?'期限超過':task.band==='today'?'本日期限':task.band==='within-3'?'3日以内':task.band==='within-7'?'7日以内':'通常';
+    inline.className='task-meta-inline '+dateClass;
+    inline.innerHTML=`<span class="task-meta-status">${status}</span>
+      <label>期限<input type="date" value="${esc(task.dueDate)}" onchange="updateTaskMetaField('${task.id}','dueDates',this.value)"></label>
+      <label>完了日<input type="date" value="${esc(task.doneAt.slice(0,10))}" onchange="updateTaskMetaField('${task.id}','doneAt',this.value)"></label>
+      <label class="task-meta-note">備考<input type="text" value="${esc(task.note)}" placeholder="メモを入力" onchange="updateTaskMetaField('${task.id}','notes',this.value)"></label>`;
+  });
+  if(els.taskMetaList)els.taskMetaList.innerHTML='';
+}
+
+ function updateTaskMetaField(id,group,value){
   if(!taskMetaDraft[group])taskMetaDraft[group]={};
   if(String(value||'').trim())taskMetaDraft[group][id]=String(value).trim();
   else delete taskMetaDraft[group][id];

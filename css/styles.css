@@ -670,6 +670,24 @@ label[for="templateFiles"] {
 #taskCheckList .schedule-actions{
   flex-direction:row;
 }
+.task-meta-inline{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:auto 140px 140px minmax(160px,1fr);
+  gap:8px;
+  align-items:end;
+  padding-top:8px;
+  border-top:1px solid var(--line2);
+}
+.task-meta-inline label{display:grid;gap:4px;color:var(--muted);font-size:.66rem}
+.task-meta-inline input{min-height:30px;padding:5px 7px;font-size:.76rem}
+.task-meta-inline .task-meta-status{align-self:center;min-width:90px;color:var(--muted);font-size:.68rem}
+.task-meta-inline.overdue,.task-meta-inline.today{border-top-color:var(--danger)}
+.task-meta-inline.within-3{border-top-color:var(--warn)}
+.task-meta-inline.within-7{border-top-color:var(--cyan)}
+.task-meta-inline.done{opacity:.7}
+.task-meta-empty{grid-column:1/-1;color:var(--muted);font-size:.7rem}
+#taskChecklistPanel .task-meta-panel{display:none}
 .task-mail-btn{
   width:30px;height:30px;
   display:flex;align-items:center;justify-content:center;
@@ -1853,9 +1871,13 @@ html{scroll-behavior:smooth}
   .training-pie-container{margin-left:0}
   .task-meta-row{grid-template-columns:1fr 1fr}
   .task-meta-name,.task-meta-note{grid-column:1/-1}
+  .task-meta-inline{grid-template-columns:1fr 1fr}
+  .task-meta-inline .task-meta-status,.task-meta-inline .task-meta-note{grid-column:1/-1}
 }
 @media (max-width:640px){
   .global-task-summary{grid-template-columns:1fr 1fr;min-width:100%}
   .task-meta-row{grid-template-columns:1fr}
   .task-meta-name,.task-meta-note{grid-column:auto}
+  .task-meta-inline{grid-template-columns:1fr}
+  .task-meta-inline .task-meta-status,.task-meta-inline .task-meta-note{grid-column:auto}
 }
