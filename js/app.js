@@ -3077,3 +3077,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
   });
 });
+
+// Firebase Auth復元後のDB読込を、画面側の初期化完了後に開始させる。
+window.__seminarAppReady = true;
+window.onFirebaseLogin = onFirebaseLogin;
+window.onFirebaseLogout = onFirebaseLogout;

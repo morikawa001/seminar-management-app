@@ -44,6 +44,12 @@
   // 定義されるまで再評価して取りこぼさずに送出する（各ページの再チェックは不要）
   function dispatchAuth(){
     if(!currentUser || authDispatched) return;
+    // index.html は画面側の初期化が完了してから認証後のDB読込を開始する。
+    if(document.getElementById('taskChecklistPanel') && window.__seminarAppReady !== true){
+      clearTimeout(authRetryTimer);
+      authRetryTimer = setTimeout(dispatchAuth, 100);
+      return;
+    }
     if(typeof onFirebaseLogin !== 'function' || typeof onFirebaseLogout !== 'function'){
       clearTimeout(authRetryTimer);
       authRetryTimer = setTimeout(dispatchAuth, 100);
