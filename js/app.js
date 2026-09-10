@@ -2106,7 +2106,7 @@ function buildDeadlineCommands(rows){
       const diff=task.daysUntil;
       const urgency=diff<0?'critical':diff===0?'critical':diff<=3?'high':'normal';
       const label=diff<0?`期限超過（${Math.abs(diff)}日）`:diff===0?'本日期限':`${diff}日以内`;
-      commands.push({no,title,urgency,priorityRank:diff<0?0:diff===0?1:2,csvKey:'task'+task.id,taskKey:'task'+task.id,action:`${label}：${taskLabel(task.id)}`,reason:task.dueDate?`期限: ${task.dueDate}`:'期限未設定',buttons:[{label:'タスクを開く',href:'#taskChecklistPanel',no},{label:'詳細を見る',href:'#entryConsoleSection',no}]});
+      commands.push({no,title,urgency,priorityRank:diff<0?0:diff===0?1:2,csvKey:'task'+task.id,taskKey:'task'+task.id,action:`${label}：${taskLabel(task.id)}`,reason:task.dueDate?`期限: ${task.dueDate}`:'期限未設定',buttons:[{label:'詳細を見る',href:'#entryConsoleSection',no}]});
     });
   });
   return commands;
