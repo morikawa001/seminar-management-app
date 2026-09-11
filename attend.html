@@ -444,7 +444,7 @@ function buildAttendanceNotice(){
   ].join('\n');
 }
 
-function exportCSVFromRows(rows,prefix){if(!rows.length){log('出力対象データがありません','err'); return;} const cols=Object.keys(rows[0]); const csvRows=[cols.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')]; rows.forEach(row=>{csvRows.push(cols.map(c=>`"${String(row[c]??'').replace(/"/g,'""')}"`).join(','));}); if(prefix==='受講者処理済み'){const notice=buildAttendanceNotice(); const noticeRow=cols.map((_,index)=>`"${index===6?notice.replace(/"/g,'""'):''}"`).join(','); let lastGDataRow=-1; rows.forEach((row,index)=>{if(String(row[cols[6]]??'').trim()!=='') lastGDataRow=index+1;}); const insertAt=lastGDataRow>=1?lastGDataRow+1:csvRows.length; csvRows.splice(insertAt,0,noticeRow); log('G列にデータがある最後の行の次へ受講案内を追加しました','ok');} const csv='\uFEFF'+csvRows.join('\r\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; const day=document.getElementById('inputDay').value.trim()||'output'; a.download=`${prefix}_${day}.csv`; document.body.appendChild(a); a.click(); setTimeout(()=>{document.body.removeChild(a); URL.revokeObjectURL(url);},200); log(`CSVエクスポート完了: ${prefix}_${day}.csv`,'ok');}
+function exportCSVFromRows(rows,prefix,appendAttendanceNotice=false){if(!rows.length){log('出力対象データがありません','err'); return;} const cols=Object.keys(rows[0]); const csvRows=[cols.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')]; rows.forEach(row=>{csvRows.push(cols.map(c=>`"${String(row[c]??'').replace(/"/g,'""')}"`).join(','));}); if(appendAttendanceNotice){const notice=buildAttendanceNotice(); const gColumnIndex=cols.indexOf('氏名')>=0?cols.indexOf('氏名'):6; const noticeRow=cols.map((_,index)=>`"${index===gColumnIndex?notice.replace(/"/g,'""'):''}"`).join(','); let lastGDataRow=-1; rows.forEach((row,index)=>{if(String(row[cols[gColumnIndex]]??'').trim()!=='') lastGDataRow=index+1;}); const insertAt=lastGDataRow>=1?lastGDataRow+1:csvRows.length; csvRows.splice(insertAt,0,noticeRow); log(`G列の最終データ行(${lastGDataRow+1}行目)の次へ受講案内を追加しました`,'ok');} const csv='\uFEFF'+csvRows.join('\r\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; const day=document.getElementById('inputDay').value.trim()||'output'; a.download=`${prefix}_${day}.csv`; document.body.appendChild(a); a.click(); setTimeout(()=>{document.body.removeChild(a); URL.revokeObjectURL(url);},200); log(`CSVエクスポート完了: ${prefix}_${day}.csv`,'ok');}
 
 function normalizeText(v){
   return String(v ?? '')
@@ -891,7 +891,7 @@ document.getElementById('surveyFileInput').addEventListener('change',e=>{
 });
 
 document.getElementById('btnProcess').addEventListener('click',startProcess);
-document.getElementById('btnProcessExport').addEventListener('click',()=>exportCSVFromRows(processedData,'受講者処理済み'));
+document.getElementById('btnProcessExport').addEventListener('click',()=>exportCSVFromRows(processedData,'受講者処理済み',true));
 document.getElementById('btnMergeExport').addEventListener('click',()=>exportCSVFromRows(mergedData,'受講者_アンケート結合済み'));
 document.getElementById('btnJobSummaryExport').addEventListener('click',()=>{
   const rows = buildJobSummaryData();
