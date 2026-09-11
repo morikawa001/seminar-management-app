@@ -892,7 +892,7 @@ document.getElementById('surveyFileInput').addEventListener('change',e=>{
 
 document.getElementById('btnProcess').addEventListener('click',startProcess);
 document.getElementById('btnProcessExport').addEventListener('click',()=>exportCSVFromRows(processedData,'受講者処理済み',true));
-document.getElementById('btnMergeExport').addEventListener('click',()=>exportCSVFromRows(mergedData,'受講者_アンケート結合済み'));
+document.getElementById('btnMergeExport').addEventListener('click',()=>exportCSVFromRows(mergedData,'受講者_アンケート結合済み',true));
 document.getElementById('btnJobSummaryExport').addEventListener('click',()=>{
   const rows = buildJobSummaryData();
   if(rows.length) exportCSVFromRows(rows,'認定者職種集計');
