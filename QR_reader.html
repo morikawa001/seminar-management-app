@@ -211,6 +211,16 @@
                         </div>
                         <div id="save-status" class="status-msg hidden" style="margin-top:10px;"></div>
                     </div>
+
+                    <div class="save-section" style="margin-top:16px;">
+                        <p style="text-align:center;color:var(--muted);font-size:14px;margin-bottom:8px;">
+                            ファイルと保管場所のデータを確認してから送信してください。
+                        </p>
+                        <button id="btn-send-data" onclick="appLayer.sendData()" class="btn primary" style="width:100%;padding:14px;font-size:16px;">
+                            データ送信
+                        </button>
+                        <div id="send-status" class="status-msg hidden" style="margin-top:10px;"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -452,26 +462,8 @@
                 }
                 if (this.scanMode === "loc") {
                     this.currentLoc = text;
-                    if (this.currentDoc) {
-                        try {
-                            await this.refreshCurrentDoc();
-                            if (!this.currentDoc) {
-                                this.updateLocationDisplay();
-                                this.showStatus("scan-status", "対象のレコードが見つかりません（別端末で削除・更新された可能性があります）", "status-err");
-                                return;
-                            }
-                            await this.qrService.saveLocation(this.currentDoc.id, text);
-                            this.currentDoc.data.qr_storage_loc = text;
-                            this.updateLocationDisplay();
-                            this.showStatus("scan-status", `保管場所を記録しました（DBに保存済み）: ${this.currentLoc}`, "status-ok");
-                        } catch (err) {
-                            this.updateLocationDisplay();
-                            this.showStatus("scan-status", "保管場所を記録しました（DB保存エラー: " + err.message + "）", "status-err");
-                        }
-                    } else {
-                        this.updateLocationDisplay();
-                        this.showStatus("scan-status", `保管場所を記録しました: ${this.currentLoc}（保存ボタン押下時にDBへ保存されます）`, "status-ok");
-                    }
+                    this.updateLocationDisplay();
+                    this.showStatus("scan-status", `保管場所を読み取りました: ${this.currentLoc}（データ送信ボタンで連携されます）`, "status-ok");
                     return;
                 }
                 const proposalNo = text;
@@ -618,6 +610,39 @@
 
             async handleSaveK3() {
                 await this.handleSaveK("K3", "btn-save-k3", "qr_saved_k3");
+            }
+
+            // ファイルと保管場所のデータをまとめて連携
+            async sendData() {
+                const btn = document.getElementById("btn-send-data");
+                if (!this.currentDoc) {
+                    this.showStatus("send-status", "先にファイルのQRコードを読み取ってください", "status-err");
+                    return;
+                }
+                if (!this.currentLoc) {
+                    this.showStatus("send-status", "先に保管場所のQRコードを読み取ってください", "status-err");
+                    return;
+                }
+
+                try {
+                    btn.disabled = true;
+                    btn.textContent = "データ送信中…";
+                    await this.refreshCurrentDoc();
+                    if (!this.currentDoc) {
+                        this.showStatus("send-status", "対象のレコードが見つかりません（別端末で削除・更新された可能性があります）", "status-err");
+                        return;
+                    }
+                    await this.qrService.saveLocation(this.currentDoc.id, this.currentLoc);
+                    this.currentDoc.data.qr_storage_loc = this.currentLoc;
+                    this.updateLocationDisplay();
+                    this.showStatus("send-status", "データ取り込み完了", "status-ok");
+                    this.showStatus("scan-status", "ファイルと保管場所のデータ連携が完了しました", "status-ok");
+                } catch (err) {
+                    this.showStatus("send-status", "データ送信エラー: " + err.message, "status-err");
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "データ送信";
+                }
             }
 
             // スキャン履歴に追加
