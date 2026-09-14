@@ -2197,6 +2197,12 @@ function buildTodayCommands(rows){
   return cmds.slice(0,12);
 }
 
+// 概要: Today Commandの進行チェックをTask Checklistのタスク番号へ対応付ける
+function taskKeyForTodayCommand(csvKey){
+  const map={checkK1:'task04',checkHp:'task08',checkK2:'task17',checkK3:'task29'};
+  return map[csvKey]||csvKey;
+}
+
 function renderTodayCommand(){
   const el=document.getElementById('todayCommandList');
   if(!el) return;
@@ -2238,8 +2244,10 @@ function renderTodayCommand(){
     }[cmd.urgency] || 'NORMAL';
 
     const row = dataRows.find(r => String(r[fullKeys.no] || '').trim() === String(cmd.no || '').trim());
-    const checkHeader = fullKeys[cmd.csvKey] || fullKeys.checkK1;
-    const isDone = row ? isCheckedValue(row[checkHeader]) : false;
+    const taskKey=taskKeyForTodayCommand(cmd.taskKey||cmd.csvKey);
+    const checkHeader = fullKeys[taskKey] || fullKeys[cmd.csvKey] || fullKeys.checkK1;
+    const phaseHeader = fullKeys[cmd.csvKey];
+    const isDone = row ? (isCheckedValue(row[checkHeader]) || (phaseHeader && isCheckedValue(row[phaseHeader]))) : false;
     const doneClass = isDone ? ' done' : '';
     const checkedAttr = isDone ? ' checked' : '';
     const hintText = isDone ? '▼ 展開' : '';
@@ -2258,7 +2266,7 @@ function renderTodayCommand(){
     const cardId=`tc-card-${idx}`;
 
     return `
-      <div class="tc-card urgency-${urgClass}${doneClass}" id="${cardId}" data-no="${esc(cmd.no)}" data-csvkey="${esc(cmd.csvKey || 'checkK1')}">
+      <div class="tc-card urgency-${urgClass}${doneClass}" id="${cardId}" data-no="${esc(cmd.no)}" data-csvkey="${esc(cmd.csvKey || 'checkK1')}" data-taskkey="${esc(taskKey)}">
         <div class="tc-card-head">
           <div class="tc-card-check-row" onclick="tcToggleExpand('${cardId}')">
             <input type="checkbox" class="tc-check" id="chk${cardId}"${checkedAttr}
@@ -2475,15 +2483,19 @@ function tcCheckDone(cardId, checked){
 
   const no=card.dataset.no || '';
   const csvKeyName=card.dataset.csvkey || 'checkK1';
+  const taskKeyName=card.dataset.taskkey || taskKeyForTodayCommand(csvKeyName);
 
   if(no && csvKeyName){
     writeCheckToRaw(no, csvKeyName, checked);
-    if(/^task\d+$/.test(csvKeyName)){
+    if(taskKeyName !== csvKeyName && fullKeys[taskKeyName]){
+      writeCheckToRaw(no, taskKeyName, checked);
+    }
+    if(/^task\d+$/.test(taskKeyName)){
       const rawRow=rawRows.find(r=>String(r[fullKeys.no]||'').trim()===String(no).trim());
       if(rawRow){
         ensureHeader(fullKeys.taskDueDates);ensureHeader(fullKeys.taskDoneAt);ensureHeader(fullKeys.taskNotes);
         const meta=SeminarDomain.taskMetaFromRow(rawRow,fullKeys);
-        const taskId=csvKeyName.replace('task','');
+        const taskId=taskKeyName.replace('task','');
         if(checked){
           const now=new Date();
           meta.doneAt[taskId]=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
@@ -2494,6 +2506,13 @@ function tcCheckDone(cardId, checked){
       }
     }
     dataRows = buildDisplayRowsFromRaw(rawRows);
+    const selectedNo=String(selectedRow?.[fullKeys.no]||'').trim();
+    if(selectedNo===String(no).trim()){
+      selectedRow=dataRows.find(r=>String(r[fullKeys.no]||'').trim()===String(no).trim())||selectedRow;
+      const taskCheckbox=document.getElementById('ck_'+taskKeyName);
+      if(taskCheckbox) taskCheckbox.checked=checked;
+      updateTaskProgress();
+    }
     renderTodayCommand();
     renderExceptionQueue();
     renderAlerts();
