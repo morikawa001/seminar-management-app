@@ -427,7 +427,6 @@ function formatTrainingDate(dayValue){
 }
 
 function buildAttendanceNotice(){
-  const day=document.getElementById('inputDay').value.trim();
   const start=document.getElementById('inputStart').value;
   const end=document.getElementById('inputEnd').value;
   const startSec=hhmmssToSec(start);
@@ -435,16 +434,10 @@ function buildAttendanceNotice(){
   const seminarSec=startSec!==null&&endSec!==null?Math.max(0,endSec-startSec):0;
   const certifiedSec=Math.floor(seminarSec*3/4);
   const minutes=sec=>`${Math.floor(sec/60)}分${sec%60?`${sec%60}秒`:''}`;
-  return [
-    '※内規より受講扱いとはしない',
-    '1.聴講者のうち、研修会開始から質疑応答終了までの時間のうち4分の3以上を聴講し、希望する者に受講証を発行する。',
-    `＜${formatTrainingDate(day) || ''}研修会について＞`,
-    `聴講時間の目安：研修会開始～質疑応答終了時間: ${start || '未設定'}～${end || '未設定'}`,
-    `研修会時間: ${secToHHMMSS(seminarSec)} (${minutes(seminarSec)}) ／ 受講認定時間（3/4）: ${secToHHMMSS(certifiedSec)} (${minutes(certifiedSec)})`
-  ].join('\n');
+  return `研修会時間: ${secToHHMMSS(seminarSec)} (${minutes(seminarSec)}) ／ 受講認定時間（3/4）: ${secToHHMMSS(certifiedSec)} (${minutes(certifiedSec)})`;
 }
 
-function exportCSVFromRows(rows,prefix,appendAttendanceNotice=false){if(!rows.length){log('出力対象データがありません','err'); return;} const cols=Object.keys(rows[0]); const csvRows=[cols.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')]; rows.forEach(row=>{csvRows.push(cols.map(c=>`"${String(row[c]??'').replace(/"/g,'""')}"`).join(','));}); if(appendAttendanceNotice){const notice=buildAttendanceNotice(); const gColumnIndex=cols.indexOf('氏名')>=0?cols.indexOf('氏名'):6; const noticeRow=cols.map((_,index)=>`"${index===gColumnIndex?notice.replace(/"/g,'""'):''}"`).join(','); let lastGDataRow=-1; rows.forEach((row,index)=>{if(String(row[cols[gColumnIndex]]??'').trim()!=='') lastGDataRow=index+1;}); const insertAt=lastGDataRow>=1?lastGDataRow+1:csvRows.length; csvRows.splice(insertAt,0,noticeRow); log(`G列の最終データ行(${lastGDataRow+1}行目)の次へ受講案内を追加しました`,'ok');} const csv='\uFEFF'+csvRows.join('\r\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; const day=document.getElementById('inputDay').value.trim()||'output'; a.download=`${prefix}_${day}.csv`; document.body.appendChild(a); a.click(); setTimeout(()=>{document.body.removeChild(a); URL.revokeObjectURL(url);},200); log(`CSVエクスポート完了: ${prefix}_${day}.csv`,'ok');}
+function exportCSVFromRows(rows,prefix,appendAttendanceNotice=false){if(!rows.length){log('出力対象データがありません','err'); return;} const cols=Object.keys(rows[0]); const csvRows=[cols.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')]; rows.forEach(row=>{csvRows.push(cols.map(c=>`"${String(row[c]??'').replace(/"/g,'""')}"`).join(','));}); if(appendAttendanceNotice){const notice=buildAttendanceNotice(); const gColumnIndex=6; const gColumn=cols[gColumnIndex]; const noticeRow=cols.map((_,index)=>`"${index===gColumnIndex?notice.replace(/"/g,'""'):''}"`).join(','); let lastGDataRow=-1; rows.forEach((row,index)=>{if(String(row[gColumn]??'').trim()!=='') lastGDataRow=index+1;}); const insertAt=lastGDataRow>=1?lastGDataRow+1:csvRows.length; csvRows.splice(insertAt,0,noticeRow); log(`G列の最終入力行(${lastGDataRow+1}行目)の次の空白行へ時間案内を追加しました`,'ok');} const csv='\uFEFF'+csvRows.join('\r\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; const day=document.getElementById('inputDay').value.trim()||'output'; a.download=`${prefix}_${day}.csv`; document.body.appendChild(a); a.click(); setTimeout(()=>{document.body.removeChild(a); URL.revokeObjectURL(url);},200); log(`CSVエクスポート完了: ${prefix}_${day}.csv`,'ok');}
 
 function normalizeText(v){
   return String(v ?? '')
