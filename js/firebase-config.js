@@ -126,7 +126,8 @@
     if(row._order!==undefined)data._order=Number(row._order);
     var p;
     if(row.__docId){
-      p = db.collection(DB_COLLECTION).doc(row.__docId).set(data);
+      // 既存レコードの未使用項目を消さないよう、更新はマージ保存する
+      p = db.collection(DB_COLLECTION).doc(row.__docId).set(data, {merge:true});
     } else {
       data.createdAt = new Date().toISOString();
       p = db.collection(DB_COLLECTION).add(data);
