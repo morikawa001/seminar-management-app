@@ -3175,13 +3175,3 @@ document.addEventListener('DOMContentLoaded',()=>{
 window.__seminarAppReady = true;
 window.onFirebaseLogin = onFirebaseLogin;
 window.onFirebaseLogout = onFirebaseLogout;
-
-// live_session.html など別画面で保存された変更を受け取り、index側を自動更新する
-(function(){
-  if(typeof BroadcastChannel === 'undefined') return;
-  const ch=new BroadcastChannel('sm-sync-v1');
-  ch.addEventListener('message',function(event){
-    if(event.data!=='sync'||typeof FirebaseApp==='undefined'||!FirebaseApp.getCurrentUser()) return;
-    if(typeof onFirebaseLogin==='function') onFirebaseLogin(FirebaseApp.getCurrentUser());
-  });
-})();
