@@ -1,4 +1,4 @@
-function updateTaskProgress(){
+function updateTaskProgress(persist=true){
   const total=TASK_IDS.length;
   let done=0;
   const selectedTaskRow=selectedRow||rawRows.find(r=>String(r?.[fullKeys.no]||'').trim()===String(fields.no.value||'').trim());
@@ -18,6 +18,10 @@ function updateTaskProgress(){
   if(barEl)barEl.style.width=pct+'%';
   for(const id of TASK_IDS){const tc=document.getElementById('taskcard_task'+id);const cb=document.getElementById('ck_task'+id);if(tc)tc.classList.toggle('done',selectedTaskRow?isCheckedValue(selectedTaskRow[fullKeys['task'+id]]):cb?.checked||false);}
   const no=String(fields.no.value||'').trim();
+  if(!persist){
+    renderTaskMetaList();
+    return;
+  }
   if(!no)return;
   const rawIdx=getRawRowIndexByNo(no);
   if(rawIdx<0)return;
@@ -2506,12 +2510,26 @@ function tcCheckDone(cardId, checked){
       }
     }
     dataRows = buildDisplayRowsFromRaw(rawRows);
-    const selectedNo=String(selectedRow?.[fullKeys.no]||'').trim();
-    if(selectedNo===String(no).trim()){
-      selectedRow=dataRows.find(r=>String(r[fullKeys.no]||'').trim()===String(no).trim())||selectedRow;
-      const taskCheckbox=document.getElementById('ck_'+taskKeyName);
-      if(taskCheckbox) taskCheckbox.checked=checked;
-      updateTaskProgress();
+    const targetRow=dataRows.find(r=>String(r[fullKeys.no]||'').trim()===String(no).trim())||null;
+    if(targetRow){
+      const selectedNo=String(selectedRow?.[fullKeys.no]||'').trim();
+      selectedRow=targetRow;
+      const recordSelect=document.getElementById('recordSelect');
+      const quickRecordSelect=document.getElementById('quickRecordSelect');
+      if(recordSelect) recordSelect.value=String(no).trim();
+      if(quickRecordSelect) quickRecordSelect.value=String(no).trim();
+      if(selectedNo===String(no).trim()){
+        const taskCheckbox=document.getElementById('ck_'+taskKeyName);
+        if(taskCheckbox) taskCheckbox.checked=checked;
+        setTaskMetaDraft(targetRow);
+        updateTaskProgress(false);
+      }else if(typeof loadSelectedIntoForm==='function'){
+        loadSelectedIntoForm();
+      }
+      if(typeof FirebaseApp!=='undefined'&&FirebaseApp.getCurrentUser()){
+        FirebaseApp.saveToFirestore(rawRows.find(r=>String(r[fullKeys.no]||'').trim()===String(no).trim())||targetRow,currentHeaders)
+          .catch(err=>console.error('Firestore Today Command save error:',err));
+      }
     }
     renderTodayCommand();
     renderExceptionQueue();
