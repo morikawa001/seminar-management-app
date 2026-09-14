@@ -1608,6 +1608,7 @@ label[for="templateFiles"] {
   position:fixed;left:0;top:48px;
   width:180px;height:calc(100vh - 48px);
   overflow-y:auto;z-index:2;
+  display:flex;flex-direction:column;
   background:var(--panel2);
   border-right:1px solid var(--line);
   padding:0 0 8px;
@@ -1646,6 +1647,7 @@ label[for="templateFiles"] {
 .v2-sidebar-btn:hover{background:var(--panel3);color:var(--text-strong);box-shadow:inset 0 0 0 1px var(--line)}
 .v2-sidebar-btn.active{background:var(--panel3);color:var(--green);border-left:3px solid var(--green);box-shadow:inset 1px 0 0 0 var(--green),inset 0 0 0 1px var(--line)}
 .v2-sidebar-btn i{width:16px;text-align:center;font-size:.82rem;flex-shrink:0}
+.v2-sidebar-save{margin-top:auto;border-top:1px solid var(--line);color:var(--green)}
 .v2-main{flex:1;min-width:0}
 /* ── Section collapsible / group labels ── */
 html{scroll-behavior:smooth}
