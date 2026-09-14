@@ -807,6 +807,7 @@
       <select class="ssel" id="ssel" disabled>
         <option value="">── 研修会を選択してください ──</option>
       </select>
+      <button class="btn pri" id="saveLiveBtn" disabled style="width:100%;margin-top:8px">💾 変更を保存（indexに反映）</button>
     </div>
 
     <!-- Operation Log -->
@@ -952,7 +953,7 @@
   };
 
   /* ── アプリ状態 ── */
-  const ST = { rows:[], headers:[], events:[] };
+  const ST = { rows:[], headers:[], events:[], rowDocs:[], currentIndex:-1 };
 
   const EVENT_DEFS = [
     { key:'事前打合せ開始時間_PRE_MEETING', label:'事前打合せ' },
@@ -1256,6 +1257,7 @@
 
   function loadRow(idx){
     if(idx<1||idx>=ST.rows.length)return;
+    ST.currentIndex=idx;
     const row = toObj(ST.headers, ST.rows[idx]);
     INTRO_DEFS.forEach(d=>{
       const v=row[d.key];
@@ -1276,7 +1278,36 @@
     document.getElementById('olog').textContent=
       '> FILE LOADED\n> No.'+no+' / '+date+'\n> '+title+
       '\n> EVENTS: '+ST.events.length+'件\n> TRACKING...';
+    const saveBtn=document.getElementById('saveLiveBtn');
+    if(saveBtn) saveBtn.disabled=!ST.rowDocs[idx-1];
   }
+
+  function saveLiveEdits(){
+    const idx=ST.currentIndex;
+    const doc=idx>0?ST.rowDocs[idx-1]:null;
+    if(!doc){
+      document.getElementById('olog').textContent='> Firebaseからデータを読み込んだ後に保存してください。';
+      return;
+    }
+    const row=toObj(ST.headers,ST.rows[idx]);
+    INTRO_DEFS.forEach(function(def){
+      const el=document.getElementById(def.elId);
+      const value=el?el.innerText.trim():'';
+      row[def.key]=value;
+      ST.rows[idx][ST.headers.indexOf(def.key)]=value;
+      doc[def.key]=value;
+    });
+    const headers=Object.keys(doc).filter(function(key){return !['__docId','_order','updatedAt','createdAt','createdBy'].includes(key);});
+    const saveBtn=document.getElementById('saveLiveBtn');
+    if(saveBtn) saveBtn.disabled=true;
+    FirebaseApp.saveToFirestore(doc,headers).then(function(){
+      document.getElementById('olog').textContent='> 進行表の変更を保存しました。index.htmlへ反映されます。';
+    }).catch(function(err){
+      if(saveBtn) saveBtn.disabled=false;
+      document.getElementById('olog').textContent='> 保存失敗: '+err;
+    });
+  }
+  window.saveLiveEdits=saveLiveEdits;
 
   function buildSelect(){
     const sel=document.getElementById('ssel');
@@ -1335,6 +1366,7 @@
       if(rows.length<2)throw new Error('データ不足（ヘッダー行＋データ行が必要）');
       ST.rows=rows;
       ST.headers=rows[0].map(norm);
+      ST.rowDocs=[];
       const idxs=buildSelect();
       loadRow(idxs.length?idxs[0]:1);
     }catch(err){
@@ -1346,6 +1378,14 @@
   document.getElementById('ssel').addEventListener('change', function(e){
     if(e.target.value==='')return;
     loadRow(Number(e.target.value));
+  });
+  document.getElementById('saveLiveBtn').addEventListener('click',saveLiveEdits);
+  INTRO_DEFS.forEach(function(def){
+    const el=document.getElementById(def.elId);
+    if(el) el.addEventListener('input',function(){
+      const saveBtn=document.getElementById('saveLiveBtn');
+      if(saveBtn&&ST.rowDocs[ST.currentIndex-1]) saveBtn.disabled=false;
+    });
   });
 
   /* ── Firebase Integration ── */
@@ -1373,6 +1413,7 @@
         return;
       }
       ST.headers = LIVE_HEADERS;
+      ST.rowDocs = rows;
       ST.rows = [LIVE_HEADERS].concat(rows.map(function(r){
         return LIVE_HEADERS.map(function(h){ return r[h] || ''; });
       }));
@@ -1387,8 +1428,11 @@
     ST.rows = [];
     ST.headers = [];
     ST.events = [];
+    ST.rowDocs = [];
+    ST.currentIndex = -1;
     document.getElementById('ssel').innerHTML = '<option value="">── 研修会を選択してください ──</option>';
     document.getElementById('ssel').disabled = true;
+    document.getElementById('saveLiveBtn').disabled = true;
     document.getElementById('sbfile').textContent = 'FILE: —';
     document.getElementById('sbrow').textContent = 'ROW: —';
     document.getElementById('olog').textContent = '> ログアウトしました。';
