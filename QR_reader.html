@@ -247,7 +247,35 @@
         // ======================================================================
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, query, where, getDocs, updateDoc, getDocFromServer, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const QR_SYNC_CHANNEL = "sm-sync-v1";
+        const QR_SYNC_STORAGE_KEY = "seminarManagementQrSync";
+        let qrSyncChannel = null;
+
+        // index.htmlへQR側の更新を通知する。BroadcastChannel非対応時はstorageイベントを使う。
+        function notifyIndexSync(proposalNo, fields) {
+            const message = {
+                type: "qr-update",
+                proposalNo: String(proposalNo || "").trim(),
+                fields: Array.isArray(fields) ? fields : [],
+                at: Date.now()
+            };
+            if (!message.proposalNo) return;
+            try {
+                if (typeof BroadcastChannel !== "undefined") {
+                    if (!qrSyncChannel) qrSyncChannel = new BroadcastChannel(QR_SYNC_CHANNEL);
+                    qrSyncChannel.postMessage(message);
+                }
+            } catch (e) {
+                console.warn("QR同期通知(BroadcastChannel)に失敗しました", e);
+            }
+            try {
+                localStorage.setItem(QR_SYNC_STORAGE_KEY, JSON.stringify(message));
+            } catch (e) {
+                console.warn("QR同期通知(storage)に失敗しました", e);
+            }
+        }
 
         class FirestoreDatabase {
             constructor(config) {
@@ -258,41 +286,75 @@
 
             getAuth() { return this.auth; }
 
+            // 指定ドキュメントを更新し、サーバー上の保存結果を確認する
+            async updateFields(docId, fields) {
+                if (!docId) throw new Error("保存先のドキュメントが特定できません");
+                const ref = doc(this.db, "seminars", docId);
+                const payload = { ...fields, updatedAt: new Date().toISOString() };
+                let lastError = null;
+                for (let attempt = 0; attempt < 3; attempt++) {
+                    try {
+                        await updateDoc(ref, payload);
+                        const snapshot = await getDocFromServer(ref);
+                        if (!snapshot.exists()) throw new Error("保存先のレコードを確認できません");
+                        const saved = snapshot.data();
+                        Object.keys(fields).forEach((key) => {
+                            if (String(saved[key] ?? "") !== String(fields[key] ?? "")) {
+                                throw new Error("保存結果の確認に失敗しました。もう一度お試しください");
+                            }
+                        });
+                        return saved;
+                    } catch (e) {
+                        lastError = e;
+                        if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
+                    }
+                }
+                throw lastError || new Error("保存に失敗しました");
+            }
+
             // 重複排除：同一 proposalNo（Firestore上のキーは「起案行No」）のドキュメントを検索し、重複があれば updatedAt（無ければ createdAt）最新を優先。削除は行わない
             async findUniqueByProposalNo(proposalNo, userId) {
+                const normalizedProposalNo = String(proposalNo ?? "").trim();
                 const q = query(
                     collection(this.db, "seminars"),
                     where("createdBy", "==", userId),
-                    where("起案行No", "==", proposalNo)
+                    where("起案行No", "==", normalizedProposalNo)
                 );
                 const snapshot = await getDocs(q);
                 if (snapshot.empty) return null;
 
                 const docs = snapshot.docs;
                 if (docs.length > 1) {
+                    const timeOf = (value) => {
+                        if (value && typeof value.toDate === "function") return value.toDate().getTime();
+                        const parsed = Date.parse(String(value || ""));
+                        return Number.isNaN(parsed) ? 0 : parsed;
+                    };
                     docs.sort((a, b) => {
-                        const aTime = new Date(a.data().updatedAt || a.data().createdAt || 0).getTime();
-                        const bTime = new Date(b.data().updatedAt || b.data().createdAt || 0).getTime();
-                        return bTime - aTime;
+                        const aData = a.data();
+                        const bData = b.data();
+                        const aTime = timeOf(aData.updatedAt || aData.createdAt);
+                        const bTime = timeOf(bData.updatedAt || bData.createdAt);
+                        return bTime - aTime || b.id.localeCompare(a.id);
                     });
                 }
                 return { id: docs[0].id, data: docs[0].data() };
             }
 
             async updateSaveDateK1(docId, dateStr) {
-                await updateDoc(doc(this.db, "seminars", docId), {
+                return this.updateFields(docId, {
                     qr_saved_k1: dateStr
                 });
             }
 
             async updateSaveDateK2(docId, dateStr) {
-                await updateDoc(doc(this.db, "seminars", docId), {
+                return this.updateFields(docId, {
                     qr_saved_k2: dateStr
                 });
             }
 
             async updateSaveDateK3(docId, dateStr) {
-                await updateDoc(doc(this.db, "seminars", docId), {
+                return this.updateFields(docId, {
                     qr_saved_k3: dateStr
                 });
             }
@@ -303,12 +365,12 @@
                 const payload = {};
                 payload[field] = dateStr;
                 if (locStr) payload.qr_storage_loc = locStr;
-                await updateDoc(doc(this.db, "seminars", docId), payload);
+                return this.updateFields(docId, payload);
             }
 
             // 保管場所のみ保存（保存ボタン押下を待たずに即時反映）
             async updateStorageLocation(docId, locStr) {
-                await updateDoc(doc(this.db, "seminars", docId), {
+                return this.updateFields(docId, {
                     qr_storage_loc: locStr
                 });
             }
@@ -348,13 +410,13 @@
                 const mm = String(now.getMonth() + 1).padStart(2, "0");
                 const dd = String(now.getDate()).padStart(2, "0");
                 const dateStr = `${yyyy}/${mm}/${dd}`;
-                await this.db.updateSaveDateWithLocation(docId, dateStr, locStr || "", "qr_saved_" + field.toLowerCase());
-                return dateStr;
+                const data = await this.db.updateSaveDateWithLocation(docId, dateStr, locStr || "", "qr_saved_" + field.toLowerCase());
+                return { dateStr, data };
             }
 
             // 保管場所をデータベースに保存
             async saveLocation(docId, locStr) {
-                await this.db.updateStorageLocation(docId, locStr);
+                return this.db.updateStorageLocation(docId, locStr);
             }
 
             formatDate(dateStr) {
@@ -376,6 +438,7 @@
                 this.scanHistory = [];
                 this.scanMode = "file";
                 this.currentLoc = "";
+                this.scanProcessing = false;
             }
 
             init(qrService) {
@@ -454,16 +517,20 @@
 
             // QRコード読み取り成功コールバック
             async onQrCodeScanned(decodedText) {
+                if (this.scanProcessing) return;
+                this.scanProcessing = true;
                 await this.stopScanner();
-                const text = decodedText.trim();
+                const text = String(decodedText ?? "").trim();
                 if (!text) {
                     this.showStatus("scan-status", "QRコードデータが空です", "status-err");
+                    this.scanProcessing = false;
                     return;
                 }
                 if (this.scanMode === "loc") {
                     this.currentLoc = text;
                     this.updateLocationDisplay();
                     this.showStatus("scan-status", `保管場所を読み取りました: ${this.currentLoc}（データ送信ボタンで連携されます）`, "status-ok");
+                    this.scanProcessing = false;
                     return;
                 }
                 const proposalNo = text;
@@ -481,6 +548,8 @@
                     this.addHistory(result.data);
                 } catch (err) {
                     this.showStatus("scan-status", "検索エラー: " + err.message, "status-err");
+                } finally {
+                    this.scanProcessing = false;
                 }
             }
 
@@ -580,15 +649,21 @@
                     if (currentlySaved) {
                         btn.textContent = "解除中…";
                         const method = this.qrService.db['updateSaveDate' + field];
-                        if (method) await method.call(this.qrService.db, this.currentDoc.id, "");
-                        delete this.currentDoc.data[dataField];
+                        const savedData = method ? await method.call(this.qrService.db, this.currentDoc.id, "") : null;
+                        if (savedData) Object.assign(this.currentDoc.data, savedData);
+                        notifyIndexSync(this.currentDoc.data["起案行No"], [dataField]);
                         this.updateSaveButtonState(btn, null, label);
                         this.showStatus("save-status", `${label} 保存を解除しました`, "status-info");
                     } else {
                         btn.textContent = "保存中…";
-                        const dateStr = await this.qrService.recordSaveDate(field, this.currentDoc.id, this.currentLoc);
+                        const saveResult = await this.qrService.recordSaveDate(field, this.currentDoc.id, this.currentLoc);
+                        const dateStr = saveResult.dateStr;
+                        if (saveResult.data) Object.assign(this.currentDoc.data, saveResult.data);
                         this.currentDoc.data[dataField] = dateStr;
                         if (this.currentLoc) this.currentDoc.data.qr_storage_loc = this.currentLoc;
+                        const savedFields = [dataField];
+                        if (this.currentLoc) savedFields.push("qr_storage_loc");
+                        notifyIndexSync(this.currentDoc.data["起案行No"], savedFields);
                         this.updateSaveButtonState(btn, dateStr, label);
                         this.showStatus("save-status", `${label} 保存完了: ${dateStr}` + (this.currentLoc ? `（保管場所: ${this.currentLoc}）` : ""), "status-ok");
                     }
@@ -632,8 +707,10 @@
                         this.showStatus("send-status", "対象のレコードが見つかりません（別端末で削除・更新された可能性があります）", "status-err");
                         return;
                     }
-                    await this.qrService.saveLocation(this.currentDoc.id, this.currentLoc);
+                    const savedData = await this.qrService.saveLocation(this.currentDoc.id, this.currentLoc);
+                    if (savedData) Object.assign(this.currentDoc.data, savedData);
                     this.currentDoc.data.qr_storage_loc = this.currentLoc;
+                    notifyIndexSync(this.currentDoc.data["起案行No"], ["qr_storage_loc"]);
                     this.updateLocationDisplay();
                     this.showStatus("send-status", "データ取り込み完了", "status-ok");
                     this.showStatus("scan-status", "ファイルと保管場所のデータ連携が完了しました", "status-ok");

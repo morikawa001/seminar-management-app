@@ -920,12 +920,20 @@ function compactRawRows(rows){return rows.filter(r=>isMeaningfulRow(r))}
 function dedupeRowsByNo(rows){
   const out=[];
   const seen={};
+  const rowVersionTime=function(row){
+    const value=row?.updatedAt||row?.createdAt||'';
+    if(value&&typeof value.toDate==='function')return value.toDate().getTime();
+    const parsed=Date.parse(String(value));
+    return Number.isNaN(parsed)?0:parsed;
+  };
   rows.forEach(function(r){
     const no=String(r?.[fullKeys.no]||'').trim();
     if(!no||!seen[no]){seen[no]=r;out.push(r)}
     else{
-      const curT=String(r.updatedAt||''),prevT=String(seen[no].updatedAt||'');
-      if(curT&&curT>prevT){
+      const curT=rowVersionTime(r),prevT=rowVersionTime(seen[no]);
+      const sameTime=curT===prevT;
+      const newerDoc=sameTime&&String(r.__docId||'')>String(seen[no].__docId||'');
+      if(curT>prevT||newerDoc){
         const idx=out.indexOf(seen[no]);
         if(idx>=0)out[idx]=r;
         seen[no]=r;
@@ -3175,3 +3183,78 @@ document.addEventListener('DOMContentLoaded',()=>{
 window.__seminarAppReady = true;
 window.onFirebaseLogin = onFirebaseLogin;
 window.onFirebaseLogout = onFirebaseLogout;
+
+// QR_reader.htmlの更新を受け取り、QR関連項目だけを一覧へ反映する。
+(function(){
+  const QR_SYNC_CHANNEL='sm-sync-v1';
+  const QR_SYNC_STORAGE_KEY='seminarManagementQrSync';
+  const QR_FIELDS=['qr_saved_k1','qr_saved_k2','qr_saved_k3','qr_storage_loc'];
+  let syncTimer=null;
+  let lastSyncMessage='';
+
+  function applyQrSync(message){
+    if(!message||message.type!=='qr-update')return;
+    const no=String(message.proposalNo||'').trim();
+    if(!no||!currentHeaders.length)return;
+    const messageKey=no+'|'+String(message.at||'');
+    if(messageKey===lastSyncMessage)return;
+    lastSyncMessage=messageKey;
+    clearTimeout(syncTimer);
+    syncTimer=setTimeout(function(){
+      if(typeof FirebaseApp==='undefined'||!FirebaseApp.getCurrentUser())return;
+      FirebaseApp.loadFromFirestore(currentHeaders,function(rows){
+        const latest=dedupeRowsByNo(rows).find(function(row){
+          return String(row?.[fullKeys.no]||'').trim()===no;
+        });
+        const raw=rawRows.find(function(row){
+          return String(row?.[fullKeys.no]||'').trim()===no;
+        });
+        if(!latest){
+          setStatus('QR_reader.htmlの更新を確認できませんでした。通信状態を確認して再読み込みしてください。');
+          return;
+        }
+        if(!raw){
+          onFirebaseLogin(FirebaseApp.getCurrentUser());
+          return;
+        }
+        const fields=Array.isArray(message.fields)&&message.fields.length?message.fields:QR_FIELDS;
+        fields.filter(function(field){return QR_FIELDS.includes(field)}).forEach(function(field){
+          raw[field]=latest[field]??'';
+        });
+        raw.updatedAt=latest.updatedAt||raw.updatedAt||'';
+        const selectedNo=String(selectedRow?.[fullKeys.no]||'').trim();
+        dataRows=buildDisplayRowsFromRaw(rawRows);
+        selectedRow=dataRows.find(function(row){
+          return String(row?.[fullKeys.no]||'').trim()===selectedNo;
+        })||selectedRow;
+        renderRecordOptions();
+        renderTable();
+        renderStats();
+        renderAlerts();
+        renderTodayCommand();
+        renderExceptionQueue();
+        updateTrainingProgressFromRows(rawRows);
+        renderMergeOptions();
+        if(selectedRow&&selectedNo===no){
+          if(els.ckK1Saved)els.ckK1Saved.checked=!!String(selectedRow[fullKeys.qrK1Saved]||'').trim();
+          if(els.ckK2Saved)els.ckK2Saved.checked=!!String(selectedRow[fullKeys.qrK2Saved]||'').trim();
+          if(els.ckK3Saved)els.ckK3Saved.checked=!!String(selectedRow[fullKeys.qrK3Saved]||'').trim();
+          updateStorageLocation();
+        }
+        setStatus('QR_reader.htmlの更新を一覧へ反映しました。');
+      });
+    },150);
+  }
+
+  try{
+    if(typeof BroadcastChannel!=='undefined'){
+      const channel=new BroadcastChannel(QR_SYNC_CHANNEL);
+      channel.addEventListener('message',function(event){applyQrSync(event.data)});
+    }
+  }catch(e){console.warn('QR同期(BroadcastChannel)の受信に失敗しました',e)}
+
+  window.addEventListener('storage',function(event){
+    if(event.key!==QR_SYNC_STORAGE_KEY||!event.newValue)return;
+    try{applyQrSync(JSON.parse(event.newValue))}catch(e){console.warn('QR同期(storage)の受信に失敗しました',e)}
+  });
+})();
