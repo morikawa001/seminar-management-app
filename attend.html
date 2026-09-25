@@ -132,11 +132,7 @@ td.ok{color:var(--accent);}
         💾 処理済み出席者CSVをダウンロード
       </button>
     </div>
-    <div>
-      <button class="btn btn-success" id="btnNormalizedExport" disabled>
-        💾 整形済み出席者CSVをダウンロード
-      </button>
-    </div>
+    <div></div>
   </div>
 
   <div class="grid-2" style="margin-top:8px;">
@@ -368,7 +364,7 @@ const SWAP_NAMES = new Set([
 ]);
 
 const CANONICAL = '静岡県立静岡がんセンター';
-let rawWorkbook=null,surveyWorkbook=null,normalizedRows=[],processedData=[],mergedData=[],jobSummaryData=[];
+let rawWorkbook=null,surveyWorkbook=null,processedData=[],mergedData=[],jobSummaryData=[];
 
 function log(msg,type='info'){const box=document.getElementById('logBox');const d=document.createElement('div');d.className=`log-line log-${type}`;d.textContent=`[${new Date().toLocaleTimeString('ja-JP')}] ${msg}`;box.appendChild(d);box.scrollTop=box.scrollHeight;}
 function setStep(n,state){document.getElementById(`s${n}`).className=`step ${state}`;}
@@ -416,50 +412,6 @@ function normalizeMail(v){return String(v??'').trim().toLowerCase();}
 function calcTimeInfo(){const s=document.getElementById('inputStart').value,e=document.getElementById('inputEnd').value;if(!s||!e) return; const ss=hhmmssToSec(s), es=hhmmssToSec(e); if(ss===null||es===null) return; const semSec=es-ss, certSec=Math.floor(semSec*3/4), toMM=sec=>`${Math.floor(sec/60)}分${sec%60>0?sec%60+'秒':''}`; document.getElementById('timeInfo').textContent=`研修会時間: ${secToHHMMSS(semSec)} (${toMM(semSec)}) ／ 受講認定時間（3/4）: ${secToHHMMSS(certSec)} (${toMM(certSec)})`;}
 function resetSteps(){for(let i=1;i<=7;i++) setStep(i,''); setProgress(0,'READY');}
 function parseWorkbook(file,onDone){const reader=new FileReader(); reader.onload=e=>{try{const data=new Uint8Array(e.target.result); const wb=XLSX.read(data,{type:'array',cellDates:false,raw:true}); onDone(wb);}catch(err){log(`ファイル解析失敗: ${err.message}`,'err');}}; reader.readAsArrayBuffer(file);}
-function normalizeAttendanceRows(rows){
-  const sections=['ホスト詳細','パネリストの詳細','出席者の詳細'];
-  const sectionIndexes=sections.map(name=>rows.findIndex(row=>row&&row.some(value=>String(value??'').trim()===name)));
-  if(sectionIndexes.every(index=>index===-1)) return rows;
-  if(sectionIndexes.some(index=>index<0)||sectionIndexes.some((index,i)=>i>0&&index<=sectionIndexes[i-1])) throw new Error('出席者レポートの区分が見つからないか、順序が異なります');
-  const headerIndexes=sectionIndexes.map((index,i)=>{
-    for(let j=index+1;j<(sectionIndexes[i+1]??rows.length);j++){
-      if(rows[j]&&rows[j].some(value=>!isBlankValue(value))) return j;
-    }
-    throw new Error(`${sections[i]}の見出し行が見つかりません`);
-  });
-  const headers=rows[headerIndexes[2]].map(value=>String(value??'').trim());
-  if(headers.length!==21) throw new Error(`出席者の詳細は21列の見出しが必要です（検出: ${headers.length}列）`);
-  const columnPositions=[[0,1,2,5,6,7,8,16],[0,1,4,8,9,10,11,19]];
-  const result=[rows[headerIndexes[2]].slice()];
-  for(let section=0;section<3;section++){
-    const end=section<2?sectionIndexes[section+1]:rows.length;
-    for(let i=headerIndexes[section]+1;i<end;i++){
-      const source=rows[i];
-      if(!source||source.every(isBlankValue)) continue;
-      if(section===2){
-        result.push(Array.from({length:21},(_,column)=>source[column]??''));
-      }else{
-        const target=Array(21).fill('');
-        columnPositions[section].forEach((targetColumn,column)=>{
-          target[targetColumn]=source[column]??'';
-        });
-        result.push(target);
-      }
-    }
-  }
-  return result;
-}
-function exportNormalizedAttendance(){
-  if(!normalizedRows.length) return;
-  const csv='\uFEFF'+normalizedRows.map(row=>row.map(value=>`"${String(value??'').replace(/"/g,'""')}"`).join(',')).join('\r\n');
-  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-  const link=document.createElement('a');
-  link.href=url;
-  link.download='出席者レポート_整形済み.csv';
-  document.body.appendChild(link);
-  link.click();
-  setTimeout(()=>{link.remove();URL.revokeObjectURL(url);},200);
-}
 function sheetToObjects(workbook){const ws=workbook.Sheets[workbook.SheetNames[0]]; return XLSX.utils.sheet_to_json(ws,{defval:'',raw:true});}
 function fillMissingFieldsByPreviousRow(rows){if(!rows||!rows.length) return rows; const TARGET_FIELDS=['登録時間','承認ステータス','ご所属施設','ご所属部署','職種：該当する職種にチェックを入れてください。','役割','本研修会をどのように知りましたか。']; let fillCount=0; for(let i=1;i<rows.length;i++){const prev=rows[i-1], curr=rows[i], prevMail=normalizeMail(prev['メール']), currMail=normalizeMail(curr['メール']); if(!prevMail||!currMail||prevMail!==currMail) continue; TARGET_FIELDS.forEach(col=>{if(isBlankValue(curr[col])&&!isBlankValue(prev[col])){curr[col]=prev[col];fillCount++;}});} log(`前行メール一致による空白補完: ${fillCount}件`,fillCount>0?'warn':'ok'); return rows;}
 function renderTable(data){if(!data||!data.length){document.getElementById('tableWrap').innerHTML='<div class="note">表示データがありません。</div>'; return;} const cols=Object.keys(data[0]); let html='<table><thead><tr>'; cols.forEach(c=>html+=`<th>${escapeHtml(c)}</th>`); html+='</tr></thead><tbody>'; data.forEach(row=>{html+='<tr>'; cols.forEach(c=>{const v=row[c]===null||row[c]===undefined?'':row[c]; let cls=''; if(c==='判定'||c==='交付の可否'){cls=(v===1||v==='1'||v==='○')?'ok':(v===0||v==='0'||v==='✕')?'ng':'';} html+=`<td class="${cls}">${escapeHtml(v)}</td>`;}); html+='</tr>';}); html+='</tbody></table>'; document.getElementById('tableWrap').innerHTML=html;}
@@ -614,7 +566,8 @@ async function startProcess(){
 
   try{
     setStep(1,'active'); setProgress(10,'STEP 1: ファイル解析'); await sleep(120);
-    const rawRows=normalizedRows;
+    const ws=rawWorkbook.Sheets[rawWorkbook.SheetNames[0]];
+    const rawRows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true});
     log(`全行数: ${rawRows.length}`,'ok');
 
     const REQUIRED_COLS=['名','姓','参加時間','退出時間'];
@@ -917,28 +870,12 @@ setupFileDrop(document.getElementById('surveyFileInput'),document.querySelector(
 document.getElementById('fileInput').addEventListener('change',e=>{
   const file=e.target.files?.[0];
   if(!file) return;
-  rawWorkbook=null;
-  normalizedRows=[];
-  document.getElementById('btnProcess').disabled=true;
-  document.getElementById('btnNormalizedExport').disabled=true;
   document.getElementById('fileLabelText').textContent='選択済み';
   document.getElementById('fileName').textContent='▶ '+file.name;
   parseWorkbook(file,wb=>{
-    try{
-      const ws=wb.Sheets[wb.SheetNames[0]];
-      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true});
-      normalizedRows=normalizeAttendanceRows(rows);
-      rawWorkbook=wb;
-      document.getElementById('btnProcess').disabled=false;
-      document.getElementById('btnNormalizedExport').disabled=false;
-      log(`出席者レポート読み込み完了: ${file.name}（整形後${normalizedRows.length-1}行）`,'ok');
-    }catch(err){
-      rawWorkbook=null;
-      normalizedRows=[];
-      document.getElementById('btnProcess').disabled=true;
-      document.getElementById('btnNormalizedExport').disabled=true;
-      log(`出席者レポートの整形に失敗: ${err.message}`,'err');
-    }
+    rawWorkbook=wb;
+    document.getElementById('btnProcess').disabled=false;
+    log(`出席者レポート読み込み完了: ${file.name}`,'ok');
   });
 });
 
@@ -955,7 +892,6 @@ document.getElementById('surveyFileInput').addEventListener('change',e=>{
 });
 
 document.getElementById('btnProcess').addEventListener('click',startProcess);
-document.getElementById('btnNormalizedExport').addEventListener('click',exportNormalizedAttendance);
 document.getElementById('btnProcessExport').addEventListener('click',()=>exportCSVFromRows(processedData,'受講者処理済み',true));
 document.getElementById('btnMergeExport').addEventListener('click',()=>exportCSVFromRows(mergedData,'受講者_アンケート結合済み',true));
 document.getElementById('btnJobSummaryExport').addEventListener('click',()=>{

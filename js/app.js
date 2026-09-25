@@ -1103,9 +1103,12 @@ function downloadQR(){
 }
 
 function updateStorageLocation(){
+  const nameEl=document.getElementById('storageLocName');
+  const valueEl=document.getElementById('storageLocValue');
+  if(!nameEl||!valueEl)return;
   const loc=selectedRow?String(selectedRow[fullKeys.qrStorageLoc]||'').trim():'';
-  const value=loc||'保管場所データが未登録です。';
-  document.querySelectorAll('.storage-loc-value').forEach(function(el){el.textContent=value;});
+  nameEl.textContent=selectedRow?`No.${selectedRow[fullKeys.no]||''} の保存場所`:'保存場所';
+  valueEl.textContent=loc||'保管場所データが未登録です。';
 }
 window.updateStorageLocation=updateStorageLocation;
 
