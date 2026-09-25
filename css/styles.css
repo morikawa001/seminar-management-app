@@ -637,6 +637,22 @@ label[for="templateFiles"] {
   gap:4px;
 }
 .schedule-left{display:grid;gap:4px}
+#computedScheduleSection .schedule-storage-location{
+  display:grid;
+  gap:3px;
+  margin-top:8px;
+  padding-top:8px;
+  border-top:1px solid var(--line);
+}
+#computedScheduleSection .schedule-storage-location span{
+  color:var(--muted);
+  font-size:.72rem;
+  font-weight:700;
+}
+#computedScheduleSection .schedule-storage-location b{
+  font-size:.82rem;
+  overflow-wrap:anywhere;
+}
 .schedule-check{
   display:inline-flex;
   align-items:center;
