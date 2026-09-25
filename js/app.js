@@ -1104,8 +1104,10 @@ function downloadQR(){
 
 function updateStorageLocation(){
   const loc=selectedRow?String(selectedRow[fullKeys.qrStorageLoc]||'').trim():'';
-  const value=loc||'保管場所データが未登録です。';
-  document.querySelectorAll('.storage-loc-value').forEach(function(el){el.textContent=value;});
+  const savedChecks=[els.ckK1Saved,els.ckK2Saved,els.ckK3Saved];
+  document.querySelectorAll('.storage-loc-value').forEach(function(el,index){
+    el.textContent=savedChecks[index]?.checked&&loc?loc:'保管場所データが未登録です。';
+  });
 }
 window.updateStorageLocation=updateStorageLocation;
 
