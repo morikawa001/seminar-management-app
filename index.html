@@ -521,6 +521,10 @@
               <span class="small-label">起案1</span>
               <strong id="dK1">-</strong>
               <p>開催35日前の起案予定です。</p>
+              <div class="schedule-storage-location">
+                <span>ファイルの保存場所</span>
+                <b class="storage-loc-value">保管場所データが未登録です。</b>
+              </div>
             </div>
             <div class="schedule-actions">
               <label class="schedule-check"><input type="checkbox" id="ckK1"><span>実施済み</span></label>
@@ -540,6 +544,10 @@
               <span class="small-label">起案2</span>
               <strong id="dK2">-</strong>
               <p>開催7日前の資料起案予定です。</p>
+              <div class="schedule-storage-location">
+                <span>ファイルの保存場所</span>
+                <b class="storage-loc-value">保管場所データが未登録です。</b>
+              </div>
             </div>
             <div class="schedule-actions">
               <label class="schedule-check"><input type="checkbox" id="ckK2"><span>実施済み</span></label>
@@ -551,6 +559,10 @@
               <span class="small-label">起案3</span>
               <strong id="dK3">-</strong>
               <p>開催翌営業日の受講証・修了証起案予定です。</p>
+              <div class="schedule-storage-location">
+                <span>ファイルの保存場所</span>
+                <b class="storage-loc-value">保管場所データが未登録です。</b>
+              </div>
             </div>
             <div class="schedule-actions">
               <label class="schedule-check"><input type="checkbox" id="ckK3"><span>実施済み</span></label>
@@ -587,20 +599,6 @@
           </div>
           <div id="qrUrlDisplay" style="margin-top:8px;font-size:11px;word-break:break-all;color:#666;padding:0 4px;"></div>
           <button id="qrDownloadBtn" class="btn small" style="margin-top:8px;display:none;" onclick="downloadQR()">QRコードをダウンロード</button>
-        </div>
-      </section>
-
-      <section class="panel" id="storageLocPanel">
-        <div class="corner-label">File Storage Location</div>
-        <div class="panel-head">
-          <div>
-            <h2>ファイルの保存場所</h2>
-            <p>QR_reader.html（QRファイル管理）でスキャンした保管場所QRのデータを表示します。</p>
-          </div>
-        </div>
-        <div class="hint-box">
-          <b id="storageLocName">-</b>
-          <span id="storageLocValue">保管場所データが未登録です。</span>
         </div>
       </section>
 
