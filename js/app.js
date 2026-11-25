@@ -1,10 +1,9 @@
 function updateTaskProgress(persist=true){
   const total=TASK_IDS.length;
   let done=0;
-  const selectedTaskRow=selectedRow||rawRows.find(r=>String(r?.[fullKeys.no]||'').trim()===String(fields.no.value||'').trim());
   for(const id of TASK_IDS){
     const el=document.getElementById('ck_task'+id);
-    if(selectedTaskRow?isCheckedValue(selectedTaskRow[fullKeys['task'+id]]):(el&&el.checked))done++;
+    if(el?.checked)done++;
   }
   const remain=total-done;
   const pct=Math.round(done/total*100);
@@ -16,7 +15,7 @@ function updateTaskProgress(persist=true){
   if(remEl)remEl.textContent=String(remain);
   if(pctEl)pctEl.textContent=pct+'%';
   if(barEl)barEl.style.width=pct+'%';
-  for(const id of TASK_IDS){const tc=document.getElementById('taskcard_task'+id);const cb=document.getElementById('ck_task'+id);if(tc)tc.classList.toggle('done',selectedTaskRow?isCheckedValue(selectedTaskRow[fullKeys['task'+id]]):cb?.checked||false);}
+  for(const id of TASK_IDS){const tc=document.getElementById('taskcard_task'+id);const cb=document.getElementById('ck_task'+id);if(tc)tc.classList.toggle('done',cb?.checked||false);}
   const no=String(fields.no.value||'').trim();
   if(!persist){
     renderTaskMetaList();
@@ -47,9 +46,9 @@ function resetAllTasks(){
 // 初期化時にも進捗を反映
 (function(){
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',updateTaskProgress);
+    document.addEventListener('DOMContentLoaded',()=>updateTaskProgress(false));
   }else{
-    setTimeout(updateTaskProgress,100);
+    setTimeout(()=>updateTaskProgress(false),100);
   }
 })();
 
@@ -966,7 +965,7 @@ function resetScheduleChecks(){
   if(els.ckK3Saved) els.ckK3Saved.checked=false;
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=false;}
   taskMetaDraft={dueDates:{},doneAt:{},notes:{}};
-  updateTaskProgress();
+  updateTaskProgress(false);
   updateScheduleDone();
 }
 
@@ -1021,13 +1020,13 @@ function applyScheduleChecksFromRow(row){
   if(els.ckK3Saved) els.ckK3Saved.checked = !!(row?.[fullKeys.qrK3Saved] && String(row[fullKeys.qrK3Saved]).trim());
   setTaskMetaDraft(row||{});
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=isCheckedValue(row?.[fullKeys['task'+id]]);}
-  updateTaskProgress();
+  updateTaskProgress(false);
 }
 
 function prefillFromLast(){
   const last=dataRows[dataRows.length-1];
   if(!last)return;
-  fields.no.value=String(Number(last[fullKeys.no]||0)+1);
+  fields.no.value=String(setNextNo());
   fields.year.value=(last[fullKeys.year]||'2026年').replace(/\s+/g,'');
   fields.name.value=last[fullKeys.name]||'';
   fields.speakerAffiliation.value=last[fullKeys.speakerAffiliation]||'';
