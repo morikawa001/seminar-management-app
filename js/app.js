@@ -1,4 +1,4 @@
-function updateTaskProgress(persist=true){
+function updateTaskProgress(){
   const total=TASK_IDS.length;
   let done=0;
   for(const id of TASK_IDS){
@@ -16,39 +16,39 @@ function updateTaskProgress(persist=true){
   if(pctEl)pctEl.textContent=pct+'%';
   if(barEl)barEl.style.width=pct+'%';
   for(const id of TASK_IDS){const tc=document.getElementById('taskcard_task'+id);const cb=document.getElementById('ck_task'+id);if(tc)tc.classList.toggle('done',cb?.checked||false);}
-  const no=String(fields.no.value||'').trim();
-  if(!persist){
-    renderTaskMetaList();
-    return;
-  }
-  if(!no)return;
-  const rawIdx=getRawRowIndexByNo(no);
-  if(rawIdx<0)return;
-  const rawRow=rawRows[rawIdx];
-  for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);rawRow[fullKeys['task'+id]]=boolToCsv(el?.checked||false);}
-  dataRows=buildDisplayRowsFromRaw(rawRows);
-  selectedRow=dataRows.find(r=>String(r[fullKeys.no]||'').trim()===no)||selectedRow;
-  if(typeof FirebaseApp!=='undefined'&&FirebaseApp.getCurrentUser()){
-    FirebaseApp.saveToFirestore(rawRow,currentHeaders).catch(function(err){console.error('Firestore task save error:',err)});
-  }
-  updateTrainingProgressFromRows(rawRows);
-  renderTodayCommand();
-  renderExceptionQueue();
-  renderAlerts();
-  renderTable();
-  renderStats();
   renderTaskMetaList();
 }
+
+function saveTaskFields(row,headers){
+  if(typeof FirebaseApp==='undefined'||!FirebaseApp.getCurrentUser())return;
+  if(!row.__docId){
+    setStatus('???????????????????????????????????');
+    return;
+  }
+  FirebaseApp.saveToFirestore(row,headers).catch(function(err){
+    console.error('Firestore task save error:',err);
+    setStatus('???????????????????????????????????');
+  });
+}
+window.saveTaskFields=saveTaskFields;
+
 function resetAllTasks(){
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=false;}
+  const row=selectedTaskRecord();
+  if(row){
+    const keys=TASK_IDS.map(id=>fullKeys['task'+id]);
+    keys.forEach(key=>{row[key]=boolToCsv(false);});
+    saveTaskFields(row,keys);
+    refreshTaskViews();
+  }
   updateTaskProgress();
 }
 // 初期化時にも進捗を反映
 (function(){
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',()=>updateTaskProgress(false));
+    document.addEventListener('DOMContentLoaded',()=>updateTaskProgress());
   }else{
-    setTimeout(()=>updateTaskProgress(false),100);
+    setTimeout(()=>updateTaskProgress(),100);
   }
 })();
 
@@ -360,8 +360,8 @@ function setTaskMetaDraft(row){
   taskMetaDraft=SeminarDomain.serializeMeta(SeminarDomain.taskMetaFromRow(row||{},fullKeys));
 }
 function taskMetaBaseRow(){
-  const row=selectedRow||buildRow();
-  return SeminarDomain.applyMetaToRow(row,fullKeys,taskMetaDraft);
+  const row=selectedTaskRecord()||buildRow();
+  return SeminarDomain.applyMetaToRow({...row},fullKeys,taskMetaDraft);
 }
 function taskLabel(id){
   const el=document.querySelector('#taskcard_task'+id+' .schedule-left strong');
@@ -415,27 +415,46 @@ function renderTaskMetaList(){
   if(els.taskMetaList)els.taskMetaList.innerHTML='';
 }
 
- function updateTaskMetaField(id,group,value){
+function selectedTaskRecord(){
+  const no=String(fields.no.value||'').trim();
+  if(!no||String(selectedRow?.[fullKeys.no]||'').trim()!==no)return null;
+  return rawRows[getRawRowIndexByNo(no)]||null;
+}
+window.selectedTaskRecord=selectedTaskRecord;
+
+function refreshTaskViews(){
+  dataRows=buildDisplayRowsFromRaw(rawRows);
+  updateTrainingProgressFromRows(rawRows);
+  renderTodayCommand();renderExceptionQueue();renderAlerts();renderTable();renderStats();
+}
+window.refreshTaskViews=refreshTaskViews;
+
+function updateTaskMetaField(id,group,value,checked){
   if(!taskMetaDraft[group])taskMetaDraft[group]={};
   if(String(value||'').trim())taskMetaDraft[group][id]=String(value).trim();
   else delete taskMetaDraft[group][id];
-  const no=String(fields.no.value||'').trim();
-  const rawIdx=getRawRowIndexByNo(no);
-  if(rawIdx>=0){
-    ensureHeader(fullKeys.taskDueDates);ensureHeader(fullKeys.taskDoneAt);ensureHeader(fullKeys.taskNotes);
-    SeminarDomain.applyMetaToRow(rawRows[rawIdx],fullKeys,taskMetaDraft);
-    selectedRow=rawRows[rawIdx];
-    dataRows=buildDisplayRowsFromRaw(rawRows);
-    renderTodayCommand();renderExceptionQueue();renderAlerts();renderTable();renderStats();
-    if(typeof FirebaseApp!=='undefined'&&FirebaseApp.getCurrentUser())FirebaseApp.saveToFirestore(rawRows[rawIdx],currentHeaders).catch(e=>console.error('Firestore task metadata save error:',e));
+  const row=selectedTaskRecord();
+  if(row){
+    const key=fullKeys[{dueDates:'taskDueDates',doneAt:'taskDoneAt',notes:'taskNotes'}[group]];
+    ensureHeader(key);
+    const updated=SeminarDomain.applyMetaToRow({},fullKeys,taskMetaDraft);
+    row[key]=updated[key];
+    const headers=[key];
+    if(typeof checked==='boolean'){
+      const taskKey=fullKeys['task'+id];
+      row[taskKey]=boolToCsv(checked);
+      headers.push(taskKey);
+    }
+    saveTaskFields(row,headers);
+    refreshTaskViews();
   }
-  renderTaskMetaList();
+  updateTaskProgress();
 }
 window.updateTaskMetaField=updateTaskMetaField;
 function handleTaskChange(id,checked){
   const today=new Date();
   const value=checked?today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'):'';
-  updateTaskMetaField(id,'doneAt',value);
+  updateTaskMetaField(id,'doneAt',value,checked);
 }
 document.addEventListener('DOMContentLoaded',function(){
   TASK_IDS.forEach(id=>{
@@ -965,7 +984,7 @@ function resetScheduleChecks(){
   if(els.ckK3Saved) els.ckK3Saved.checked=false;
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=false;}
   taskMetaDraft={dueDates:{},doneAt:{},notes:{}};
-  updateTaskProgress(false);
+  updateTaskProgress();
   updateScheduleDone();
 }
 
@@ -1020,7 +1039,7 @@ function applyScheduleChecksFromRow(row){
   if(els.ckK3Saved) els.ckK3Saved.checked = !!(row?.[fullKeys.qrK3Saved] && String(row[fullKeys.qrK3Saved]).trim());
   setTaskMetaDraft(row||{});
   for(const id of TASK_IDS){const el=document.getElementById('ck_task'+id);if(el)el.checked=isCheckedValue(row?.[fullKeys['task'+id]]);}
-  updateTaskProgress(false);
+  updateTaskProgress();
 }
 
 function prefillFromLast(){
@@ -2528,7 +2547,7 @@ function tcCheckDone(cardId, checked){
         const taskCheckbox=document.getElementById('ck_'+taskKeyName);
         if(taskCheckbox) taskCheckbox.checked=checked;
         setTaskMetaDraft(targetRow);
-        updateTaskProgress(false);
+        updateTaskProgress();
       }else if(typeof loadSelectedIntoForm==='function'){
         loadSelectedIntoForm();
       }
